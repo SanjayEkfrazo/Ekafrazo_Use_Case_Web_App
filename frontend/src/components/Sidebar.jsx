@@ -33,7 +33,7 @@ function Sidebar() {
       {/* Brand mark */}
       <div className="mb-8 flex items-center gap-2 px-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary font-display text-sm font-bold text-white">
-          UC
+          EK
         </div>
         <span className="font-display text-sm font-semibold text-white">Use Cases</span>
       </div>

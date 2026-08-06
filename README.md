@@ -1,20 +1,39 @@
 # Use Case Management System
 
-A full-stack CRUD application for managing business use cases. Built as a learning project to demonstrate a clean, traceable full-stack architecture — **React** on the frontend, **Express** on the backend, and **SQLite** for storage.
+A full-stack app to manage business use cases with a clean, easy-to-follow architecture.
 
-There is no authentication, notifications, or analytics here on purpose. The whole point of this project is to make one thing very clear: **how a Create, Read, Update, and Delete flow travels through a real application, end to end.**
+The project focuses on one thing: showing how a real CRUD flow moves from UI to API to database and back.
 
----
+## What This Application Does
+
+1. Stores business use cases in SQLite.
+2. Lets users browse, search, and view details.
+3. Allows admins to create, edit, and delete use cases.
+4. Keeps frontend and backend responsibilities clearly separated.
+
+## User Roles
+
+### Public User (default)
+
+1. Can open dashboard.
+2. Can view use case list and details.
+3. Cannot create, edit, or delete.
+
+### Admin User
+
+1. Starts as Public.
+2. Clicks Unlock Admin in the top-right header.
+3. Enters the admin passcode.
+4. Gets admin mode and can create, edit, and delete.
+5. Can click Logout Admin to return to Public mode.
 
 ## Tech Stack
 
-| Layer     | Technology              |
-|-----------|--------------------------|
-| Frontend  | React (Vite) + Tailwind CSS + React Router |
-| Backend   | Node.js + Express        |
-| Database  | SQLite (via better-sqlite3) |
-
----
+| Layer | Technology |
+|---|---|
+| Frontend | React (Vite), Tailwind CSS, React Router |
+| Backend | Node.js, Express |
+| Database | SQLite (node:sqlite) |
 
 ## Project Structure
 
@@ -22,91 +41,71 @@ There is no authentication, notifications, or analytics here on purpose. The who
 usecase-management-system/
 ├── backend/
 │   ├── src/
-│   │   ├── config/         # Environment & app configuration
-│   │   ├── database/       # DB connection + raw SQL queries
-│   │   ├── models/         # Field definitions & allowed values
-│   │   ├── services/       # Business logic (search, sort, pagination, validation)
-│   │   ├── controllers/    # Request/response handling
-│   │   ├── routes/         # Express route definitions
-│   │   ├── middlewares/    # Error handling
-│   │   ├── utils/          # Validators
-│   │   ├── app.js          # Express app setup
-│   │   └── server.js       # Entry point
-│   └── package.json
-│
-└── frontend/
-    ├── src/
-    │   ├── components/     # Reusable UI building blocks
-    │   ├── pages/           # Dashboard, Use Cases, Create, Edit
-    │   ├── layouts/          # MainLayout (sidebar + content)
-    │   ├── routes/           # Route definitions
-    │   ├── services/         # API calls (fetch wrapper)
-    │   ├── hooks/             # useToast (toast notifications)
-    │   └── utils/             # Constants & client-side validation
-    └── package.json
+│   │   ├── app.js
+│   │   ├── server.js
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── database/
+│   │   ├── middlewares/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── utils/
+│   └── .env.example
+├── frontend/
+│   └── src/
+│       ├── components/
+│       ├── hooks/
+│       ├── layouts/
+│       ├── pages/
+│       ├── routes/
+│       ├── services/
+│       └── utils/
+└── .gitignore
 ```
 
----
-
-## How a Request Flows (the whole point of this project)
-
-Example: **saving a new use case**
-
-```
-User clicks "Create Use Case"
-   ↓
-UseCaseForm (React component)
-   ↓
-useCaseService.js  →  createUseCase()
-   ↓
-api.js  →  fetch("POST /api/usecases")
-   ↓
-Express route  (routes/usecase.routes.js)
-   ↓
-Controller      (controllers/usecase.controller.js)
-   ↓
-Service         (services/usecase.service.js)  → validation
-   ↓
-Database layer  (database/usecase.database.js) → SQL INSERT
-   ↓
-SQLite file (usecases.db)
-   ↓
-Response flows back up through the same layers
-   ↓
-React state updates → toast shown → table refreshes
-```
-
-Every layer has exactly one job. If something breaks, you always know which file to open.
-
----
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- Node.js 18 or higher
-- npm
+1. Node.js 18+
+2. npm
 
-### 1. Install and run the backend
+### 1. Run Backend
 
 ```bash
 cd backend
 npm install
+copy .env.example .env
 npm start
 ```
 
-The API will start on **http://localhost:5000**. A `usecases.db` SQLite file is created automatically on first run — no manual database setup required.
-
-Optional: load realistic test data
+If you are on macOS/Linux, use:
 
 ```bash
-cd backend
-npm run seed:reset
+cp .env.example .env
 ```
 
-This inserts 20 real-world sample use cases across domains like Retail, Banking, Healthcare, Logistics, and Manufacturing.
+Backend URL: http://localhost:5000
 
-### 2. Install and run the frontend
+### 2. Configure Backend Environment
+
+Open backend/.env and set secure values:
+
+```env
+PORT=5000
+CLIENT_ORIGIN=http://localhost:5173
+ADMIN_PASSCODE=your-admin-passcode
+ADMIN_SESSION_SECRET=your-long-random-secret
+```
+
+Meaning:
+
+1. ADMIN_PASSCODE is what you enter in Unlock Admin popup.
+2. ADMIN_SESSION_SECRET signs the admin session cookie.
+3. CLIENT_ORIGIN is allowed frontend URL for CORS.
+
+### 3. Run Frontend
 
 Open a second terminal:
 
@@ -116,52 +115,74 @@ npm install
 npm run dev
 ```
 
-The app will start on **http://localhost:5173**.
+Frontend URL: http://localhost:5173
 
-### 3. Open the app
+### 4. Seed Optional Sample Data
 
-Visit **http://localhost:5173** in your browser. The backend must be running for the frontend to load any data.
+```bash
+cd backend
+npm run seed:reset
+```
 
----
+## How Request Flow Works
+
+Example: create use case
+
+1. User submits form in frontend.
+2. Frontend service sends POST /api/usecases.
+3. Express route receives request.
+4. Controller calls service layer.
+5. Service validates and applies business logic.
+6. Database layer executes SQL insert.
+7. Response returns to frontend.
+8. UI shows toast and refreshes list.
 
 ## API Reference
 
-Base URL: `http://localhost:5000/api`
+Base URL: http://localhost:5000/api
 
-| Method | Endpoint                | Description                          |
-|--------|--------------------------|---------------------------------------|
-| GET    | `/usecases`              | List use cases (supports `search`, `sortBy`, `sortOrder`, `page`, `limit`) |
-| GET    | `/usecases/summary`      | Dashboard summary (total count + recently updated) |
-| GET    | `/usecases/:id`          | Get a single use case                |
-| POST   | `/usecases`               | Create a new use case                |
-| PUT    | `/usecases/:id`          | Update an existing use case          |
-| DELETE | `/usecases/:id`          | Delete a use case                    |
+### Auth and Role
 
-### Use Case Fields
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /auth/me | Get current role (public or admin) |
+| POST | /auth/unlock | Unlock admin mode with passcode |
+| POST | /auth/logout | Lock admin mode |
 
-`title`, `description`, `domain`, `category`, `status`, `priority`, `business_problem`, `proposed_solution`, `technology_stack`, `created_at`, `updated_at`
+### Use Cases
 
----
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /usecases | List use cases with search, sort, pagination |
+| GET | /usecases/summary | Dashboard summary |
+| GET | /usecases/:id | Get one use case |
+| POST | /usecases | Create use case (admin only) |
+| PUT | /usecases/:id | Update use case (admin only) |
+| DELETE | /usecases/:id | Delete use case (admin only) |
 
-## Features
+## Main Features
 
-- Full CRUD (Create, Read, Update, Delete)
-- Search across title, domain, and category
-- Sortable table columns
-- Pagination
-- Client-side and server-side validation with friendly error messages
-- Confirmation dialog before delete
-- Toast notifications for success/error feedback
-- Loading skeletons and empty states
-- Fully responsive (desktop, tablet, mobile)
+1. Dashboard summary and recently updated list.
+2. Search, sorting, and pagination.
+3. Details page for each use case.
+4. Shared create/edit form.
+5. Client-side and server-side validation.
+6. Confirm dialog for delete.
+7. Toast feedback for success and errors.
+8. Public and Admin mode with backend-protected write APIs.
 
----
+## Security and Git Hygiene
 
-## Notes for Learners
+1. One root .gitignore is used for the whole repository.
+2. .env files are ignored.
+3. .env.example files are tracked.
+4. Local database files are ignored.
 
-- **SQL lives only in `backend/src/database/`.** Nowhere else in the backend writes raw SQL.
-- **Business rules live only in `backend/src/services/`.** Controllers never contain logic beyond calling a service and shaping the HTTP response.
-- **The frontend never calls `fetch()` directly** outside of `src/services/api.js` — every page goes through the service layer.
-- **`UseCaseForm.jsx`** is shared between the Create and Edit pages, so you only need to look in one place to understand the form itself.
+## Learning Notes
 
-Read the code top to bottom starting from `backend/src/server.js` and `frontend/src/main.jsx` — everything branches out from those two files.
+1. SQL is isolated in backend/src/database.
+2. Business logic is isolated in backend/src/services.
+3. Controllers stay thin.
+4. Frontend API calls are centralized in frontend/src/services/api.js.
+
+Start reading from backend/src/server.js and frontend/src/main.jsx to understand the full flow quickly.

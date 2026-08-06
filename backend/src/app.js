@@ -4,13 +4,20 @@
 const express = require("express");
 const cors = require("cors");
 const usecaseRoutes = require("./routes/usecase.routes");
+const authRoutes = require("./routes/auth.routes");
 const { errorHandler, notFoundHandler } = require("./middlewares/errorHandler");
+const { CLIENT_ORIGIN } = require("./config/server.config");
 
 // Initialize Express app
 const app = express();
 
 // Allow the frontend to call this API and parse incoming JSON bodies
-app.use(cors());
+app.use(
+  cors({
+    origin: CLIENT_ORIGIN,
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Simple health check route
@@ -19,6 +26,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Mount use case routes under /api/usecases
+app.use("/api/auth", authRoutes);
 app.use("/api/usecases", usecaseRoutes);
 
 // Handle unknown routes and unexpected errors

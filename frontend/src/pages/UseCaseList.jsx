@@ -11,6 +11,7 @@ import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { fetchUseCases, deleteUseCase } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
+import { useAuth } from "../hooks/useAuth";
 import { DEFAULT_PAGE_SIZE } from "../utils/constants";
 
 function UseCaseList() {
@@ -25,6 +26,7 @@ function UseCaseList() {
 
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { isAdmin } = useAuth();
 
   // Load use cases from the API using the current filters
   const loadUseCases = useCallback(async () => {
@@ -80,7 +82,7 @@ function UseCaseList() {
         {/* Toolbar: search and create button */}
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <SearchBar value={search} onChange={handleSearchChange} />
-          <Button onClick={() => navigate("/use-cases/new")}>+ New Use Case</Button>
+          {isAdmin && <Button onClick={() => navigate("/use-cases/new")}>+ New Use Case</Button>}
         </div>
 
         {isLoading ? (
@@ -88,8 +90,14 @@ function UseCaseList() {
         ) : useCases.length === 0 ? (
           <EmptyState
             title="No use cases found"
-            description={search ? "Try adjusting your search term." : "Create your first use case to get started."}
-            actionLabel={search ? undefined : "Create Use Case"}
+            description={
+              search
+                ? "Try adjusting your search term."
+                : isAdmin
+                  ? "Create your first use case to get started."
+                  : "No use cases available yet."
+            }
+            actionLabel={search || !isAdmin ? undefined : "Create Use Case"}
             onAction={() => navigate("/use-cases/new")}
           />
         ) : (
@@ -99,6 +107,7 @@ function UseCaseList() {
               sortBy={sortBy}
               sortOrder={sortOrder}
               onSort={handleSort}
+              canManage={isAdmin}
               onDelete={(useCase) => setUseCaseToDelete(useCase)}
             />
             <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} onPageChange={setPage} />
@@ -108,7 +117,7 @@ function UseCaseList() {
 
       {/* Confirmation dialog before deleting */}
       <ConfirmDialog
-        isOpen={Boolean(useCaseToDelete)}
+        isOpen={isAdmin && Boolean(useCaseToDelete)}
         title="Delete this use case?"
         description={`"${useCaseToDelete?.title}" will be permanently removed. This action cannot be undone.`}
         onConfirm={handleConfirmDelete}

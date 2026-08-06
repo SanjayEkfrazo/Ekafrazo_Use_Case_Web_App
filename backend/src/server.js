@@ -1,6 +1,8 @@
 // Entry point of the backend
 // Starts the Express server
 
+require("dotenv").config();
+
 const app = require("./app");
 const { PORT } = require("./config/server.config");
 

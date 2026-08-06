@@ -1,8 +1,7 @@
 // Responsive card grid that lists use cases
 import { useNavigate } from "react-router-dom";
-import StatusBadge from "./StatusBadge";
 
-function Table({ useCases, onDelete }) {
+function Table({ useCases, onDelete, canManage = false }) {
   const navigate = useNavigate();
 
   // Format a date string into a short readable form
@@ -17,7 +16,6 @@ function Table({ useCases, onDelete }) {
         <article key={useCase.id} className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4 shadow-card">
           <div className="flex items-start justify-between gap-3">
             <h3 className="text-base font-semibold text-ink">{useCase.title}</h3>
-            <StatusBadge status={useCase.status} />
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -60,18 +58,22 @@ function Table({ useCases, onDelete }) {
               >
                 Details
               </button>
-              <button
-                onClick={() => navigate(`/use-cases/${useCase.id}/edit`)}
-                className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-primary-light"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => onDelete(useCase)}
-                className="rounded-md px-2 py-1 text-xs font-medium text-danger hover:bg-danger-light"
-              >
-                Delete
-              </button>
+              {canManage && (
+                <>
+                  <button
+                    onClick={() => navigate(`/use-cases/${useCase.id}/edit`)}
+                    className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-primary-light"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(useCase)}
+                    className="rounded-md px-2 py-1 text-xs font-medium text-danger hover:bg-danger-light"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </article>

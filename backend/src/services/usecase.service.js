@@ -111,8 +111,55 @@ function deleteUseCase(id) {
 function getDashboardSummary() {
   const total = usecaseDb.count();
   const all = usecaseDb.findAll();
-  const recentlyUpdated = all.slice(0, 5);
-  return { total, recentlyUpdated };
+  const recentlyUpdated = all.slice(0, 6);
+
+  const byStatus = all.reduce((accumulator, item) => {
+    const key = item.status || "Draft";
+    accumulator[key] = (accumulator[key] || 0) + 1;
+    return accumulator;
+  }, {});
+
+  const byPriority = all.reduce((accumulator, item) => {
+    const key = item.priority || "Medium";
+    accumulator[key] = (accumulator[key] || 0) + 1;
+    return accumulator;
+  }, {});
+
+  const completedCount = byStatus.Completed || 0;
+  const inProgressCount = byStatus["In Progress"] || 0;
+  const blockedCount = byStatus["On Hold"] || 0;
+
+  const highPriorityOpenCount = all.filter(
+    (item) => (item.priority === "Critical" || item.priority === "High") && item.status !== "Completed"
+  ).length;
+
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const updatedLast7Days = all.filter((item) => {
+    if (!item.updated_at) {
+      return false;
+    }
+    const updatedAt = new Date(item.updated_at.replace(" ", "T")).getTime();
+    return Number.isFinite(updatedAt) && updatedAt >= sevenDaysAgo;
+  }).length;
+
+  const needsAttention = all
+    .filter(
+      (item) => item.status === "On Hold" || ((item.priority === "Critical" || item.priority === "High") && item.status !== "Completed")
+    )
+    .slice(0, 5);
+
+  return {
+    total,
+    recentlyUpdated,
+    byStatus,
+    byPriority,
+    completedCount,
+    inProgressCount,
+    blockedCount,
+    highPriorityOpenCount,
+    updatedLast7Days,
+    needsAttention,
+  };
 }
 
 module.exports = {
