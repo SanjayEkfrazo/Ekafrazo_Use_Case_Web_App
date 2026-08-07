@@ -3,10 +3,13 @@ import { Link } from "react-router-dom";
 
 function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-app text-center px-6">
-      <p className="font-display text-5xl font-semibold text-ink">404</p>
+    <div className="page-enter flex min-h-screen flex-col items-center justify-center gap-3 bg-app px-6 text-center">
+      <p className="text-brand-gradient font-display text-7xl font-bold">404</p>
       <p className="text-sm text-muted">The page you are looking for does not exist.</p>
-      <Link to="/" className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover">
+      <Link
+        to="/"
+        className="mt-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-solid shadow-card transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-glow-primary motion-reduce:transition-none motion-reduce:transform-none"
+      >
         Back to Dashboard
       </Link>
     </div>

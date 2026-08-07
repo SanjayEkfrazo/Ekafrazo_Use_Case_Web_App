@@ -5,7 +5,10 @@ function Loader({ rows = 5 }) {
   return (
     <div className="flex flex-col gap-3">
       {Array.from({ length: rows }).map((_, index) => (
-        <div key={index} className="h-12 w-full animate-pulse rounded-md bg-slate-100" />
+        <div
+          key={index}
+          className="h-12 w-full rounded-lg bg-gradient-to-r from-surface-elevated via-border to-surface-elevated bg-[length:200%_100%] animate-shimmer"
+        />
       ))}
     </div>
   );

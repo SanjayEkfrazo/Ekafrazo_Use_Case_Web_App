@@ -3,6 +3,7 @@
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const usecaseRoutes = require("./routes/usecase.routes");
 const authRoutes = require("./routes/auth.routes");
 const { errorHandler, notFoundHandler } = require("./middlewares/errorHandler");
@@ -19,6 +20,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // Simple health check route
 app.get("/api/health", (req, res) => {

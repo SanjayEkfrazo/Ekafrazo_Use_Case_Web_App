@@ -13,14 +13,14 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
         <button
           onClick={goToPrevious}
           disabled={currentPage <= 1}
-          className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-ink hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl border border-border bg-surface-elevated px-3 py-1.5 text-sm font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border"
         >
           Previous
         </button>
         <button
           onClick={goToNext}
           disabled={currentPage >= totalPages}
-          className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-ink hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl border border-border bg-surface-elevated px-3 py-1.5 text-sm font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border"
         >
           Next
         </button>

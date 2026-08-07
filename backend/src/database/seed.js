@@ -203,9 +203,6 @@ const baseUseCases = [
   }
 ];
 
-const STATUS_OPTIONS = ["Draft", "In Review", "Approved", "In Progress", "Completed", "On Hold"];
-const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
-
 function slugify(text) {
   return text
     .toLowerCase()
@@ -215,8 +212,6 @@ function slugify(text) {
 
 function makeRecord(base, index) {
   const slug = slugify(base.title);
-  const status = STATUS_OPTIONS[index % STATUS_OPTIONS.length];
-  const priority = PRIORITY_OPTIONS[index % PRIORITY_OPTIONS.length];
 
   const createdAt = new Date(Date.UTC(2025, (index * 3) % 12, (index % 27) + 1, 10, 30, 0));
   const updatedAt = new Date(createdAt.getTime() + ((index % 18) + 2) * 24 * 60 * 60 * 1000);
@@ -225,12 +220,11 @@ function makeRecord(base, index) {
     title: base.title,
     description: base.description,
     domain: base.domain,
+    domain_image_url: "",
     deployment_url: `https://demo.ekfrazo.ai/${slug}`,
     resource_url: `https://docs.ekfrazo.ai/usecases/${slug}`,
     client_name: base.client_name,
     category: base.category,
-    status,
-    priority,
     business_problem: base.business_problem,
     proposed_solution: base.proposed_solution,
     technology_stack: base.technology_stack,
@@ -250,12 +244,11 @@ function seed({ reset = false } = {}) {
       title,
       description,
       domain,
+      domain_image_url,
       deployment_url,
       resource_url,
       client_name,
       category,
-      status,
-      priority,
       business_problem,
       proposed_solution,
       technology_stack,
@@ -265,12 +258,11 @@ function seed({ reset = false } = {}) {
       @title,
       @description,
       @domain,
+      @domain_image_url,
       @deployment_url,
       @resource_url,
       @client_name,
       @category,
-      @status,
-      @priority,
       @business_problem,
       @proposed_solution,
       @technology_stack,

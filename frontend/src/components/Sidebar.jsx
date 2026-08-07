@@ -32,10 +32,10 @@ function Sidebar() {
     <aside className="hidden w-60 flex-shrink-0 flex-col bg-sidebar px-4 py-6 md:flex">
       {/* Brand mark */}
       <div className="mb-8 flex items-center gap-2 px-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary font-display text-sm font-bold text-white">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-gradient font-display text-sm font-bold text-on-solid shadow-glow-brand">
           EK
         </div>
-        <span className="font-display text-sm font-semibold text-white">Use Cases</span>
+        <span className="font-display text-sm font-semibold text-sidebar-active">Use Cases</span>
       </div>
 
       {/* Navigation links */}
@@ -46,8 +46,10 @@ function Sidebar() {
             to={item.to}
             end={item.to === "/"}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                isActive ? "bg-sidebar-hover text-sidebar-active" : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
+              `relative flex items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                isActive
+                  ? "bg-sidebar-active-bg text-sidebar-active before:absolute before:left-0 before:h-5 before:w-0.5 before:rounded-full before:bg-primary"
+                  : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
               }`
             }
           >

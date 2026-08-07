@@ -3,6 +3,103 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---- Dark theme (default) ---- */
+:root,
+[data-theme="dark"] {
+  --color-app: 8 10 16;
+  --color-surface: 13 17 26;
+  --color-surface-elevated: 18 24 38;
+  --color-border: 30 37 48;
+  --color-border-strong: 42 51 65;
+
+  --color-ink: 245 247 250;
+  --color-muted: 139 147 161;
+  --color-muted-dim: 91 100 114;
+  --color-overlay: 0 0 0;
+  --color-on-solid: 255 255 255;
+
+  --color-primary: 59 130 246;
+  --color-primary-hover: 37 99 235;
+  --color-primary-subtle: 19 35 63;
+  --color-primary-text: 147 197 253;
+
+  --color-gradient-from: 59 130 246;
+  --color-gradient-via: 139 124 240;
+  --color-gradient-to: 242 146 79;
+
+  --color-sidebar-bg: 5 7 12;
+  --color-sidebar-text: 124 132 147;
+  --color-sidebar-hover: 17 24 38;
+  --color-sidebar-active-bg: 22 29 43;
+  --color-sidebar-active-text: 255 255 255;
+
+  --color-success: 34 197 94;
+  --color-success-subtle: 15 40 24;
+  --color-success-text: 74 222 128;
+  --color-warning: 245 158 11;
+  --color-warning-subtle: 43 27 5;
+  --color-warning-text: 251 191 36;
+  --color-danger: 239 68 68;
+  --color-danger-subtle: 42 17 19;
+  --color-danger-text: 252 165 165;
+
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 14px 44px rgba(0, 0, 0, 0.55);
+  --shadow-glow-primary: 0 0 0 1px rgba(59, 130, 246, 0.4), 0 8px 24px rgba(59, 130, 246, 0.28);
+  --shadow-glow-brand: 0 10px 34px rgba(139, 124, 240, 0.28);
+
+  --hero-glow:
+    radial-gradient(1100px circle at 12% -10%, rgba(59, 130, 246, 0.2), transparent 60%),
+    radial-gradient(900px circle at 92% 0%, rgba(242, 146, 79, 0.16), transparent 55%);
+}
+
+/* ---- Light theme (existing system, unchanged values) ---- */
+[data-theme="light"] {
+  --color-app: 245 245 245;
+  --color-surface: 255 255 255;
+  --color-surface-elevated: 255 255 255;
+  --color-border: 215 222 230;
+  --color-border-strong: 190 198 209;
+
+  --color-ink: 15 28 43;
+  --color-muted: 80 89 95;
+  --color-muted-dim: 120 128 135;
+  --color-overlay: 0 0 0;
+  --color-on-solid: 255 255 255;
+
+  --color-primary: 0 102 204;
+  --color-primary-hover: 0 78 158;
+  --color-primary-subtle: 234 244 255;
+  --color-primary-text: 0 78 158;
+
+  --color-gradient-from: 59 130 246;
+  --color-gradient-via: 139 124 240;
+  --color-gradient-to: 242 146 79;
+
+  --color-sidebar-bg: 14 25 39;
+  --color-sidebar-text: 170 181 194;
+  --color-sidebar-hover: 24 38 58;
+  --color-sidebar-active-bg: 24 38 58;
+  --color-sidebar-active-text: 255 255 255;
+
+  --color-success: 18 183 106;
+  --color-success-subtle: 230 249 240;
+  --color-success-text: 11 132 87;
+  --color-warning: 247 144 9;
+  --color-warning-subtle: 255 244 229;
+  --color-warning-text: 180 83 9;
+  --color-danger: 217 45 32;
+  --color-danger-subtle: 253 237 235;
+  --color-danger-text: 180 35 24;
+
+  --shadow-card: 0 4px 18px rgba(15, 28, 43, 0.08);
+  --shadow-card-hover: 0 8px 28px rgba(15, 28, 43, 0.12);
+  --shadow-glow-primary: 0 0 0 1px rgba(0, 102, 204, 0.25), 0 6px 16px rgba(0, 102, 204, 0.15);
+  --shadow-glow-brand: 0 8px 22px rgba(139, 124, 240, 0.18);
+
+  --hero-glow: linear-gradient(180deg, #eef5ff 0%, #f5f5f5 32%, #f5f5f5 100%);
+}
+
 html,
 body,
 #root {
@@ -16,6 +113,9 @@ body {
 /* Set the default font and background for the whole app */
 body {
   @apply bg-app text-ink font-sans antialiased;
+  background-color: rgb(var(--color-app));
+  color: rgb(var(--color-ink));
+  transition: background-color 200ms ease-out, color 200ms ease-out;
 }
 
 /* Keep content scrollable but hide the visible scrollbar track */
@@ -31,11 +131,12 @@ body {
 /* Show a clear but clean scrollbar for inner dashboard panels */
 .panel-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #b7c6d8 transparent;
+  scrollbar-color: rgb(var(--color-border-strong)) transparent;
 }
 
 .panel-scrollbar::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 .panel-scrollbar::-webkit-scrollbar-track {
@@ -43,18 +144,111 @@ body {
 }
 
 .panel-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #b7c6d8;
+  background: rgb(var(--color-border-strong));
   border-radius: 999px;
-  border: 2px solid transparent;
-  background-clip: content-box;
 }
 
 .panel-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #8ea8c4;
+  background: rgb(var(--color-muted-dim));
 }
 
-/* Give every focusable element a visible keyboard focus ring */
+/* Focus ring remains visible and token-driven */
 :focus-visible {
-  outline: 2px solid #0066cc;
+  outline: 2px solid rgb(var(--color-primary));
   outline-offset: 2px;
+}
+
+/* Gradient text utility; restricted to approved brand moments. */
+.text-brand-gradient {
+  background: linear-gradient(135deg, rgb(var(--color-gradient-from)) 0%, rgb(var(--color-gradient-via)) 50%, rgb(var(--color-gradient-to)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Terminal-like field used for admin passcode input. */
+.input-terminal {
+  background: rgb(var(--color-app));
+  border: 1px solid rgb(var(--color-border));
+  color: rgb(var(--color-ink));
+  font-family: "JetBrains Mono", monospace;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes fade-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes progress-shrink {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+.page-enter {
+  animation: fade-rise 250ms ease-out both;
+}
+
+.empty-enter {
+  animation: fade-rise 250ms ease-out both;
+}
+
+.toast-enter {
+  animation: toast-in 200ms ease-out both;
+}
+
+.toast-progress {
+  transform-origin: left center;
+  animation: progress-shrink 3500ms linear forwards;
+}
+
+.modal-panel-enter {
+  animation: modal-in 200ms ease-out both;
 }

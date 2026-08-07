@@ -1,8 +1,6 @@
 // Validation helper for use case input coming from the client
 // Returns a list of error messages, empty array means valid
 
-const { STATUS_OPTIONS, PRIORITY_OPTIONS } = require("../models/usecase.model");
-
 function validateUseCase(data) {
   const errors = [];
 
@@ -11,6 +9,7 @@ function validateUseCase(data) {
     "title",
     "description",
     "domain",
+    "domain_image_url",
     "deployment_url",
     "resource_url",
     "client_name",
@@ -36,14 +35,8 @@ function validateUseCase(data) {
     errors.push("resource url must start with http:// or https://");
   }
 
-  // Check status is one of the allowed options
-  if (data.status && !STATUS_OPTIONS.includes(data.status)) {
-    errors.push(`status must be one of: ${STATUS_OPTIONS.join(", ")}`);
-  }
-
-  // Check priority is one of the allowed options
-  if (data.priority && !PRIORITY_OPTIONS.includes(data.priority)) {
-    errors.push(`priority must be one of: ${PRIORITY_OPTIONS.join(", ")}`);
+  if (data.domain_image_url && !/^https?:\/\//i.test(String(data.domain_image_url).trim())) {
+    errors.push("domain image url must start with http:// or https://");
   }
 
   return errors;

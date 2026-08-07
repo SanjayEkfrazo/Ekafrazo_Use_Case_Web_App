@@ -14,12 +14,11 @@ const createTableQuery = `
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     domain TEXT NOT NULL,
+    domain_image_url TEXT NOT NULL DEFAULT '',
     deployment_url TEXT NOT NULL DEFAULT '',
     resource_url TEXT NOT NULL DEFAULT '',
     client_name TEXT NOT NULL DEFAULT '',
     category TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'Draft',
-    priority TEXT NOT NULL DEFAULT 'Medium',
     business_problem TEXT NOT NULL,
     proposed_solution TEXT NOT NULL,
     technology_stack TEXT NOT NULL,
@@ -42,5 +41,82 @@ function ensureColumn(columnName, columnDefinition) {
 ensureColumn("deployment_url", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("resource_url", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("client_name", "TEXT NOT NULL DEFAULT ''");
+
+function migrateUseCasesTableRemoveStatusPriority() {
+  const columns = db.prepare("PRAGMA table_info(use_cases)").all().map((column) => column.name);
+  const hasStatus = columns.includes("status");
+  const hasPriority = columns.includes("priority");
+
+  if (!hasStatus && !hasPriority) {
+    return;
+  }
+
+  db.exec("BEGIN");
+  try {
+    db.exec(`
+      CREATE TABLE use_cases_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        domain TEXT NOT NULL,
+        domain_image_url TEXT NOT NULL DEFAULT '',
+        deployment_url TEXT NOT NULL DEFAULT '',
+        resource_url TEXT NOT NULL DEFAULT '',
+        client_name TEXT NOT NULL DEFAULT '',
+        category TEXT NOT NULL,
+        business_problem TEXT NOT NULL,
+        proposed_solution TEXT NOT NULL,
+        technology_stack TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+
+    db.exec(`
+      INSERT INTO use_cases_new (
+        id,
+        title,
+        description,
+        domain,
+        deployment_url,
+        resource_url,
+        client_name,
+        category,
+        business_problem,
+        proposed_solution,
+        technology_stack,
+        created_at,
+        updated_at
+      )
+      SELECT
+        id,
+        title,
+        description,
+        domain,
+        deployment_url,
+        resource_url,
+        client_name,
+        category,
+        business_problem,
+        proposed_solution,
+        technology_stack,
+        created_at,
+        updated_at
+      FROM use_cases
+    `);
+
+    db.exec("DROP TABLE use_cases");
+    db.exec("ALTER TABLE use_cases_new RENAME TO use_cases");
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
+migrateUseCasesTableRemoveStatusPriority();
+
+// Keep existing DB files compatible by adding optional image URL if missing.
+ensureColumn("domain_image_url", "TEXT NOT NULL DEFAULT ''");
 
 module.exports = db;

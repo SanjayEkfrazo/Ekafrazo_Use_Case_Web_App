@@ -6,6 +6,7 @@ const USE_CASE_FIELDS = [
   "title",
   "description",
   "domain",
+  "domain_image_url",
   "deployment_url",
   "resource_url",
   "client_name",
@@ -13,16 +14,8 @@ const USE_CASE_FIELDS = [
   "business_problem",
   "proposed_solution",
   "technology_stack",
-  "status",
-  "priority",
 ];
-
-// Allowed values for status and priority
-const STATUS_OPTIONS = ["Draft", "In Review", "Approved", "In Progress", "Completed", "On Hold"];
-const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
 
 module.exports = {
   USE_CASE_FIELDS,
-  STATUS_OPTIONS,
-  PRIORITY_OPTIONS,
 };

@@ -20,7 +20,7 @@ function SearchBar({ value, onChange, placeholder = "Search use cases..." }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-md border border-border bg-surface py-2 pl-9 pr-3 text-sm text-ink placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary"
+        className="w-full rounded-lg border border-border bg-surface py-2 pl-9 pr-3 text-sm text-ink placeholder:text-muted-dim transition-all duration-200 ease-out focus:border-primary focus:shadow-glow-primary motion-reduce:transition-none"
       />
     </div>
   );

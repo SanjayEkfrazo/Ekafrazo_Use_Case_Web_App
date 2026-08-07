@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import UseCaseForm from "../components/UseCaseForm";
 import Loader from "../components/Loader";
-import { fetchUseCaseById, updateUseCase } from "../services/useCaseService";
+import { fetchUseCaseById, updateUseCase, uploadDomainImage } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 
 function UseCaseEdit() {
@@ -32,9 +32,21 @@ function UseCaseEdit() {
   }, [id]);
 
   // Handle form submission by calling the API service
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, { domainImageFile, setSubmitPhase } = {}) => {
     try {
-      await updateUseCase(id, values);
+      let payload = { ...values };
+
+      if (domainImageFile) {
+        setSubmitPhase?.("uploading");
+        const uploadResponse = await uploadDomainImage(domainImageFile);
+        payload = {
+          ...payload,
+          domain_image_url: uploadResponse?.data?.url || "",
+        };
+      }
+
+      setSubmitPhase?.("saving");
+      await updateUseCase(id, payload);
       showToast("Use case updated successfully");
       navigate("/use-cases");
     } catch (error) {
@@ -43,9 +55,9 @@ function UseCaseEdit() {
   };
 
   return (
-    <div>
+    <div className="page-enter">
       <Navbar compact title="Edit Use Case" />
-      <div className="p-2.5 md:p-3">
+      <div className="p-4 md:p-6">
         <div className="mx-auto max-w-6xl">
           {isLoading ? (
             <Loader rows={6} />

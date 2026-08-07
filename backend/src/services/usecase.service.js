@@ -11,15 +11,12 @@ function pickAllowedFields(data) {
   USE_CASE_FIELDS.forEach((field) => {
     clean[field] = data[field] !== undefined ? data[field] : "";
   });
-  // Apply sensible defaults when status or priority are missing
-  clean.status = clean.status || "Draft";
-  clean.priority = clean.priority || "Medium";
   return clean;
 }
 
 // Fetch all use cases, then apply search, sort, and pagination in memory
 // (Kept simple on purpose since this is an educational project)
-function getUseCases({ search, sortBy, sortOrder, page, limit }) {
+function getUseCases({ search, domain, sortBy, sortOrder, page, limit }) {
   let items = usecaseDb.findAll();
 
   // Filter by search term across title, domain, client, and deployment link
@@ -34,8 +31,14 @@ function getUseCases({ search, sortBy, sortOrder, page, limit }) {
     );
   }
 
+  // Filter by an exact domain when provided
+  if (domain && domain.trim() !== "") {
+    const selectedDomain = domain.trim().toLowerCase();
+    items = items.filter((item) => item.domain.toLowerCase() === selectedDomain);
+  }
+
   // Sort the results by the requested column
-  const validSortColumns = ["title", "domain", "client_name", "deployment_url", "status", "priority", "updated_at", "created_at"];
+  const validSortColumns = ["title", "domain", "client_name", "deployment_url", "resource_url", "updated_at", "created_at"];
   const column = validSortColumns.includes(sortBy) ? sortBy : "updated_at";
   const order = sortOrder === "asc" ? 1 : -1;
 
@@ -64,14 +67,49 @@ function getUseCases({ search, sortBy, sortOrder, page, limit }) {
   };
 }
 
+// Return distinct domains that can be used as filter options
+function getDomains() {
+  return usecaseDb.findDistinctDomains();
+}
+
 // Fetch a single use case by id
 function getUseCaseById(id) {
   return usecaseDb.findById(id);
 }
 
+function validateDomainImageUsage(data, currentId = null) {
+  const imageUrl = String(data.domain_image_url || "").trim();
+  const domain = String(data.domain || "").trim();
+
+  if (!imageUrl || !domain) {
+    return "";
+  }
+
+  const existingWithSameImage = usecaseDb.findByDomainImageUrl(imageUrl);
+  if (!existingWithSameImage) {
+    return "";
+  }
+
+  if (currentId && Number(existingWithSameImage.id) === Number(currentId)) {
+    return "";
+  }
+
+  const existingDomain = String(existingWithSameImage.domain || "").trim().toLowerCase();
+  const currentDomain = domain.toLowerCase();
+  if (existingDomain !== currentDomain) {
+    return "This image is already used for a different domain. Please upload/select a different image.";
+  }
+
+  return "";
+}
+
 // Create a new use case after validating the input
 function createUseCase(data) {
   const errors = validateUseCase(data);
+  const imageUsageError = validateDomainImageUsage(data);
+  if (imageUsageError) {
+    errors.push(imageUsageError);
+  }
   if (errors.length > 0) {
     return { errors };
   }
@@ -88,6 +126,10 @@ function updateUseCase(id, data) {
   }
 
   const errors = validateUseCase(data);
+  const imageUsageError = validateDomainImageUsage(data, id);
+  if (imageUsageError) {
+    errors.push(imageUsageError);
+  }
   if (errors.length > 0) {
     return { errors };
   }
@@ -113,25 +155,9 @@ function getDashboardSummary() {
   const all = usecaseDb.findAll();
   const recentlyUpdated = all.slice(0, 6);
 
-  const byStatus = all.reduce((accumulator, item) => {
-    const key = item.status || "Draft";
-    accumulator[key] = (accumulator[key] || 0) + 1;
-    return accumulator;
-  }, {});
-
-  const byPriority = all.reduce((accumulator, item) => {
-    const key = item.priority || "Medium";
-    accumulator[key] = (accumulator[key] || 0) + 1;
-    return accumulator;
-  }, {});
-
-  const completedCount = byStatus.Completed || 0;
-  const inProgressCount = byStatus["In Progress"] || 0;
-  const blockedCount = byStatus["On Hold"] || 0;
-
-  const highPriorityOpenCount = all.filter(
-    (item) => (item.priority === "Critical" || item.priority === "High") && item.status !== "Completed"
-  ).length;
+  const uniqueDomainCount = new Set(all.map((item) => (item.domain || "").trim().toLowerCase()).filter(Boolean)).size;
+  const withDeploymentUrlCount = all.filter((item) => String(item.deployment_url || "").trim() !== "").length;
+  const withResourceUrlCount = all.filter((item) => String(item.resource_url || "").trim() !== "").length;
 
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const updatedLast7Days = all.filter((item) => {
@@ -143,20 +169,15 @@ function getDashboardSummary() {
   }).length;
 
   const needsAttention = all
-    .filter(
-      (item) => item.status === "On Hold" || ((item.priority === "Critical" || item.priority === "High") && item.status !== "Completed")
-    )
+    .filter((item) => String(item.deployment_url || "").trim() === "" || String(item.resource_url || "").trim() === "")
     .slice(0, 5);
 
   return {
     total,
     recentlyUpdated,
-    byStatus,
-    byPriority,
-    completedCount,
-    inProgressCount,
-    blockedCount,
-    highPriorityOpenCount,
+    uniqueDomainCount,
+    withDeploymentUrlCount,
+    withResourceUrlCount,
     updatedLast7Days,
     needsAttention,
   };
@@ -164,6 +185,7 @@ function getDashboardSummary() {
 
 module.exports = {
   getUseCases,
+  getDomains,
   getUseCaseById,
   createUseCase,
   updateUseCase,

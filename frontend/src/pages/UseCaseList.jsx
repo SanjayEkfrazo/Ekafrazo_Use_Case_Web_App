@@ -9,16 +9,20 @@ import Loader from "../components/Loader";
 import EmptyState from "../components/EmptyState";
 import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
-import { fetchUseCases, deleteUseCase } from "../services/useCaseService";
+import { fetchUseCases, fetchUseCaseDomains, deleteUseCase } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
 import { DEFAULT_PAGE_SIZE } from "../utils/constants";
 
+const ALL_DOMAINS = "All Domains";
+
 function UseCaseList() {
   const [useCases, setUseCases] = useState([]);
+  const [domains, setDomains] = useState([]);
   const [pagination, setPagination] = useState({ totalPages: 1, currentPage: 1 });
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedDomain, setSelectedDomain] = useState(ALL_DOMAINS);
   const [sortBy, setSortBy] = useState("updated_at");
   const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(1);
@@ -32,7 +36,14 @@ function UseCaseList() {
   const loadUseCases = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetchUseCases({ search, sortBy, sortOrder, page, limit: DEFAULT_PAGE_SIZE });
+      const response = await fetchUseCases({
+        search,
+        domain: selectedDomain === ALL_DOMAINS ? "" : selectedDomain,
+        sortBy,
+        sortOrder,
+        page,
+        limit: DEFAULT_PAGE_SIZE,
+      });
       setUseCases(response.data);
       setPagination(response.pagination);
     } catch (error) {
@@ -40,15 +51,34 @@ function UseCaseList() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, sortBy, sortOrder, page]);
+  }, [search, selectedDomain, sortBy, sortOrder, page, showToast]);
+
+  const loadDomains = useCallback(async () => {
+    try {
+      const response = await fetchUseCaseDomains();
+      setDomains(response.data || []);
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }, [showToast]);
 
   useEffect(() => {
     loadUseCases();
   }, [loadUseCases]);
 
+  useEffect(() => {
+    loadDomains();
+  }, [loadDomains]);
+
   // Reset back to page 1 whenever the search term changes
   const handleSearchChange = (value) => {
     setSearch(value);
+    setPage(1);
+  };
+
+  // Reset back to page 1 whenever domain filter changes
+  const handleDomainChange = (event) => {
+    setSelectedDomain(event.target.value);
     setPage(1);
   };
 
@@ -75,13 +105,28 @@ function UseCaseList() {
   };
 
   return (
-    <div>
+    <div className="page-enter">
       <Navbar title="Use Cases" subtitle="Browse, search, and manage every business use case" />
 
       <div className="p-6 md:p-8">
         {/* Toolbar: search and create button */}
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <SearchBar value={search} onChange={handleSearchChange} />
+          <div className="flex w-full max-w-2xl flex-col gap-3 sm:flex-row sm:items-center">
+            <SearchBar value={search} onChange={handleSearchChange} />
+            <select
+              value={selectedDomain}
+              onChange={handleDomainChange}
+              aria-label="Filter by domain"
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink transition-all duration-200 ease-out focus:border-primary focus:shadow-glow-primary motion-reduce:transition-none sm:max-w-[220px]"
+            >
+              <option value={ALL_DOMAINS}>{ALL_DOMAINS}</option>
+              {domains.map((domain) => (
+                <option key={domain} value={domain}>
+                  {domain}
+                </option>
+              ))}
+            </select>
+          </div>
           {isAdmin && <Button onClick={() => navigate("/use-cases/new")}>+ New Use Case</Button>}
         </div>
 
@@ -91,8 +136,8 @@ function UseCaseList() {
           <EmptyState
             title="No use cases found"
             description={
-              search
-                ? "Try adjusting your search term."
+              search || selectedDomain !== ALL_DOMAINS
+                ? "Try adjusting your search term or Domain Type filter."
                 : isAdmin
                   ? "Create your first use case to get started."
                   : "No use cases available yet."
@@ -107,8 +152,6 @@ function UseCaseList() {
               sortBy={sortBy}
               sortOrder={sortOrder}
               onSort={handleSort}
-              canManage={isAdmin}
-              onDelete={(useCase) => setUseCaseToDelete(useCase)}
             />
             <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} onPageChange={setPage} />
           </>
