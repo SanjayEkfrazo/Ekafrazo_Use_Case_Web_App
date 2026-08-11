@@ -25,8 +25,14 @@ function UseCaseCreate() {
 
       setSubmitPhase?.("saving");
       await createUseCase(payload);
-      showToast("Use case created successfully");
-      navigate("/use-cases");
+      navigate("/use-cases", {
+        state: {
+          toast: {
+            message: "Use case created successfully",
+            type: "success",
+          },
+        },
+      });
     } catch (error) {
       showToast(error.message, "error");
     }

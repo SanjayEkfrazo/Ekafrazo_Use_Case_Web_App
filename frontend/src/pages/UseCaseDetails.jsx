@@ -64,6 +64,27 @@ function UseCaseDetails() {
     navigate("/use-cases");
   };
 
+  const handleCopyLink = async () => {
+    const pageUrl = window.location.href;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(pageUrl);
+      } else {
+        const input = document.createElement("input");
+        input.value = pageUrl;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+      }
+
+      showToast("Link copied");
+    } catch (error) {
+      showToast("Unable to copy link", "error");
+    }
+  };
+
   useEffect(() => {
     async function loadUseCase() {
       try {
@@ -92,6 +113,8 @@ function UseCaseDetails() {
 
   const resolvedDeploymentUrl = shouldSwapLinks ? resourceUrl : deploymentUrl;
   const resolvedResourceUrl = shouldSwapLinks ? deploymentUrl : resourceUrl;
+  const demoActionClass = "mt-2 inline-flex w-full items-center justify-center rounded-lg border border-primary/25 bg-primary-light px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/20 motion-reduce:transform-none motion-reduce:transition-none";
+  const presentationActionClass = "mt-2 inline-flex w-full items-center justify-center rounded-lg border border-success/25 bg-success-light px-3 py-2 text-sm font-semibold text-success-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-success/40 hover:bg-success/20 motion-reduce:transform-none motion-reduce:transition-none";
   const techStackItems = normalize(useCase?.technology_stack)
     .split(/[,;|\n]+/)
     .map((item) => item.trim())
@@ -128,113 +151,157 @@ function UseCaseDetails() {
               <div className="h-[3px] bg-brand-gradient" />
 
               <div className="space-y-4 p-4 md:p-5">
-                <header className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-surface-elevated p-4">
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">Case Study</p>
-                    <h2 className="mt-1 text-2xl font-semibold leading-tight text-ink md:text-[1.9rem]">{useCase.title}</h2>
-                    <div className="mt-3 grid grid-cols-1 gap-1 text-sm text-muted sm:grid-cols-2 sm:gap-x-6">
-                      <p><span className="font-medium text-ink">Domain:</span> {normalize(useCase.domain) || "Unknown domain"}</p>
-                      <p><span className="font-medium text-ink">Client:</span> {normalize(useCase.client_name) || "Unknown client"}</p>
-                      <p><span className="font-medium text-ink">Updated:</span> {useCase.updated_at ? formatDate(useCase.updated_at) : "Not available"}</p>
+                <header className="rounded-xl border border-border bg-surface-elevated p-4 md:p-5">
+                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">Case Study</p>
+                      <h2 className="mt-1 break-words text-2xl font-semibold leading-tight text-ink [overflow-wrap:anywhere] md:text-[1.9rem]">{normalize(useCase.title) || "Untitled use case"}</h2>
                     </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button variant="ghost" onClick={handleBack}>Back</Button>
+
+                    <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                      <span className="inline-flex items-center whitespace-nowrap rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
+                        Updated: {useCase.updated_at ? formatDate(useCase.updated_at) : "Not available"}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        onClick={handleBack}
+                        className="whitespace-nowrap border border-primary/40 bg-primary-light text-primary-text hover:border-primary/55 hover:bg-primary/20"
+                      >
+                        Back to Use Cases
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={handleCopyLink}
+                        className="whitespace-nowrap border border-success/45 bg-success-light text-success-text hover:border-success/60 hover:bg-success/20"
+                      >
+                        Copy Link
+                      </Button>
+                    </div>
+
+                    <p className="text-sm leading-relaxed text-muted lg:col-span-2">{normalize(useCase.description) || "No summary added yet."}</p>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
+                        Domain: {normalize(useCase.domain) || "Unknown"}
+                      </span>
+                      <span className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
+                        Client: {normalize(useCase.client_name) || "Unknown"}
+                      </span>
+                      {normalize(useCase.status) && (
+                        <span className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
+                          Status: {normalize(useCase.status)}
+                        </span>
+                      )}
+                      {normalize(useCase.priority) && (
+                        <span className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
+                          Priority: {normalize(useCase.priority)}
+                        </span>
+                      )}
+                    </div>
+
+                    {isAdmin ? (
+                      <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                        <Button
+                          variant="secondary"
+                          onClick={() => navigate(`/use-cases/${useCase.id}/edit`)}
+                          className="whitespace-nowrap border border-warning/45 !bg-warning-light text-warning-text hover:-translate-y-0.5 hover:border-warning/65 hover:!bg-warning-light/70 hover:shadow-card"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="danger"
+                          onClick={() => setShowDeleteDialog(true)}
+                          disabled={isDeleting}
+                          className="whitespace-nowrap border border-danger/75 bg-danger-light text-danger-text hover:border-danger/90 hover:bg-danger/20"
+                        >
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="hidden lg:block" aria-hidden="true" />
+                    )}
                   </div>
                 </header>
 
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
-                  <div className="space-y-3">
-                    <section className="rounded-xl border border-border bg-surface-elevated p-4">
-                      <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Business Overview</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-ink">{normalize(useCase.description) || "No summary added yet."}</p>
-                    </section>
+                <section className="rounded-xl border border-border bg-surface-elevated p-4">
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Business Overview</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink">{normalize(useCase.description) || "No summary added yet."}</p>
+                </section>
 
-                    <section className="rounded-xl border border-border bg-surface-elevated p-4">
-                      <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Technology Stack</h3>
-                      {techStackItems.length > 0 ? (
-                        <div className="mt-2.5 flex flex-wrap gap-1.5">
-                          {techStackItems.map((item) => (
-                            <span
-                              key={item}
-                              className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[11px] font-medium text-ink"
-                            >
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-sm text-muted">Not provided yet.</p>
-                      )}
-                    </section>
+                <section className="rounded-xl border border-border bg-surface-elevated p-4">
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Technology Stack</h3>
+                  {techStackItems.length > 0 ? (
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      {techStackItems.map((item) => (
+                        <span
+                          key={item}
+                          className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[11px] font-medium text-ink"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-muted">Not provided yet.</p>
+                  )}
+                </section>
 
-                    {isAdmin && (
-                      <section className="rounded-xl border border-border bg-surface-elevated p-4">
-                        <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Admin Actions</h3>
-                        <div className="mt-2.5 flex flex-wrap gap-2">
-                          <Button variant="secondary" onClick={() => navigate(`/use-cases/${useCase.id}/edit`)}>Edit</Button>
-                          <Button variant="danger" onClick={() => setShowDeleteDialog(true)} disabled={isDeleting}>
-                            {isDeleting ? "Deleting..." : "Delete"}
-                          </Button>
-                        </div>
-                      </section>
-                    )}
-                  </div>
-
-                  <aside className="space-y-3">
-                    <section className="rounded-xl border border-border bg-surface-elevated p-4">
-                      <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Live Demo</h3>
+                <section className="rounded-xl border border-border bg-surface-elevated p-4">
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Resources</h3>
+                  <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-2">
+                    <div className="rounded-lg border border-border bg-surface p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted">Live Demo</p>
                       {resolvedDeploymentUrl ? (
                         <a
                           href={resolvedDeploymentUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-primary to-brand-via px-3 py-2 text-sm font-semibold text-on-solid"
+                          className={demoActionClass}
                         >
                           Open Demo
                         </a>
                       ) : (
-                        <p className="mt-1.5 text-xs text-muted">Live demo URL not provided.</p>
+                        <p className="mt-2 text-xs text-muted">Not provided by owner.</p>
                       )}
-                    </section>
+                    </div>
 
-                    <section className="rounded-xl border border-border bg-surface-elevated p-4">
-                      <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Presentation</h3>
+                    <div className="rounded-lg border border-border bg-surface p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted">Presentation</p>
                       {resolvedResourceUrl ? (
                         <a
                           href={resolvedResourceUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-border bg-surface px-3 py-2 text-sm font-semibold text-ink"
+                          className={presentationActionClass}
                         >
                           Open Presentation
                         </a>
                       ) : (
-                        <p className="mt-1.5 text-xs text-muted">Presentation URL not provided.</p>
+                        <p className="mt-2 text-xs text-muted">Not provided by owner.</p>
                       )}
-                    </section>
+                    </div>
+                  </div>
+                </section>
 
-                    <section className="rounded-xl border border-border bg-surface-elevated p-4">
-                      <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Domain Image</h3>
-                      {normalize(useCase.domain_image_url) && !isDomainImageBroken ? (
-                        <a href={normalize(useCase.domain_image_url)} target="_blank" rel="noreferrer" className="mt-2.5 block">
-                          <img
-                            src={normalize(useCase.domain_image_url)}
-                            alt={`${normalize(useCase.domain) || "Domain"} visual`}
-                            className="h-52 w-full rounded-xl border border-border object-cover"
-                            loading="lazy"
-                            decoding="async"
-                            onError={() => setIsDomainImageBroken(true)}
-                          />
-                        </a>
-                      ) : (
-                        <div className="mt-2.5 flex h-52 w-full items-center justify-center rounded-lg border border-border bg-surface text-sm font-medium text-muted">
-                          {normalize(useCase.domain_image_url) ? `Image not available • ${toInitials(useCase.domain)}` : "No image added yet"}
-                        </div>
-                      )}
-                    </section>
-                  </aside>
-                </div>
+                <section className="rounded-xl border border-border bg-surface-elevated p-4">
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Domain Visual</h3>
+                  {normalize(useCase.domain_image_url) && !isDomainImageBroken ? (
+                    <a href={normalize(useCase.domain_image_url)} target="_blank" rel="noreferrer" className="mt-2.5 block">
+                      <img
+                        src={normalize(useCase.domain_image_url)}
+                        alt={`${normalize(useCase.domain) || "Domain"} visual`}
+                        className="h-56 w-full rounded-xl border border-border object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        onError={() => setIsDomainImageBroken(true)}
+                      />
+                    </a>
+                  ) : (
+                    <div className="mt-2.5 flex h-56 w-full items-center justify-center rounded-lg border border-border bg-surface text-sm font-medium text-muted">
+                      {normalize(useCase.domain_image_url) ? `Image not available • ${toInitials(useCase.domain)}` : "No image added yet"}
+                    </div>
+                  )}
+                </section>
               </div>
             </section>
           )}

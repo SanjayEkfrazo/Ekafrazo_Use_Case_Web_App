@@ -6,9 +6,6 @@ import AdminRoute from "./AdminRoute";
 
 const DashboardLayout = lazy(() => import("../layouts/DashboardLayout"));
 const DashboardOverview = lazy(() => import("../pages/DashboardOverview"));
-const DashboardInsights = lazy(() => import("../pages/DashboardInsights"));
-const DashboardActivity = lazy(() => import("../pages/DashboardActivity"));
-const DashboardQuality = lazy(() => import("../pages/DashboardQuality"));
 const UseCaseList = lazy(() => import("../pages/UseCaseList"));
 const UseCaseCreate = lazy(() => import("../pages/UseCaseCreate"));
 const UseCaseEdit = lazy(() => import("../pages/UseCaseEdit"));
@@ -19,13 +16,15 @@ function AppRoutes() {
   return (
     <Suspense fallback={<div className="p-4 md:p-6"><Loader rows={6} /></div>}>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard/overview" replace />} />
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="overview" replace />} />
-          <Route path="overview" element={<DashboardOverview />} />
-          <Route path="insights" element={<DashboardInsights />} />
-          <Route path="activity" element={<DashboardActivity />} />
-          <Route path="quality" element={<DashboardQuality />} />
+        <Route path="/" element={<Navigate to="/use-cases" replace />} />
+        <Route element={<AdminRoute />}>
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<DashboardOverview />} />
+            <Route path="insights" element={<Navigate to="/dashboard/overview" replace />} />
+            <Route path="activity" element={<Navigate to="/dashboard/overview" replace />} />
+            <Route path="quality" element={<Navigate to="/dashboard/overview" replace />} />
+          </Route>
         </Route>
         <Route path="/use-cases" element={<UseCaseList />} />
         <Route path="/use-cases/:id" element={<UseCaseDetails />} />

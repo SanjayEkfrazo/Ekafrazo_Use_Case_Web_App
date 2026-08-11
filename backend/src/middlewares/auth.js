@@ -2,7 +2,11 @@ const crypto = require("crypto");
 
 const COOKIE_NAME = "uc_admin_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
-const SESSION_SECRET = process.env.ADMIN_SESSION_SECRET || "dev-change-this-session-secret";
+const SESSION_SECRET = String(process.env.ADMIN_SESSION_SECRET || "").trim();
+
+if (!SESSION_SECRET || SESSION_SECRET === "change-me-to-a-long-random-secret") {
+  throw new Error("ADMIN_SESSION_SECRET must be set to a strong value");
+}
 
 function base64urlEncode(value) {
   return Buffer.from(value).toString("base64url");
@@ -53,7 +57,13 @@ function verifySessionToken(token) {
   }
 
   const expectedSignature = signPayload(encoded);
-  if (signature !== expectedSignature) {
+  const signatureBuffer = Buffer.from(signature, "utf8");
+  const expectedSignatureBuffer = Buffer.from(expectedSignature, "utf8");
+
+  if (
+    signatureBuffer.length !== expectedSignatureBuffer.length
+    || !crypto.timingSafeEqual(signatureBuffer, expectedSignatureBuffer)
+  ) {
     return null;
   }
 

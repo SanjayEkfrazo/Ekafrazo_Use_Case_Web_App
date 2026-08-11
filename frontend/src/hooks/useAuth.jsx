@@ -28,6 +28,17 @@ export function AuthProvider({ children }) {
     bootstrapAuth();
   }, [refreshRole]);
 
+  useEffect(() => {
+    function handleRoleStale() {
+      refreshRole();
+    }
+
+    window.addEventListener("auth:role-stale", handleRoleStale);
+    return () => {
+      window.removeEventListener("auth:role-stale", handleRoleStale);
+    };
+  }, [refreshRole]);
+
   const unlockAdmin = useCallback(async (passcode) => {
     await unlockAdminRequest(passcode);
     setRole("admin");

@@ -7,6 +7,17 @@ function Table({ useCases }) {
   const navigate = useNavigate();
   const [brokenImagesById, setBrokenImagesById] = useState({});
 
+  const openUseCaseDetails = (id) => {
+    navigate(`/use-cases/${id}`);
+  };
+
+  const handleCardKeyDown = (event, id) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openUseCaseDetails(id);
+    }
+  };
+
   const normalize = (value) => String(value || "").trim();
 
   const toInitials = (domainValue) => {
@@ -40,17 +51,11 @@ function Table({ useCases }) {
       const domain = normalize(useCase.domain) || "Unknown";
       const client = normalize(useCase.client_name) || "Not specified";
       const imageUrl = normalize(useCase.domain_image_url);
-      const description = truncate(useCase.description, 135) || "No description available yet.";
+      const description = normalize(useCase.description) || "No description available yet.";
       const parsedUpdatedAt = useCase.updated_at ? new Date(String(useCase.updated_at).replace(" ", "T")) : null;
       const updatedLabel = parsedUpdatedAt && !Number.isNaN(parsedUpdatedAt.getTime())
-        ? parsedUpdatedAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+        ? parsedUpdatedAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
         : "N/A";
-      const allTechItems = normalize(useCase.technology_stack)
-        .split(/[,;|\n]+/)
-        .map((item) => item.trim())
-        .filter(Boolean);
-      const techItems = allTechItems.slice(0, 3);
-
       return {
         raw: useCase,
         title,
@@ -59,8 +64,6 @@ function Table({ useCases }) {
         imageUrl,
         description,
         updatedLabel,
-        techItems,
-        extraTechCount: Math.max(allTechItems.length - techItems.length, 0),
       };
     }),
     [useCases]
@@ -72,13 +75,18 @@ function Table({ useCases }) {
         const useCase = item.raw;
 
         return (
-        <article
-          key={useCase.id}
-          onMouseEnter={() => prefetchUseCaseById(useCase.id)}
-          onFocus={() => prefetchUseCaseById(useCase.id)}
-          onTouchStart={() => prefetchUseCaseById(useCase.id)}
-          className="ui-card flex flex-col gap-3 overflow-hidden p-4 motion-reduce:transition-none"
-        >
+          <article
+            key={useCase.id}
+            role="button"
+            tabIndex={0}
+            aria-label={`Open use case ${item.title}`}
+            onMouseEnter={() => prefetchUseCaseById(useCase.id)}
+            onFocus={() => prefetchUseCaseById(useCase.id)}
+            onTouchStart={() => prefetchUseCaseById(useCase.id)}
+            onClick={() => openUseCaseDetails(useCase.id)}
+            onKeyDown={(event) => handleCardKeyDown(event, useCase.id)}
+            className="ui-card flex cursor-pointer flex-col gap-3 overflow-hidden p-4 outline-none motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
           <div className="flex items-start gap-3">
             {item.imageUrl && !brokenImagesById[useCase.id] ? (
               <img
@@ -98,53 +106,29 @@ function Table({ useCases }) {
               </div>
             )}
             <div className="min-w-0">
-              <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-ink">{item.title}</h3>
-              <div className="mt-1 grid grid-cols-1 gap-0.5 text-xs text-muted sm:grid-cols-2 sm:gap-x-2">
-                <p className="truncate"><span className="font-medium text-ink">Domain:</span> {item.domain}</p>
-                <p className="truncate"><span className="font-medium text-ink">Client:</span> {item.client}</p>
+              <h3 className="line-clamp-1 text-[15px] font-semibold leading-snug text-ink">{item.title}</h3>
+              <div className="mt-1 text-xs text-muted">
+                <p><span className="font-medium text-ink">Domain:</span> {item.domain}</p>
+                <p><span className="font-medium text-ink">Client:</span> {item.client}</p>
               </div>
             </div>
-            <span className="ml-auto rounded-full border border-border bg-surface-elevated px-2 py-0.5 text-[10px] font-medium text-muted">
-              Updated {item.updatedLabel}
-            </span>
           </div>
 
-          <div className="min-h-[2.7rem]">
-            <p className="line-clamp-2 text-sm leading-[1.35rem] text-ink">
-              {item.description}
-            </p>
+          <p className="text-sm text-ink/90">{item.description}</p>
+          <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-2">
+            <p className="text-[11px] text-muted">Updated {item.updatedLabel}</p>
+            <button
+              type="button"
+              onMouseEnter={() => prefetchUseCaseById(useCase.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                openUseCaseDetails(useCase.id);
+              }}
+              className="rounded-lg border border-border bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong motion-reduce:transition-none"
+            >
+              View Details
+            </button>
           </div>
-
-          <div className="flex flex-wrap gap-1.5">
-              {item.techItems.length > 0 ? (
-                <>
-                  {item.techItems.map((tech) => (
-                  <span
-                    key={tech}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-elevated px-2.5 py-1 font-mono text-[11px] font-medium text-ink"
-                  >
-                    {tech}
-                  </span>
-                  ))}
-                  {item.extraTechCount > 0 && (
-                    <span className="inline-flex items-center rounded-full border border-border bg-surface-elevated px-2.5 py-1 text-[11px] font-semibold text-muted">
-                      +{item.extraTechCount} more
-                    </span>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-muted">Not provided</p>
-              )}
-          </div>
-
-          <button
-            type="button"
-            onMouseEnter={() => prefetchUseCaseById(useCase.id)}
-            onClick={() => navigate(`/use-cases/${useCase.id}`)}
-            className="mt-auto w-full rounded-xl border border-border bg-surface-elevated px-3 py-2 text-sm font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong motion-reduce:transition-none"
-          >
-            View Details
-          </button>
         </article>
         );
       })}

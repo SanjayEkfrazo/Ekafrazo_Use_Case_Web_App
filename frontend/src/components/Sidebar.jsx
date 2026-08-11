@@ -4,11 +4,8 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const navItems = [
-  { type: "heading", label: "Dashboard" },
-  { to: "/dashboard/overview", label: "Overview", icon: "grid" },
-  { to: "/dashboard/insights", label: "Insights", icon: "chart" },
-  { to: "/dashboard/activity", label: "Activity", icon: "pulse" },
-  { to: "/dashboard/quality", label: "Quality", icon: "shield", adminOnly: true },
+  { type: "heading", label: "Dashboard", adminOnly: true },
+  { to: "/dashboard/overview", label: "Overview", icon: "grid", adminOnly: true },
   { type: "heading", label: "Repository" },
   { to: "/use-cases", label: "Browse Use Cases", icon: "list" },
 ];

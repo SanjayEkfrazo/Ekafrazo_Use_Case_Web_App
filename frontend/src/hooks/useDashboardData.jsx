@@ -58,6 +58,7 @@ export function useDashboardData(showToast) {
   const [summary, setSummary] = useState(cacheIsFresh ? dashboardCache.summary : null);
   const [allUseCases, setAllUseCases] = useState(cacheIsFresh ? dashboardCache.allUseCases : []);
   const [isLoading, setIsLoading] = useState(!cacheIsFresh);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -71,6 +72,7 @@ export function useDashboardData(showToast) {
       }
 
       try {
+        setHasError(false);
         const [summaryResponse, allUseCasesData] = await Promise.all([
           fetchDashboardSummary(),
           fetchAllUseCasesForDashboard(),
@@ -90,6 +92,7 @@ export function useDashboardData(showToast) {
         };
       } catch (error) {
         if (!isCancelled) {
+          setHasError(true);
           showToast(error.message || "Failed to load dashboard data", "error");
         }
       } finally {
@@ -117,6 +120,10 @@ export function useDashboardData(showToast) {
     let missingPresentationCount = 0;
     let missingImageCount = 0;
     let incompleteRecordsCount = 0;
+    let readyForDemoAndPresentationCount = 0;
+    let missingOnlyDemoCount = 0;
+    let missingOnlyPresentationCount = 0;
+    let missingBothLinksCount = 0;
 
     items.forEach((item) => {
       const domain = normalizeText(item.domain);
@@ -124,6 +131,7 @@ export function useDashboardData(showToast) {
       const deploymentUrl = normalizeText(item.deployment_url);
       const resourceUrl = normalizeText(item.resource_url);
       const imageUrl = normalizeText(item.domain_image_url);
+      const createdAt = parseDate(item.created_at || item.updated_at);
 
       if (domain) {
         domainMap.set(domain, (domainMap.get(domain) || 0) + 1);
@@ -151,6 +159,20 @@ export function useDashboardData(showToast) {
       if (hasCoreGaps || !deploymentUrl || !resourceUrl || !imageUrl) {
         incompleteRecordsCount += 1;
       }
+
+      if (deploymentUrl && resourceUrl) {
+        readyForDemoAndPresentationCount += 1;
+      } else if (!deploymentUrl && resourceUrl) {
+        missingOnlyDemoCount += 1;
+      } else if (deploymentUrl && !resourceUrl) {
+        missingOnlyPresentationCount += 1;
+      } else {
+        missingBothLinksCount += 1;
+      }
+
+      if (!Number.isFinite(createdAt)) {
+        return;
+      }
     });
 
     const domainDistribution = Array.from(domainMap.entries())
@@ -165,6 +187,25 @@ export function useDashboardData(showToast) {
     const uniqueDomainCount = summary?.uniqueDomainCount ?? domainDistribution.length;
     const withDeploymentUrlCount = summary?.withDeploymentUrlCount ?? items.length - missingDeploymentCount;
     const withResourceUrlCount = summary?.withResourceUrlCount ?? items.length - missingPresentationCount;
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    const createdThisMonthCount = items.filter((item) => {
+      const parsedDate = parseDate(item.created_at || item.updated_at);
+      if (!parsedDate) {
+        return false;
+      }
+      const date = new Date(parsedDate);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    }).length;
+
+    const lastUpdatedAt = items[0]?.updated_at || items[0]?.created_at || "";
+
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const updatedLast7Days = summary?.updatedLast7Days ?? items.filter((item) => {
+      const updatedAt = parseDate(item.updated_at || item.created_at);
+      return updatedAt >= sevenDaysAgo;
+    }).length;
 
     const needsAttention = summary?.needsAttention?.length
       ? summary.needsAttention
@@ -178,17 +219,27 @@ export function useDashboardData(showToast) {
 
     return {
       isLoading,
+      hasError,
       totalUseCases,
       uniqueDomainCount,
       clientCount: clientSet.size,
       withDeploymentUrlCount,
       withResourceUrlCount,
+      createdThisMonthCount,
+      lastUpdatedAt,
+      updatedLast7Days,
       technologyCount: technologyDistribution.length,
       domainDistribution,
       technologyDistribution,
       recentlyUpdated: summary?.recentlyUpdated || items.slice(0, 6),
       recentlyCreated,
       needsAttention,
+      readinessDistribution: [
+        { key: "ready", label: "Demo + Presentation Ready", count: readyForDemoAndPresentationCount },
+        { key: "demo-missing", label: "Demo Missing", count: missingOnlyDemoCount },
+        { key: "presentation-missing", label: "Presentation Missing", count: missingOnlyPresentationCount },
+        { key: "both-missing", label: "Both Links Missing", count: missingBothLinksCount },
+      ],
       healthCounts: {
         missingDeploymentCount,
         missingPresentationCount,
@@ -196,5 +247,5 @@ export function useDashboardData(showToast) {
         incompleteRecordsCount,
       },
     };
-  }, [allUseCases, isLoading, summary]);
+  }, [allUseCases, hasError, isLoading, summary]);
 }

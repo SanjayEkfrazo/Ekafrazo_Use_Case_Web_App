@@ -17,6 +17,12 @@ async function request(path, options = {}) {
   const body = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:role-stale"));
+      }
+    }
+
     const message = body.message || "Something went wrong. Please try again.";
     const error = new Error(message);
     error.errors = body.errors;

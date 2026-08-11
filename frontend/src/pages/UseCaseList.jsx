@@ -1,6 +1,6 @@
 // Use Cases page: lists all use cases with search, sort, and pagination
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import Table from "../components/Table";
@@ -18,6 +18,7 @@ import { useTheme } from "../hooks/useTheme";
 import { DEFAULT_PAGE_SIZE } from "../utils/constants";
 
 const ALL_DOMAINS = "All Domains";
+const ALL_CLIENTS = "All Clients";
 const REVIEW_KINDS = new Set(["deployment", "presentation", "image", "incomplete"]);
 
 const REVIEW_LABELS = {
@@ -86,91 +87,99 @@ function UseCaseList() {
 
   const initialSearch = searchParams.get("search") || "";
   const initialDomain = searchParams.get("domain") || ALL_DOMAINS;
-  const initialSortBy = searchParams.get("sortBy") || "updated_at";
-  const initialSortOrder = searchParams.get("sortOrder") === "asc" ? "asc" : "desc";
+  const initialClient = searchParams.get("client") || ALL_CLIENTS;
   const initialPage = toPositiveNumberOrFallback(searchParams.get("page"), 1);
   const reviewFromParams = (searchParams.get("review") || "").trim();
   const initialReview = REVIEW_KINDS.has(reviewFromParams) ? reviewFromParams : "";
 
   const [useCases, setUseCases] = useState([]);
   const [domains, setDomains] = useState([]);
+  const [clients, setClients] = useState([]);
   const [pagination, setPagination] = useState({ totalPages: 1, currentPage: 1 });
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState(initialSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [selectedDomain, setSelectedDomain] = useState(initialDomain);
-  const [sortBy, setSortBy] = useState(initialSortBy);
-  const [sortOrder, setSortOrder] = useState(initialSortOrder);
+  const [selectedClient, setSelectedClient] = useState(initialClient);
   const [page, setPage] = useState(initialPage);
   const [reviewFilter, setReviewFilter] = useState(initialReview);
   const [isUnlockOpen, setIsUnlockOpen] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const handledToastLocationKeyRef = useRef(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const { isAdmin, unlockAdmin, lockAdmin } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
-  const hasActiveFilters = search.trim() || selectedDomain !== ALL_DOMAINS || sortBy !== "updated_at" || sortOrder !== "desc" || page > 1 || Boolean(reviewFilter);
-
-  const sortLabelMap = {
-    updated_at: "Recently Updated",
-    created_at: "Recently Added",
-    title: "Title",
-    domain: "Domain",
-    client_name: "Client",
-  };
+  const hasActiveFilters = search.trim() || selectedDomain !== ALL_DOMAINS || selectedClient !== ALL_CLIENTS || page > 1 || Boolean(reviewFilter);
 
   // Load use cases from the API using the current filters
   const loadUseCases = useCallback(async () => {
     setIsLoading(true);
     try {
-      if (reviewFilter) {
-        const records = await fetchAllUseCasesForFilters({
-          search: debouncedSearch,
-          domain: selectedDomain === ALL_DOMAINS ? "" : selectedDomain,
-          sortBy,
-          sortOrder,
-        });
-
-        const filtered = records.filter((item) => matchesReviewKind(item, reviewFilter));
-        const totalPages = Math.max(1, Math.ceil(filtered.length / DEFAULT_PAGE_SIZE));
-        const currentPage = Math.min(page, totalPages);
-        const start = (currentPage - 1) * DEFAULT_PAGE_SIZE;
-        const end = start + DEFAULT_PAGE_SIZE;
-
-        setUseCases(filtered.slice(start, end));
-        setPagination({ totalPages, currentPage });
-
-        if (currentPage !== page) {
-          setPage(currentPage);
-        }
-
-        return;
-      }
-
-      const response = await fetchUseCases({
-        search: debouncedSearch,
+      const records = await fetchAllUseCasesForFilters({
+        search: "",
         domain: selectedDomain === ALL_DOMAINS ? "" : selectedDomain,
-        sortBy,
-        sortOrder,
-        page,
-        limit: DEFAULT_PAGE_SIZE,
+        sortBy: "updated_at",
+        sortOrder: "desc",
       });
-      setUseCases(response.data);
-      setPagination(response.pagination);
+
+      const titleTerm = debouncedSearch.trim().toLowerCase();
+      const filtered = records.filter((item) => {
+        const matchesTitle = !titleTerm || String(item?.title || "").toLowerCase().includes(titleTerm);
+        const matchesClient = selectedClient === ALL_CLIENTS || String(item?.client_name || "") === selectedClient;
+        const matchesReview = !reviewFilter || matchesReviewKind(item, reviewFilter);
+        return matchesTitle && matchesClient && matchesReview;
+      });
+
+      const totalPages = Math.max(1, Math.ceil(filtered.length / DEFAULT_PAGE_SIZE));
+      const currentPage = Math.min(page, totalPages);
+      const start = (currentPage - 1) * DEFAULT_PAGE_SIZE;
+      const end = start + DEFAULT_PAGE_SIZE;
+
+      setUseCases(filtered.slice(start, end));
+      setPagination({ totalPages, currentPage });
+
+      if (currentPage !== page) {
+        setPage(currentPage);
+      }
     } catch (error) {
       showToast(error.message, "error");
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, selectedDomain, sortBy, sortOrder, page, reviewFilter, showToast]);
+  }, [debouncedSearch, selectedClient, selectedDomain, page, reviewFilter, showToast]);
 
   const loadDomains = useCallback(async () => {
     try {
       const response = await fetchUseCaseDomains();
       setDomains(response.data || []);
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }, [showToast]);
+
+  const loadClients = useCallback(async () => {
+    try {
+      const allRecords = await fetchAllUseCasesForFilters({
+        search: "",
+        domain: "",
+        sortBy: "updated_at",
+        sortOrder: "desc",
+      });
+
+      const uniqueClients = Array.from(
+        new Set(
+          allRecords
+            .map((item) => String(item?.client_name || "").trim())
+            .filter(Boolean)
+        )
+      ).sort((a, b) => a.localeCompare(b));
+
+      setClients(uniqueClients);
     } catch (error) {
       showToast(error.message, "error");
     }
@@ -193,6 +202,10 @@ function UseCaseList() {
   }, [loadDomains]);
 
   useEffect(() => {
+    loadClients();
+  }, [loadClients]);
+
+  useEffect(() => {
     const params = new URLSearchParams();
     if (search.trim()) {
       params.set("search", search.trim());
@@ -200,11 +213,8 @@ function UseCaseList() {
     if (selectedDomain !== ALL_DOMAINS) {
       params.set("domain", selectedDomain);
     }
-    if (sortBy !== "updated_at") {
-      params.set("sortBy", sortBy);
-    }
-    if (sortOrder !== "desc") {
-      params.set("sortOrder", sortOrder);
+    if (selectedClient !== ALL_CLIENTS) {
+      params.set("client", selectedClient);
     }
     if (page > 1) {
       params.set("page", String(page));
@@ -213,7 +223,23 @@ function UseCaseList() {
       params.set("review", reviewFilter);
     }
     setSearchParams(params, { replace: true });
-  }, [search, selectedDomain, sortBy, sortOrder, page, reviewFilter, setSearchParams]);
+  }, [search, selectedDomain, selectedClient, page, reviewFilter, setSearchParams]);
+
+  useEffect(() => {
+    const toast = location.state?.toast;
+    if (!toast?.message) {
+      return;
+    }
+
+    if (handledToastLocationKeyRef.current === location.key) {
+      return;
+    }
+
+    handledToastLocationKeyRef.current = location.key;
+
+    showToast(toast.message, toast.type || "success");
+    navigate(location.pathname + location.search, { replace: true, state: null });
+  }, [location.key, location.pathname, location.search, location.state, navigate, showToast]);
 
   // Reset back to page 1 whenever the search term changes
   const handleSearchChange = (value) => {
@@ -227,6 +253,11 @@ function UseCaseList() {
     setPage(1);
   };
 
+  const handleClientChange = (event) => {
+    setSelectedClient(event.target.value);
+    setPage(1);
+  };
+
   const handlePageChange = (nextPage) => {
     setPage(nextPage);
   };
@@ -234,8 +265,7 @@ function UseCaseList() {
   const handleResetFilters = () => {
     setSearch("");
     setSelectedDomain(ALL_DOMAINS);
-    setSortBy("updated_at");
-    setSortOrder("desc");
+    setSelectedClient(ALL_CLIENTS);
     setPage(1);
     setReviewFilter("");
   };
@@ -303,12 +333,12 @@ function UseCaseList() {
         <div className="p-4 md:p-6">
           <div className="mb-4 rounded-2xl border border-border bg-surface p-3 shadow-card md:p-4">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2 xl:max-w-4xl xl:grid-cols-4">
-                <div className="md:col-span-2 xl:col-span-2">
+              <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2 xl:max-w-4xl xl:grid-cols-3">
+                <div>
                   <SearchBar
                     value={search}
                     onChange={handleSearchChange}
-                    placeholder="Search by title, domain, client, or technology"
+                    placeholder="Filter by title"
                   />
                 </div>
 
@@ -326,34 +356,19 @@ function UseCaseList() {
                   ))}
                 </select>
 
-                <div className="flex gap-2">
-                  <select
-                    value={sortBy}
-                    onChange={(event) => {
-                      setSortBy(event.target.value);
-                      setPage(1);
-                    }}
-                    aria-label="Sort field"
-                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink transition-all duration-200 ease-out focus:border-primary focus:shadow-glow-primary motion-reduce:transition-none"
-                  >
-                    <option value="updated_at">Recently Updated</option>
-                    <option value="created_at">Recently Added</option>
-                    <option value="title">Title</option>
-                    <option value="domain">Domain</option>
-                    <option value="client_name">Client</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSortOrder((current) => (current === "asc" ? "desc" : "asc"));
-                      setPage(1);
-                    }}
-                    className="rounded-lg border border-border bg-surface-elevated px-3 py-2 text-xs font-semibold text-ink transition-all duration-200 hover:border-border-strong motion-reduce:transition-none"
-                    aria-label="Toggle sort order"
-                  >
-                    {sortOrder === "asc" ? "Asc" : "Desc"}
-                  </button>
-                </div>
+                <select
+                  value={selectedClient}
+                  onChange={handleClientChange}
+                  aria-label="Filter by client"
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink transition-all duration-200 ease-out focus:border-primary focus:shadow-glow-primary motion-reduce:transition-none"
+                >
+                  <option value={ALL_CLIENTS}>{ALL_CLIENTS}</option>
+                  {clients.map((client) => (
+                    <option key={client} value={client}>
+                      {client}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
@@ -370,11 +385,10 @@ function UseCaseList() {
               <p>
                 Showing {useCases.length} record{useCases.length === 1 ? "" : "s"}
                 {selectedDomain !== ALL_DOMAINS ? ` in ${selectedDomain}` : " across all domains"}
+                {selectedClient !== ALL_CLIENTS ? ` • Client: ${selectedClient}` : ""}
                 {reviewFilter ? ` • Filter: ${REVIEW_LABELS[reviewFilter]}` : ""}
               </p>
-              <p>
-                Sorted by {sortLabelMap[sortBy] || "Recently Updated"} ({sortOrder === "asc" ? "ascending" : "descending"}) • Page {pagination.currentPage} of {pagination.totalPages}
-              </p>
+              <p>Page {pagination.currentPage} of {pagination.totalPages}</p>
             </div>
           </div>
 
@@ -384,7 +398,7 @@ function UseCaseList() {
             <EmptyState
               title="No matching use cases"
               description={
-                search || selectedDomain !== ALL_DOMAINS
+                search || selectedDomain !== ALL_DOMAINS || selectedClient !== ALL_CLIENTS
                   ? "No use cases match your search. Try changing the search or filters."
                   : reviewFilter
                     ? `No records found for ${REVIEW_LABELS[reviewFilter]}.`

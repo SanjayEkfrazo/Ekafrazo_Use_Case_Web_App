@@ -7,6 +7,29 @@ import Loader from "../components/Loader";
 import { fetchUseCaseById, updateUseCase, uploadDomainImage } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 
+const COMPARABLE_FIELDS = [
+  "title",
+  "description",
+  "domain",
+  "domain_image_url",
+  "deployment_url",
+  "resource_url",
+  "client_name",
+  "business_problem",
+  "proposed_solution",
+  "technology_stack",
+];
+
+function normalizeComparableValue(value) {
+  return String(value ?? "").trim();
+}
+
+function hasMeaningfulChanges(nextValues, currentValues) {
+  return COMPARABLE_FIELDS.some(
+    (field) => normalizeComparableValue(nextValues?.[field]) !== normalizeComparableValue(currentValues?.[field])
+  );
+}
+
 function UseCaseEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -36,6 +59,11 @@ function UseCaseEdit() {
     try {
       let payload = { ...values };
 
+      if (!domainImageFile && !hasMeaningfulChanges(payload, useCase)) {
+        showToast("No fields were edited. Update at least one field before saving.", "error");
+        return;
+      }
+
       if (domainImageFile) {
         setSubmitPhase?.("uploading");
         const uploadResponse = await uploadDomainImage(domainImageFile);
@@ -47,10 +75,17 @@ function UseCaseEdit() {
 
       setSubmitPhase?.("saving");
       await updateUseCase(id, payload);
-      showToast("Use case updated successfully");
-      navigate("/use-cases");
+      navigate("/use-cases", {
+        state: {
+          toast: {
+            message: "Use case updated successfully",
+            type: "success",
+          },
+        },
+      });
     } catch (error) {
       showToast(error.message, "error");
+      throw error;
     }
   };
 

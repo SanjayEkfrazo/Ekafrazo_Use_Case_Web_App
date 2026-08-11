@@ -74,6 +74,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
   const [touched, setTouched] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitPhase, setSubmitPhase] = useState("idle");
+  const [submitError, setSubmitError] = useState("");
   const [selectedDomainImageFile, setSelectedDomainImageFile] = useState(null);
   const [selectedDomainImagePreviewUrl, setSelectedDomainImagePreviewUrl] = useState("");
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -234,6 +235,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
 
     setFieldTouched("domain_image_url");
     setSelectedDomainImageFile(file);
+    setSubmitError("");
 
     if (selectedDomainImagePreviewUrl) {
       URL.revokeObjectURL(selectedDomainImagePreviewUrl);
@@ -256,6 +258,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
     }
     setSelectedDomainImagePreviewUrl("");
     setSelectedDomainImageFile(null);
+    setSubmitError("");
     setFieldTouched("domain_image_url");
     setValues((current) => ({ ...current, domain_image_url: "" }));
     if (hasSubmitted) {
@@ -307,9 +310,20 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
     }
 
     setIsSubmitting(true);
+    setSubmitError("");
     try {
       setSubmitPhase(selectedDomainImageFile ? "uploading" : "saving");
       await onSubmit(payload, { domainImageFile: selectedDomainImageFile, setSubmitPhase });
+    } catch (error) {
+      const message = String(error?.message || "Failed to save use case");
+      setSubmitError(message);
+
+      if (selectedDomainImageFile) {
+        setErrors((current) => ({
+          ...current,
+          domain_image_url: `Image upload failed: ${message}`,
+        }));
+      }
     } finally {
       setSubmitPhase("idle");
       setIsSubmitting(false);
@@ -389,9 +403,56 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                   isClearable
                   placeholder="Select or type a domain"
                   noOptionsMessage={({ inputValue }) =>
-                    inputValue ? "Press Enter to use this domain" : "No matching domains"
+                    inputValue ? "Press Enter to create this domain" : "No matching domains"
                   }
-                  formatCreateLabel={(inputValue) => `Use "${inputValue.trim()}"`}
+                  formatCreateLabel={(inputValue) => `Create domain: "${inputValue.trim()}"`}
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      backgroundColor: "rgb(var(--color-surface))",
+                      borderColor: errors.domain
+                        ? "rgb(var(--color-danger))"
+                        : state.isFocused
+                          ? "rgb(var(--color-primary))"
+                          : "rgb(var(--color-border))",
+                      boxShadow: state.isFocused ? "var(--shadow-glow-primary)" : "none",
+                      minHeight: 38,
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "rgb(var(--color-ink))",
+                    }),
+                    input: (base) => ({
+                      ...base,
+                      color: "rgb(var(--color-ink))",
+                    }),
+                    placeholder: (base) => ({
+                      ...base,
+                      color: "rgb(var(--color-muted-dim))",
+                    }),
+                    menu: (base) => ({
+                      ...base,
+                      backgroundColor: "rgb(var(--color-surface))",
+                      border: "1px solid rgb(var(--color-border))",
+                      boxShadow: "var(--shadow-card)",
+                    }),
+                    menuList: (base) => ({
+                      ...base,
+                      backgroundColor: "rgb(var(--color-surface))",
+                      paddingTop: 4,
+                      paddingBottom: 4,
+                    }),
+                    option: (base, state) => ({
+                      ...base,
+                      backgroundColor: state.isFocused
+                        ? "rgb(var(--color-primary-subtle))"
+                        : "rgb(var(--color-surface))",
+                      color: state.isFocused
+                        ? "rgb(var(--color-primary-text))"
+                        : "rgb(var(--color-ink))",
+                      cursor: "pointer",
+                    }),
+                  }}
                   classNames={{
                     control: (state) =>
                       `min-h-[38px] rounded-lg border bg-surface px-1 text-sm text-ink transition-all duration-200 ${
@@ -405,6 +466,10 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                       `cursor-pointer px-3 py-2 text-sm ${state.isFocused ? "bg-primary-light text-primary-text" : "text-ink"}`,
                   }}
                 />
+                <p className="text-xs text-muted">
+                  Select an existing domain or create one. Custom domain must start with a letter, be 2-50 characters,
+                  and use only letters, numbers, spaces, &, /, +, and -.
+                </p>
                 {errors.domain && (
                   <p className="inline-flex items-center gap-1 text-xs text-danger-text">
                     <AlertTriangle size={12} /> {errors.domain}
@@ -459,34 +524,13 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
           </div>
 
           <div className="rounded-xl border border-border bg-surface-elevated p-3">
-            <h3 className="font-display text-base font-semibold text-ink">Resources</h3>
-            <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-2 [&_input]:py-1.5">
-              <FormInput
-                label="Live Demo URL"
-                name="deployment_url"
-                required
-                value={values.deployment_url}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={errors.deployment_url}
-                placeholder="https://example.com/demo"
-              />
-              <FormInput
-                label="Presentation URL"
-                name="resource_url"
-                required
-                value={values.resource_url}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={errors.resource_url}
-                placeholder="https://drive.google.com/..."
-              />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-surface-elevated p-3">
             <h3 className="font-display text-base font-semibold text-ink">Media</h3>
             <p className="mt-1 text-xs text-muted">Upload a domain image and verify preview before saving.</p>
+            <ul className="mt-2 space-y-1 text-xs text-muted">
+              <li>Accepted: image files only (JPG, PNG, WEBP, GIF)</li>
+              <li>Maximum size: 5MB</li>
+              <li>If upload fails, a clear error will appear below this field</li>
+            </ul>
             <div className="mt-2.5 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
               <div className="rounded-xl border-2 border-dashed border-border bg-surface px-3 py-3 transition-all duration-200 hover:border-primary hover:bg-primary-light motion-reduce:transition-none">
                 <input
@@ -499,6 +543,11 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                   className="block w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-solid hover:file:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
                 />
                 {selectedDomainImageFile && <p className="mt-2 text-xs text-muted">Selected image will upload on save.</p>}
+                {selectedDomainImageFile && !errors.domain_image_url && (
+                  <p className="mt-1 text-xs text-success-text">
+                    Ready to upload: {selectedDomainImageFile.name} ({(selectedDomainImageFile.size / (1024 * 1024)).toFixed(2)} MB)
+                  </p>
+                )}
                 {errors.domain_image_url && (
                   <p className="mt-2 inline-flex items-center gap-1 text-xs text-danger-text">
                     <AlertTriangle size={12} /> {errors.domain_image_url}
@@ -527,9 +576,40 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
               )}
             </div>
           </div>
+
+          <div className="rounded-xl border border-border bg-surface-elevated p-3 xl:col-span-2">
+            <h3 className="font-display text-base font-semibold text-ink">Resources</h3>
+            <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-2 [&_input]:py-1.5">
+              <FormInput
+                label="Live Demo URL"
+                name="deployment_url"
+                required
+                value={values.deployment_url}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.deployment_url}
+                placeholder="https://example.com/demo"
+              />
+              <FormInput
+                label="Presentation URL"
+                name="resource_url"
+                required
+                value={values.resource_url}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.resource_url}
+                placeholder="https://drive.google.com/..."
+              />
+            </div>
+          </div>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-end gap-2.5 border-t border-border pt-3">
+          {submitError && !errors.domain_image_url && (
+            <p className="mr-auto inline-flex items-center gap-1 text-xs text-danger-text">
+              <AlertTriangle size={12} /> {submitError}
+            </p>
+          )}
           <Button type="button" variant="secondary" onClick={onCancel}>
             Cancel
           </Button>
