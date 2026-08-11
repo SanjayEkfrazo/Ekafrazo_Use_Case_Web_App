@@ -25,7 +25,7 @@ function Navbar({ title, subtitle, compact = false }) {
     setIsSubmitting(true);
     try {
       await unlockAdmin(passcode.trim());
-      showToast("Admin mode unlocked");
+      showToast("Admin mode enabled");
       setPasscode("");
       setIsUnlockOpen(false);
     } catch (error) {
@@ -38,7 +38,7 @@ function Navbar({ title, subtitle, compact = false }) {
   const handleLock = async () => {
     try {
       await lockAdmin();
-      showToast("Admin mode locked");
+      showToast("Admin mode disabled");
     } catch (error) {
       showToast(error.message, "error");
     }
@@ -46,7 +46,7 @@ function Navbar({ title, subtitle, compact = false }) {
 
   return (
     <>
-      <header className={`border-b border-border bg-surface ${compact ? "px-5 py-3 md:px-6" : "px-6 py-5 md:px-8"}`}>
+      <header className={`app-navbar ${compact ? "px-5 py-3 md:px-6" : "px-6 py-5 md:px-8"}`}>
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -67,11 +67,11 @@ function Navbar({ title, subtitle, compact = false }) {
             </button>
             {isAdmin ? (
               <Button variant="dangerSoft" onClick={handleLock} className="px-3 py-2 text-xs">
-                Logout Admin
+                Disable Admin Mode
               </Button>
             ) : (
               <Button variant="ghost" onClick={() => setIsUnlockOpen(true)} className="px-3 py-2 text-xs">
-                Unlock Admin
+                Enable Admin Mode
               </Button>
             )}
           </div>
@@ -86,7 +86,7 @@ function Navbar({ title, subtitle, compact = false }) {
           setPasscode("");
         }}
       >
-        <h2 className="font-display text-lg font-semibold text-ink">Unlock Admin Mode</h2>
+        <h2 className="font-display text-lg font-semibold text-ink">Enable Admin Mode</h2>
         <p className="mt-2 text-sm text-muted">Enter the admin passcode to enable create, edit, and delete actions.</p>
 
         <div className="mt-4">
@@ -113,7 +113,7 @@ function Navbar({ title, subtitle, compact = false }) {
             Cancel
           </Button>
           <Button onClick={handleUnlock} disabled={isSubmitting}>
-            {isSubmitting ? "Unlocking..." : "Unlock"}
+            {isSubmitting ? "Enabling..." : "Enable Admin Mode"}
           </Button>
         </div>
       </Modal>

@@ -1,8 +1,9 @@
 // Search input used to filter the use cases table
+import { memo } from "react";
 
 function SearchBar({ value, onChange, placeholder = "Search use cases..." }) {
   return (
-    <div className="relative w-full max-w-sm">
+    <div className="relative w-full">
       <svg
         width="16"
         height="16"
@@ -20,10 +21,10 @@ function SearchBar({ value, onChange, placeholder = "Search use cases..." }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-border bg-surface py-2 pl-9 pr-3 text-sm text-ink placeholder:text-muted-dim transition-all duration-200 ease-out focus:border-primary focus:shadow-glow-primary motion-reduce:transition-none"
+        className="ui-search-input w-full pl-9 pr-3"
       />
     </div>
   );
 }
 
-export default SearchBar;
+export default memo(SearchBar);

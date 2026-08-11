@@ -23,6 +23,17 @@ const emptyForm = {
   technology_stack: "",
 };
 
+const requiredFields = [
+  { key: "title", label: "Title" },
+  { key: "description", label: "Description" },
+  { key: "domain", label: "Domain" },
+  { key: "domain_image_url", label: "Domain image" },
+  { key: "client_name", label: "Client" },
+  { key: "technology_stack", label: "Technology" },
+  { key: "deployment_url", label: "Deployment" },
+  { key: "resource_url", label: "Presentation" },
+];
+
 function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabel = "Save Use Case" }) {
   const [values, setValues] = useState({ ...emptyForm, ...initialValues });
   const [existingDomains, setExistingDomains] = useState([]);
@@ -291,6 +302,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
     });
 
     if (Object.keys(validationErrors).length > 0) {
+      focusFirstErrorField(validationErrors);
       return;
     }
 
@@ -305,169 +317,164 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
   };
 
   const effectiveDomainImagePreviewUrl = selectedDomainImagePreviewUrl || String(values.domain_image_url || "").trim();
+  const completedRequiredCount = requiredFields.reduce((count, field) => {
+    if (field.key === "domain_image_url") {
+      return effectiveDomainImagePreviewUrl ? count + 1 : count;
+    }
+    return String(values[field.key] || "").trim() ? count + 1 : count;
+  }, 0);
+
+  const focusFirstErrorField = (validationErrors) => {
+    const firstErrorField = requiredFields.find((field) => validationErrors[field.key])?.key;
+    if (!firstErrorField) {
+      return;
+    }
+
+    const targetId = firstErrorField === "domain_image_url" ? "domain_image" : firstErrorField;
+    const element = document.getElementById(targetId);
+    if (element) {
+      element.focus();
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
       <section className="rounded-xl border border-border bg-surface p-3 shadow-card md:p-4">
-        <div className="space-y-3">
-          <div className="rounded-xl border border-border bg-surface-elevated p-3">
-            <h3 className="font-display text-lg font-semibold text-ink">Basic Info</h3>
-            <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3 [&_input]:py-1.5 [&_select]:py-1.5 [&_textarea]:py-1.5">
-            <div className="md:col-span-3">
+        <div className="mb-3 rounded-xl border border-border bg-surface-elevated px-3 py-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink">Form Status</p>
+              <p className="mt-0.5 text-xs text-muted">{completedRequiredCount} of {requiredFields.length} required fields completed.</p>
+            </div>
+            <p className="text-xs text-muted"><span className="text-danger-text">*</span> Required fields</p>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-border/60">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-primary to-brand-via transition-all duration-300 motion-reduce:transition-none"
+              style={{ width: `${Math.round((completedRequiredCount / requiredFields.length) * 100)}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+          <div className="rounded-xl border border-border bg-surface-elevated p-3 xl:col-span-2">
+            <h3 className="font-display text-base font-semibold text-ink">General Information</h3>
+            <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-2 [&_input]:py-1.5">
+              <div className="md:col-span-2">
+                <FormInput
+                  label="Title"
+                  name="title"
+                  required
+                  value={values.title}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.title}
+                  placeholder="e.g. Customer Churn Prediction"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="domain" className="text-xs font-medium uppercase tracking-wide text-muted">
+                  Business Domain
+                  <span className="ml-1 text-danger-text">*</span>
+                </label>
+                <CreatableSelect
+                  inputId="domain"
+                  name="domain"
+                  value={selectedDomainOption}
+                  onChange={handleDomainChange}
+                  onBlur={handleDomainBlur}
+                  options={domainOptions}
+                  isClearable
+                  placeholder="Select or type a domain"
+                  noOptionsMessage={({ inputValue }) =>
+                    inputValue ? "Press Enter to use this domain" : "No matching domains"
+                  }
+                  formatCreateLabel={(inputValue) => `Use "${inputValue.trim()}"`}
+                  classNames={{
+                    control: (state) =>
+                      `min-h-[38px] rounded-lg border bg-surface px-1 text-sm text-ink transition-all duration-200 ${
+                        errors.domain ? "border-danger" : "border-border"
+                      } ${state.isFocused ? "border-primary shadow-glow-primary" : ""}`,
+                    valueContainer: () => "py-0",
+                    input: () => "!m-0 !p-0",
+                    placeholder: () => "text-muted-dim",
+                    menu: () => "z-20 mt-1 overflow-hidden rounded-lg border border-border bg-surface shadow-card",
+                    option: (state) =>
+                      `cursor-pointer px-3 py-2 text-sm ${state.isFocused ? "bg-primary-light text-primary-text" : "text-ink"}`,
+                  }}
+                />
+                {errors.domain && (
+                  <p className="inline-flex items-center gap-1 text-xs text-danger-text">
+                    <AlertTriangle size={12} /> {errors.domain}
+                  </p>
+                )}
+              </div>
+
               <FormInput
-                label="Title"
-                name="title"
-                value={values.title}
+                label="Client"
+                name="client_name"
+                required
+                value={values.client_name}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                error={errors.title}
-                placeholder="e.g. Customer Churn Prediction"
+                error={errors.client_name}
+                placeholder="e.g. Acme Corp"
               />
             </div>
+          </div>
 
-            <div className="md:col-span-3">
+          <div className="rounded-xl border border-border bg-surface-elevated p-3 xl:col-span-2">
+            <h3 className="font-display text-base font-semibold text-ink">Business Overview</h3>
+            <div className="mt-2.5 [&_textarea]:py-1.5">
               <FormTextarea
                 label="Description"
                 name="description"
+                required
                 value={values.description}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.description}
-                placeholder="A short summary of the use case"
-                rows={2}
+                placeholder="Add a short business summary"
+                rows={3}
               />
-            </div>
             </div>
           </div>
 
           <div className="rounded-xl border border-border bg-surface-elevated p-3">
-            <h3 className="font-display text-lg font-semibold text-ink">Domain and Client</h3>
-            <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3 [&_input]:py-1.5 [&_select]:py-1.5 [&_textarea]:py-1.5">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="domain" className="text-xs font-medium uppercase tracking-wide text-muted">
-                Domain
-              </label>
-              <CreatableSelect
-                inputId="domain"
-                name="domain"
-                value={selectedDomainOption}
-                onChange={handleDomainChange}
-                onBlur={handleDomainBlur}
-                options={domainOptions}
-                isClearable
-                placeholder="Select or type a domain"
-                noOptionsMessage={({ inputValue }) =>
-                  inputValue ? "Press Enter to use this domain" : "No matching domains"
-                }
-                formatCreateLabel={(inputValue) => `Use "${inputValue.trim()}"`}
-                classNames={{
-                  control: (state) =>
-                    `min-h-[38px] rounded-lg border bg-surface px-1 text-sm text-ink transition-all duration-200 ${
-                      errors.domain ? "border-danger" : "border-border"
-                    } ${state.isFocused ? "border-primary shadow-glow-primary" : ""}`,
-                  valueContainer: () => "py-0",
-                  input: () => "!m-0 !p-0",
-                  placeholder: () => "text-muted-dim",
-                  menu: () => "z-20 mt-1 overflow-hidden rounded-lg border border-border bg-surface shadow-card",
-                  option: (state) =>
-                    `cursor-pointer px-3 py-2 text-sm ${state.isFocused ? "bg-primary-light text-primary-text" : "text-ink"}`,
-                }}
-              />
-              {errors.domain && (
-                <div className="flex flex-col gap-1">
-                  <p className="inline-flex items-center gap-1 text-xs text-danger-text">
-                    <AlertTriangle size={12} /> {errors.domain}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="md:col-span-2 flex flex-col gap-1">
-              <label htmlFor="domain_image" className="text-xs font-medium uppercase tracking-wide text-muted">
-                Domain Image
-              </label>
-              <div className="rounded-xl border-2 border-dashed border-border bg-surface px-3 py-3 transition-all duration-200 hover:border-primary hover:bg-primary-light motion-reduce:transition-none">
-                <div className="flex flex-wrap items-center gap-2">
-                <input
-                  id="domain_image"
-                  name="domain_image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleDomainImageUpload}
-                  disabled={isSubmitting}
-                  className="block w-full max-w-sm rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-solid hover:file:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
-                />
-                {selectedDomainImageFile && <span className="text-xs text-muted">Image will upload on save</span>}
-                </div>
-              </div>
-              {(errors.domain_image_url || effectiveDomainImagePreviewUrl) && (
-                <div className="flex flex-col gap-1">
-                  {errors.domain_image_url && (
-                    <p className="inline-flex items-center gap-1 text-xs text-danger-text">
-                      <AlertTriangle size={12} /> {errors.domain_image_url}
-                    </p>
-                  )}
-                  {effectiveDomainImagePreviewUrl && !errors.domain_image_url && (
-                    <div className="relative mt-1 inline-flex w-fit">
-                      <img
-                        src={effectiveDomainImagePreviewUrl}
-                        alt="Domain"
-                        className="h-20 w-20 rounded-lg border border-border object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleRemoveDomainImage}
-                        aria-label="Remove selected image"
-                        className="absolute -right-2 -top-2 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface-elevated text-danger-text transition-colors duration-200 hover:bg-danger-light"
-                      >
-                        <X size={13} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <FormInput
-              label="Client / Company"
-              name="client_name"
-              value={values.client_name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.client_name}
-              placeholder="e.g. Acme Corp"
-            />
-            <FormInput
-              label="Technology Stack"
-              name="technology_stack"
-              value={values.technology_stack}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.technology_stack}
-              placeholder="e.g. Python, React, PostgreSQL"
-            />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-surface-elevated p-3">
-            <h3 className="font-display text-lg font-semibold text-ink">Links</h3>
-            <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3 [&_input]:py-1.5 [&_select]:py-1.5 [&_textarea]:py-1.5">
-            <div className="md:col-span-3">
+            <h3 className="font-display text-base font-semibold text-ink">Technology</h3>
+            <div className="mt-2.5 [&_input]:py-1.5">
               <FormInput
-                label="Use Case Deployment URL"
+                label="Technology Stack"
+                name="technology_stack"
+                required
+                value={values.technology_stack}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.technology_stack}
+                placeholder="e.g. Python, React, PostgreSQL"
+              />
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-surface-elevated p-3">
+            <h3 className="font-display text-base font-semibold text-ink">Resources</h3>
+            <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-2 [&_input]:py-1.5">
+              <FormInput
+                label="Live Demo URL"
                 name="deployment_url"
+                required
                 value={values.deployment_url}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.deployment_url}
-                placeholder="https://example.com/use-case"
+                placeholder="https://example.com/demo"
               />
-            </div>
-
-            <div className="md:col-span-2">
               <FormInput
-                label="Presentation / File URL"
+                label="Presentation URL"
                 name="resource_url"
+                required
                 value={values.resource_url}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -475,24 +482,67 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                 placeholder="https://drive.google.com/..."
               />
             </div>
-            </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-2.5 border-t border-border pt-2.5">
-            <Button type="button" variant="secondary" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  {submitPhase === "uploading" ? "Uploading image..." : "Saving..."}
-                </>
-              ) : (
-                submitLabel
+          <div className="rounded-xl border border-border bg-surface-elevated p-3">
+            <h3 className="font-display text-base font-semibold text-ink">Media</h3>
+            <p className="mt-1 text-xs text-muted">Upload a domain image and verify preview before saving.</p>
+            <div className="mt-2.5 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+              <div className="rounded-xl border-2 border-dashed border-border bg-surface px-3 py-3 transition-all duration-200 hover:border-primary hover:bg-primary-light motion-reduce:transition-none">
+                <input
+                  id="domain_image"
+                  name="domain_image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleDomainImageUpload}
+                  disabled={isSubmitting}
+                  className="block w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-solid hover:file:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
+                />
+                {selectedDomainImageFile && <p className="mt-2 text-xs text-muted">Selected image will upload on save.</p>}
+                {errors.domain_image_url && (
+                  <p className="mt-2 inline-flex items-center gap-1 text-xs text-danger-text">
+                    <AlertTriangle size={12} /> {errors.domain_image_url}
+                  </p>
+                )}
+              </div>
+
+              {effectiveDomainImagePreviewUrl && !errors.domain_image_url && (
+                <div className="relative inline-flex w-fit">
+                  <img
+                    src={effectiveDomainImagePreviewUrl}
+                    alt="Domain"
+                    className="h-28 w-28 rounded-lg border border-border object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveDomainImage}
+                    aria-label="Remove selected image"
+                    className="absolute -right-2 -top-2 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface-elevated text-danger-text transition-colors duration-200 hover:bg-danger-light"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
               )}
-            </Button>
+            </div>
           </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center justify-end gap-2.5 border-t border-border pt-3">
+          <Button type="button" variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                {submitPhase === "uploading" ? "Uploading image..." : "Saving..."}
+              </>
+            ) : (
+              submitLabel
+            )}
+          </Button>
         </div>
       </section>
     </form>

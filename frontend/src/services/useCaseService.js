@@ -3,6 +3,50 @@
 
 import { api } from "./api";
 
+const USECASE_DETAIL_CACHE_TTL_MS = 30 * 1000;
+const useCaseDetailCache = new Map();
+const useCaseDetailInFlight = new Map();
+
+function getCachedUseCase(id) {
+  const key = String(id || "").trim();
+  if (!key) {
+    return null;
+  }
+
+  const entry = useCaseDetailCache.get(key);
+  if (!entry) {
+    return null;
+  }
+
+  if (Date.now() - entry.timestamp > USECASE_DETAIL_CACHE_TTL_MS) {
+    useCaseDetailCache.delete(key);
+    return null;
+  }
+
+  return entry.data;
+}
+
+function setCachedUseCase(id, data) {
+  const key = String(id || "").trim();
+  if (!key || !data) {
+    return;
+  }
+
+  useCaseDetailCache.set(key, {
+    timestamp: Date.now(),
+    data,
+  });
+}
+
+function invalidateCachedUseCase(id) {
+  const key = String(id || "").trim();
+  if (!key) {
+    return;
+  }
+  useCaseDetailCache.delete(key);
+  useCaseDetailInFlight.delete(key);
+}
+
 // Fetch use cases with search, sort, and pagination applied
 export function fetchUseCases({ search = "", domain = "", sortBy = "updated_at", sortOrder = "desc", page = 1, limit = 8 }) {
   const params = new URLSearchParams({ search, domain, sortBy, sortOrder, page, limit });
@@ -15,8 +59,44 @@ export function fetchUseCaseDomains() {
 }
 
 // Fetch a single use case by id
-export function fetchUseCaseById(id) {
-  return api.get(`/usecases/${id}`);
+export async function fetchUseCaseById(id, { preferCache = true } = {}) {
+  const key = String(id || "").trim();
+  if (preferCache) {
+    const cached = getCachedUseCase(key);
+    if (cached) {
+      return { data: cached };
+    }
+  }
+
+  const response = await api.get(`/usecases/${id}`);
+  setCachedUseCase(key, response?.data);
+  return response;
+}
+
+export async function prefetchUseCaseById(id) {
+  const key = String(id || "").trim();
+  if (!key || getCachedUseCase(key)) {
+    return;
+  }
+
+  if (useCaseDetailInFlight.has(key)) {
+    return useCaseDetailInFlight.get(key);
+  }
+
+  const request = api
+    .get(`/usecases/${id}`)
+    .then((response) => {
+      setCachedUseCase(key, response?.data);
+    })
+    .catch(() => {
+      // Prefetch should not surface errors to the UI.
+    })
+    .finally(() => {
+      useCaseDetailInFlight.delete(key);
+    });
+
+  useCaseDetailInFlight.set(key, request);
+  return request;
 }
 
 // Create a new use case
@@ -25,8 +105,10 @@ export function createUseCase(data) {
 }
 
 // Update an existing use case
-export function updateUseCase(id, data) {
-  return api.put(`/usecases/${id}`, data);
+export async function updateUseCase(id, data) {
+  const response = await api.put(`/usecases/${id}`, data);
+  setCachedUseCase(id, response?.data);
+  return response;
 }
 
 // Upload a domain image and get a URL to store on the use case
@@ -37,8 +119,10 @@ export function uploadDomainImage(file) {
 }
 
 // Delete a use case
-export function deleteUseCase(id) {
-  return api.delete(`/usecases/${id}`);
+export async function deleteUseCase(id) {
+  const response = await api.delete(`/usecases/${id}`);
+  invalidateCachedUseCase(id);
+  return response;
 }
 
 // Fetch dashboard summary data

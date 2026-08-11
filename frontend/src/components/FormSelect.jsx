@@ -1,9 +1,10 @@
 // Reusable labeled select dropdown
+import { memo } from "react";
 
 function FormSelect({ label, name, value, onChange, onBlur, options, error }) {
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={name} className="text-xs font-medium uppercase tracking-wide text-muted">
+      <label htmlFor={name} className="ui-label">
         {label}
       </label>
       <select
@@ -12,8 +13,8 @@ function FormSelect({ label, name, value, onChange, onBlur, options, error }) {
         value={value}
         onChange={onChange}
         onBlur={onBlur}
-        className={`rounded-lg border bg-surface px-3 py-2 text-sm text-ink transition-all duration-200 ease-out focus:border-primary focus:shadow-glow-primary motion-reduce:transition-none ${
-          error ? "border-danger" : "border-border"
+        className={`ui-select ${
+          error ? "ui-select-error" : ""
         }`}
       >
         {options.map((option) => (
@@ -32,4 +33,4 @@ function FormSelect({ label, name, value, onChange, onBlur, options, error }) {
   );
 }
 
-export default FormSelect;
+export default memo(FormSelect);

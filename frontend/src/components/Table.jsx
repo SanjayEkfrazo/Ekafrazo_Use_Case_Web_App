@@ -1,6 +1,7 @@
 // Responsive card grid that lists use cases
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { prefetchUseCaseById } from "../services/useCaseService";
 
 function Table({ useCases }) {
   const navigate = useNavigate();
@@ -33,26 +34,59 @@ function Table({ useCases }) {
     return `${text.slice(0, maxLength - 1)}...`;
   };
 
-  const parseTechStack = (value) =>
-    normalize(value)
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .slice(0, 3);
+  const preparedUseCases = useMemo(
+    () => useCases.map((useCase) => {
+      const title = normalize(useCase.title) || "Untitled use case";
+      const domain = normalize(useCase.domain) || "Unknown";
+      const client = normalize(useCase.client_name) || "Not specified";
+      const imageUrl = normalize(useCase.domain_image_url);
+      const description = truncate(useCase.description, 135) || "No description available yet.";
+      const parsedUpdatedAt = useCase.updated_at ? new Date(String(useCase.updated_at).replace(" ", "T")) : null;
+      const updatedLabel = parsedUpdatedAt && !Number.isNaN(parsedUpdatedAt.getTime())
+        ? parsedUpdatedAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+        : "N/A";
+      const allTechItems = normalize(useCase.technology_stack)
+        .split(/[,;|\n]+/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const techItems = allTechItems.slice(0, 3);
+
+      return {
+        raw: useCase,
+        title,
+        domain,
+        client,
+        imageUrl,
+        description,
+        updatedLabel,
+        techItems,
+        extraTechCount: Math.max(allTechItems.length - techItems.length, 0),
+      };
+    }),
+    [useCases]
+  );
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {useCases.map((useCase) => (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {preparedUseCases.map((item) => {
+        const useCase = item.raw;
+
+        return (
         <article
           key={useCase.id}
-          className="flex flex-col gap-4 overflow-hidden rounded-xl border border-border bg-surface p-4 transition-all duration-200 hover:-translate-y-1 hover:border-border-strong hover:shadow-card-hover motion-reduce:transition-none motion-reduce:transform-none"
+          onMouseEnter={() => prefetchUseCaseById(useCase.id)}
+          onFocus={() => prefetchUseCaseById(useCase.id)}
+          onTouchStart={() => prefetchUseCaseById(useCase.id)}
+          className="ui-card flex flex-col gap-3 overflow-hidden p-4 motion-reduce:transition-none"
         >
           <div className="flex items-start gap-3">
-            {normalize(useCase.domain_image_url) && !brokenImagesById[useCase.id] ? (
+            {item.imageUrl && !brokenImagesById[useCase.id] ? (
               <img
-                src={normalize(useCase.domain_image_url)}
-                alt={`${normalize(useCase.domain) || "Domain"} thumbnail`}
+                src={item.imageUrl}
+                alt={`${item.domain} thumbnail`}
                 className="h-12 w-12 shrink-0 rounded-lg border border-border/80 object-cover"
+                loading="lazy"
+                decoding="async"
                 onError={() => setBrokenImagesById((current) => ({ ...current, [useCase.id]: true }))}
               />
             ) : (
@@ -64,57 +98,58 @@ function Table({ useCases }) {
               </div>
             )}
             <div className="min-w-0">
-              <h3 className="line-clamp-2 text-base font-semibold text-ink">{normalize(useCase.title) || "Untitled use case"}</h3>
+              <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-ink">{item.title}</h3>
+              <div className="mt-1 grid grid-cols-1 gap-0.5 text-xs text-muted sm:grid-cols-2 sm:gap-x-2">
+                <p className="truncate"><span className="font-medium text-ink">Domain:</span> {item.domain}</p>
+                <p className="truncate"><span className="font-medium text-ink">Client:</span> {item.client}</p>
+              </div>
             </div>
+            <span className="ml-auto rounded-full border border-border bg-surface-elevated px-2 py-0.5 text-[10px] font-medium text-muted">
+              Updated {item.updatedLabel}
+            </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">Domain</p>
-              <p className="truncate text-ink">{normalize(useCase.domain) || "Unknown domain"}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">Client / Company</p>
-              <p className="truncate text-ink">{normalize(useCase.client_name) || "Not provided"}</p>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">Description</p>
-            <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-ink">
-              {truncate(useCase.description, 150) || "No description available yet."}
+          <div className="min-h-[2.7rem]">
+            <p className="line-clamp-2 text-sm leading-[1.35rem] text-ink">
+              {item.description}
             </p>
           </div>
 
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">Technology Stack</p>
-            <div className="mt-1 flex flex-wrap gap-1.5">
-              {parseTechStack(useCase.technology_stack).length > 0 ? (
-                parseTechStack(useCase.technology_stack).map((tech) => (
+          <div className="flex flex-wrap gap-1.5">
+              {item.techItems.length > 0 ? (
+                <>
+                  {item.techItems.map((tech) => (
                   <span
                     key={tech}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-elevated px-3 py-1 font-mono text-xs font-medium text-ink"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-elevated px-2.5 py-1 font-mono text-[11px] font-medium text-ink"
                   >
                     {tech}
                   </span>
-                ))
+                  ))}
+                  {item.extraTechCount > 0 && (
+                    <span className="inline-flex items-center rounded-full border border-border bg-surface-elevated px-2.5 py-1 text-[11px] font-semibold text-muted">
+                      +{item.extraTechCount} more
+                    </span>
+                  )}
+                </>
               ) : (
-                <p className="text-sm text-muted">Not specified</p>
+                <p className="text-sm text-muted">Not provided</p>
               )}
-            </div>
           </div>
 
           <button
             type="button"
+            onMouseEnter={() => prefetchUseCaseById(useCase.id)}
             onClick={() => navigate(`/use-cases/${useCase.id}`)}
             className="mt-auto w-full rounded-xl border border-border bg-surface-elevated px-3 py-2 text-sm font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong motion-reduce:transition-none"
           >
             View Details
           </button>
         </article>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
-export default Table;
+export default memo(Table);

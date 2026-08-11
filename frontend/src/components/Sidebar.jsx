@@ -1,9 +1,16 @@
 // Sidebar navigation shown on the left of every page
+import { memo } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const navItems = [
-  { to: "/", label: "Dashboard", icon: "grid" },
-  { to: "/use-cases", label: "Use Cases", icon: "list" },
+  { type: "heading", label: "Dashboard" },
+  { to: "/dashboard/overview", label: "Overview", icon: "grid" },
+  { to: "/dashboard/insights", label: "Insights", icon: "chart" },
+  { to: "/dashboard/activity", label: "Activity", icon: "pulse" },
+  { to: "/dashboard/quality", label: "Quality", icon: "shield", adminOnly: true },
+  { type: "heading", label: "Repository" },
+  { to: "/use-cases", label: "Browse Use Cases", icon: "list" },
 ];
 
 // Small inline icon renderer so we avoid adding an icon library dependency
@@ -18,6 +25,30 @@ function Icon({ name }) {
       </svg>
     );
   }
+  if (name === "chart") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M4 20h16" />
+        <rect x="6" y="11" width="3" height="6" rx="1" />
+        <rect x="11" y="7" width="3" height="10" rx="1" />
+        <rect x="16" y="4" width="3" height="13" rx="1" />
+      </svg>
+    );
+  }
+  if (name === "pulse") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="3 12 7 12 10 6 14 18 17 12 21 12" />
+      </svg>
+    );
+  }
+  if (name === "shield") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z" />
+      </svg>
+    );
+  }
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <line x1="4" y1="6" x2="20" y2="6" />
@@ -28,38 +59,51 @@ function Icon({ name }) {
 }
 
 function Sidebar() {
+  const { isAdmin } = useAuth();
+  const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
+
   return (
-    <aside className="hidden w-60 flex-shrink-0 flex-col bg-sidebar px-4 py-6 md:flex">
+    <aside className="app-shell-sidebar flex-col">
       {/* Brand mark */}
       <div className="mb-8 flex items-center gap-2 px-2">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-gradient font-display text-sm font-bold text-on-solid shadow-glow-brand">
           EK
         </div>
-        <span className="font-display text-sm font-semibold text-sidebar-active">Use Cases</span>
+        <span className="font-display text-sm font-semibold text-sidebar-active">Use Case Repository</span>
       </div>
 
       {/* Navigation links */}
       <nav className="flex flex-col gap-1">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/"}
-            className={({ isActive }) =>
-              `relative flex items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
-                isActive
-                  ? "bg-sidebar-active-bg text-sidebar-active before:absolute before:left-0 before:h-5 before:w-0.5 before:rounded-full before:bg-primary"
-                  : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
-              }`
-            }
-          >
-            <Icon name={item.icon} />
-            {item.label}
-          </NavLink>
-        ))}
+        {visibleItems.map((item) => {
+          if (item.type === "heading") {
+            return (
+              <p key={item.label} className="mt-2 px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-text/80 first:mt-0">
+                {item.label}
+              </p>
+            );
+          }
+
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end
+              className={({ isActive }) =>
+                `relative flex items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                  isActive
+                    ? "bg-sidebar-active-bg text-sidebar-active before:absolute before:left-0 before:h-5 before:w-0.5 before:rounded-full before:bg-primary"
+                    : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
+                }`
+              }
+            >
+              <Icon name={item.icon} />
+              {item.label}
+            </NavLink>
+          );
+        })}
       </nav>
     </aside>
   );
 }
 
-export default Sidebar;
+export default memo(Sidebar);

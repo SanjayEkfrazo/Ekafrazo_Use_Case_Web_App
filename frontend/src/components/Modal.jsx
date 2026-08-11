@@ -57,7 +57,7 @@ function Modal({ isOpen, onClose, children, panelClassName = "", backdropClassNa
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        className={`modal-panel-enter relative z-10 w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-card-hover motion-reduce:transition-none ${panelClassName || ""}`}
+        className={`ui-modal-panel modal-panel-enter relative z-10 w-full max-w-md p-6 motion-reduce:transition-none ${panelClassName || ""}`}
       >
         {children}
       </div>

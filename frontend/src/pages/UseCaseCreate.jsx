@@ -34,7 +34,7 @@ function UseCaseCreate() {
 
   return (
     <div className="page-enter">
-      <Navbar compact title="Create Use Case" />
+      <Navbar compact title="Create Use Case" subtitle="Add a new use case to the repository" />
       <div className="p-4 md:p-6">
         <div className="mx-auto max-w-6xl">
           <UseCaseForm onSubmit={handleSubmit} onCancel={() => navigate("/use-cases")} submitLabel="Create Use Case" />

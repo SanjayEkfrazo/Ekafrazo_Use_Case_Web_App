@@ -11,7 +11,7 @@ export function validateUseCaseField(field, rawValue) {
         description: "Description",
         domain: "Domain",
         domain_image_url: "Domain image",
-        deployment_url: "Deployment URL",
+        deployment_url: "Demo URL",
         resource_url: "Presentation or file URL",
         client_name: "Client or company",
         technology_stack: "Technology stack",
@@ -25,7 +25,7 @@ export function validateUseCaseField(field, rawValue) {
   }
 
   if (field === "deployment_url" && value && !/^https?:\/\//i.test(value)) {
-    return "Deployment URL must start with http:// or https://";
+    return "Demo URL must start with http:// or https://";
   }
 
   if (field === "resource_url" && value && !/^https?:\/\//i.test(value)) {
@@ -47,7 +47,7 @@ export function validateUseCaseForm(values) {
     ["description", "Description"],
     ["domain", "Domain"],
     ["domain_image_url", "Domain image"],
-    ["deployment_url", "Deployment URL"],
+    ["deployment_url", "Demo URL"],
     ["resource_url", "Presentation or file URL"],
     ["client_name", "Client or company"],
     ["technology_stack", "Technology stack"],

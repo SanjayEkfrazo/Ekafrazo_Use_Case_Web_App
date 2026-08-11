@@ -56,7 +56,7 @@ function UseCaseEdit() {
 
   return (
     <div className="page-enter">
-      <Navbar compact title="Edit Use Case" />
+      <Navbar compact title="Edit Use Case" subtitle="Update use case details and links" />
       <div className="p-4 md:p-6">
         <div className="mx-auto max-w-6xl">
           {isLoading ? (

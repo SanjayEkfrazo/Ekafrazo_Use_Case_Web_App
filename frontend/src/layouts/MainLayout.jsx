@@ -4,9 +4,9 @@ import Sidebar from "../components/Sidebar";
 
 function MainLayout({ children }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-app">
+    <div className="app-shell">
       <Sidebar />
-      <div className="no-scrollbar flex-1 overflow-y-auto">{children}</div>
+      <div className="app-shell-main">{children}</div>
     </div>
   );
 }

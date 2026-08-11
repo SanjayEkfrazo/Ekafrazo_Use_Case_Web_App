@@ -6,9 +6,11 @@
 /* ---- Dark theme (default) ---- */
 :root,
 [data-theme="dark"] {
+  /* Core color tokens */
   --color-app: 8 10 16;
   --color-surface: 13 17 26;
   --color-surface-elevated: 18 24 38;
+  --color-surface-overlay: 11 15 24;
   --color-border: 30 37 48;
   --color-border-strong: 42 51 65;
 
@@ -22,6 +24,22 @@
   --color-primary-hover: 37 99 235;
   --color-primary-subtle: 19 35 63;
   --color-primary-text: 147 197 253;
+
+  --color-secondary: 16 185 129;
+  --color-secondary-hover: 13 148 108;
+  --color-secondary-subtle: 16 35 31;
+  --color-secondary-text: 94 234 212;
+
+  --color-neutral-50: 245 247 250;
+  --color-neutral-100: 226 232 240;
+  --color-neutral-200: 203 213 225;
+  --color-neutral-300: 148 163 184;
+  --color-neutral-400: 100 116 139;
+  --color-neutral-500: 71 85 105;
+  --color-neutral-600: 51 65 85;
+  --color-neutral-700: 30 41 59;
+  --color-neutral-800: 15 23 42;
+  --color-neutral-900: 2 6 23;
 
   --color-gradient-from: 59 130 246;
   --color-gradient-via: 139 124 240;
@@ -45,8 +63,46 @@
 
   --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.45);
   --shadow-card-hover: 0 14px 44px rgba(0, 0, 0, 0.55);
+  --shadow-elevation-1: 0 6px 20px rgba(0, 0, 0, 0.32);
+  --shadow-elevation-2: 0 10px 34px rgba(0, 0, 0, 0.4);
+  --shadow-elevation-3: 0 18px 56px rgba(0, 0, 0, 0.52);
   --shadow-glow-primary: 0 0 0 1px rgba(59, 130, 246, 0.4), 0 8px 24px rgba(59, 130, 246, 0.28);
   --shadow-glow-brand: 0 10px 34px rgba(139, 124, 240, 0.28);
+
+  /* Typography tokens */
+  --font-size-2xs: 0.6875rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
+
+  /* Spacing and radius tokens */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+
+  /* Motion tokens */
+  --motion-fast: 120ms;
+  --motion-standard: 180ms;
+  --motion-emphasized: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
   --hero-glow:
     radial-gradient(1100px circle at 12% -10%, rgba(59, 130, 246, 0.2), transparent 60%),
@@ -55,9 +111,11 @@
 
 /* ---- Light theme (existing system, unchanged values) ---- */
 [data-theme="light"] {
+  /* Core color tokens */
   --color-app: 245 245 245;
   --color-surface: 255 255 255;
   --color-surface-elevated: 255 255 255;
+  --color-surface-overlay: 247 249 252;
   --color-border: 215 222 230;
   --color-border-strong: 190 198 209;
 
@@ -71,6 +129,22 @@
   --color-primary-hover: 0 78 158;
   --color-primary-subtle: 234 244 255;
   --color-primary-text: 0 78 158;
+
+  --color-secondary: 18 144 112;
+  --color-secondary-hover: 14 119 93;
+  --color-secondary-subtle: 235 251 246;
+  --color-secondary-text: 14 119 93;
+
+  --color-neutral-50: 248 250 252;
+  --color-neutral-100: 241 245 249;
+  --color-neutral-200: 226 232 240;
+  --color-neutral-300: 203 213 225;
+  --color-neutral-400: 148 163 184;
+  --color-neutral-500: 100 116 139;
+  --color-neutral-600: 71 85 105;
+  --color-neutral-700: 51 65 85;
+  --color-neutral-800: 30 41 59;
+  --color-neutral-900: 15 23 42;
 
   --color-gradient-from: 59 130 246;
   --color-gradient-via: 139 124 240;
@@ -94,8 +168,46 @@
 
   --shadow-card: 0 4px 18px rgba(15, 28, 43, 0.08);
   --shadow-card-hover: 0 8px 28px rgba(15, 28, 43, 0.12);
+  --shadow-elevation-1: 0 4px 14px rgba(15, 28, 43, 0.08);
+  --shadow-elevation-2: 0 8px 24px rgba(15, 28, 43, 0.11);
+  --shadow-elevation-3: 0 14px 38px rgba(15, 28, 43, 0.14);
   --shadow-glow-primary: 0 0 0 1px rgba(0, 102, 204, 0.25), 0 6px 16px rgba(0, 102, 204, 0.15);
   --shadow-glow-brand: 0 8px 22px rgba(139, 124, 240, 0.18);
+
+  /* Typography tokens */
+  --font-size-2xs: 0.6875rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
+
+  /* Spacing and radius tokens */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+
+  /* Motion tokens */
+  --motion-fast: 120ms;
+  --motion-standard: 180ms;
+  --motion-emphasized: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
   --hero-glow: linear-gradient(180deg, #eef5ff 0%, #f5f5f5 32%, #f5f5f5 100%);
 }
@@ -115,7 +227,115 @@ body {
   @apply bg-app text-ink font-sans antialiased;
   background-color: rgb(var(--color-app));
   color: rgb(var(--color-ink));
-  transition: background-color 200ms ease-out, color 200ms ease-out;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  transition: background-color var(--motion-standard) var(--ease-standard), color var(--motion-standard) var(--ease-standard);
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display text-ink;
+    line-height: var(--line-height-tight);
+  }
+
+  h1 {
+    font-size: var(--font-size-3xl);
+    font-weight: 600;
+  }
+
+  h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+  }
+
+  h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+  }
+
+  p {
+    line-height: var(--line-height-relaxed);
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply flex h-screen overflow-hidden bg-app;
+  }
+
+  .app-shell-sidebar {
+    @apply hidden w-60 flex-shrink-0 bg-sidebar px-4 py-6 md:flex;
+  }
+
+  .app-shell-main {
+    @apply no-scrollbar flex-1 overflow-y-auto;
+  }
+
+  .app-page {
+    @apply min-h-full;
+  }
+
+  .app-navbar {
+    @apply border-b border-border bg-surface;
+  }
+
+  .ui-card {
+    @apply rounded-xl border border-border bg-surface shadow-card transition-all duration-200 ease-out;
+  }
+
+  .ui-card:hover {
+    @apply border-border-strong shadow-card-hover;
+  }
+
+  .ui-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none disabled:cursor-not-allowed motion-reduce:transition-none motion-reduce:transform-none;
+  }
+
+  .ui-button-primary {
+    @apply bg-primary text-white shadow-card hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-glow-primary disabled:opacity-70;
+  }
+
+  .ui-button-secondary {
+    @apply border border-border bg-surface-elevated text-ink hover:border-border-strong disabled:opacity-50;
+  }
+
+  .ui-button-danger {
+    @apply bg-danger text-white hover:-translate-y-0.5 hover:bg-danger/90 disabled:opacity-70;
+  }
+
+  .ui-input,
+  .ui-textarea,
+  .ui-select,
+  .ui-search-input {
+    @apply rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted-dim transition-all duration-200 ease-out focus:border-primary focus:shadow-glow-primary motion-reduce:transition-none;
+  }
+
+  .ui-input-error,
+  .ui-textarea-error,
+  .ui-select-error {
+    @apply border-danger;
+  }
+
+  .ui-label {
+    @apply text-xs font-medium uppercase tracking-wide text-muted;
+  }
+
+  .ui-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-elevated px-2.5 py-1 text-xs font-medium;
+  }
+
+  .ui-table-container {
+    @apply rounded-2xl border border-border bg-surface shadow-elevation-1;
+  }
+
+  .ui-modal-panel {
+    @apply rounded-2xl border border-border bg-surface shadow-card-hover;
+  }
 }
 
 /* Keep content scrollable but hide the visible scrollbar track */
@@ -233,15 +453,15 @@ body {
 }
 
 .page-enter {
-  animation: fade-rise 250ms ease-out both;
+  animation: fade-rise var(--motion-emphasized) var(--ease-standard) both;
 }
 
 .empty-enter {
-  animation: fade-rise 250ms ease-out both;
+  animation: fade-rise var(--motion-emphasized) var(--ease-standard) both;
 }
 
 .toast-enter {
-  animation: toast-in 200ms ease-out both;
+  animation: toast-in var(--motion-standard) var(--ease-standard) both;
 }
 
 .toast-progress {
@@ -250,5 +470,5 @@ body {
 }
 
 .modal-panel-enter {
-  animation: modal-in 200ms ease-out both;
+  animation: modal-in var(--motion-standard) var(--ease-standard) both;
 }

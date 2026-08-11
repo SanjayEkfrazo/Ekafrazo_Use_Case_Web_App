@@ -1,0 +1,200 @@
+import { useEffect, useMemo, useState } from "react";
+import { fetchDashboardSummary, fetchUseCases } from "../services/useCaseService";
+
+const DASHBOARD_CACHE_TTL_MS = 60 * 1000;
+let dashboardCache = null;
+
+function normalizeText(value) {
+  return String(value || "").trim();
+}
+
+function parseTechnologyStack(value) {
+  const normalized = normalizeText(value);
+  if (!normalized) {
+    return [];
+  }
+
+  return normalized
+    .split(/[,;|\n]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function parseDate(value) {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = new Date(String(value).replace(" ", "T")).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+async function fetchAllUseCasesForDashboard() {
+  const pageSize = 100;
+  let currentPage = 1;
+  let totalPages = 1;
+  const collected = [];
+
+  do {
+    const response = await fetchUseCases({
+      page: currentPage,
+      limit: pageSize,
+      search: "",
+      domain: "",
+      sortBy: "updated_at",
+      sortOrder: "desc",
+    });
+
+    collected.push(...(response?.data || []));
+    totalPages = response?.pagination?.totalPages || 1;
+    currentPage += 1;
+  } while (currentPage <= totalPages);
+
+  return collected;
+}
+
+export function useDashboardData(showToast) {
+  const cacheIsFresh = dashboardCache && Date.now() - dashboardCache.timestamp < DASHBOARD_CACHE_TTL_MS;
+  const [summary, setSummary] = useState(cacheIsFresh ? dashboardCache.summary : null);
+  const [allUseCases, setAllUseCases] = useState(cacheIsFresh ? dashboardCache.allUseCases : []);
+  const [isLoading, setIsLoading] = useState(!cacheIsFresh);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadSummary() {
+      if (dashboardCache && Date.now() - dashboardCache.timestamp < DASHBOARD_CACHE_TTL_MS) {
+        setSummary(dashboardCache.summary);
+        setAllUseCases(dashboardCache.allUseCases);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const [summaryResponse, allUseCasesData] = await Promise.all([
+          fetchDashboardSummary(),
+          fetchAllUseCasesForDashboard(),
+        ]);
+
+        if (isCancelled) {
+          return;
+        }
+
+        const nextSummary = summaryResponse.data || {};
+        setSummary(nextSummary);
+        setAllUseCases(allUseCasesData);
+        dashboardCache = {
+          timestamp: Date.now(),
+          summary: nextSummary,
+          allUseCases: allUseCasesData,
+        };
+      } catch (error) {
+        if (!isCancelled) {
+          showToast(error.message || "Failed to load dashboard data", "error");
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadSummary();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [showToast]);
+
+  return useMemo(() => {
+    const items = allUseCases;
+
+    const domainMap = new Map();
+    const clientSet = new Set();
+    const technologyMap = new Map();
+
+    let missingDeploymentCount = 0;
+    let missingPresentationCount = 0;
+    let missingImageCount = 0;
+    let incompleteRecordsCount = 0;
+
+    items.forEach((item) => {
+      const domain = normalizeText(item.domain);
+      const client = normalizeText(item.client_name);
+      const deploymentUrl = normalizeText(item.deployment_url);
+      const resourceUrl = normalizeText(item.resource_url);
+      const imageUrl = normalizeText(item.domain_image_url);
+
+      if (domain) {
+        domainMap.set(domain, (domainMap.get(domain) || 0) + 1);
+      }
+      if (client) {
+        clientSet.add(client.toLowerCase());
+      }
+
+      parseTechnologyStack(item.technology_stack).forEach((techName) => {
+        technologyMap.set(techName, (technologyMap.get(techName) || 0) + 1);
+      });
+
+      if (!deploymentUrl) {
+        missingDeploymentCount += 1;
+      }
+      if (!resourceUrl) {
+        missingPresentationCount += 1;
+      }
+      if (!imageUrl) {
+        missingImageCount += 1;
+      }
+
+      const hasCoreGaps = ["title", "description", "domain", "client_name", "technology_stack"]
+        .some((field) => !normalizeText(item[field]));
+      if (hasCoreGaps || !deploymentUrl || !resourceUrl || !imageUrl) {
+        incompleteRecordsCount += 1;
+      }
+    });
+
+    const domainDistribution = Array.from(domainMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+    const technologyDistribution = Array.from(technologyMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+    const totalUseCases = summary?.total ?? items.length;
+    const uniqueDomainCount = summary?.uniqueDomainCount ?? domainDistribution.length;
+    const withDeploymentUrlCount = summary?.withDeploymentUrlCount ?? items.length - missingDeploymentCount;
+    const withResourceUrlCount = summary?.withResourceUrlCount ?? items.length - missingPresentationCount;
+
+    const needsAttention = summary?.needsAttention?.length
+      ? summary.needsAttention
+      : items
+          .filter((item) => !normalizeText(item.deployment_url) || !normalizeText(item.resource_url))
+          .slice(0, 5);
+
+    const recentlyCreated = [...items]
+      .sort((a, b) => parseDate(b.created_at || b.updated_at) - parseDate(a.created_at || a.updated_at))
+      .slice(0, 8);
+
+    return {
+      isLoading,
+      totalUseCases,
+      uniqueDomainCount,
+      clientCount: clientSet.size,
+      withDeploymentUrlCount,
+      withResourceUrlCount,
+      technologyCount: technologyDistribution.length,
+      domainDistribution,
+      technologyDistribution,
+      recentlyUpdated: summary?.recentlyUpdated || items.slice(0, 6),
+      recentlyCreated,
+      needsAttention,
+      healthCounts: {
+        missingDeploymentCount,
+        missingPresentationCount,
+        missingImageCount,
+        incompleteRecordsCount,
+      },
+    };
+  }, [allUseCases, isLoading, summary]);
+}
