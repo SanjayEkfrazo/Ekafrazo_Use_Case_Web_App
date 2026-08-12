@@ -28,6 +28,30 @@ const REVIEW_LABELS = {
   incomplete: "Details Incomplete",
 };
 
+const QUICK_PRESETS = [
+  { id: "all", label: "All Records", review: "" },
+  { id: "deployment", label: "Missing Demo", review: "deployment" },
+  { id: "presentation", label: "Missing Presentation", review: "presentation" },
+  { id: "image", label: "Missing Image", review: "image" },
+  { id: "incomplete", label: "Incomplete", review: "incomplete" },
+];
+
+function getInitialViewMode() {
+  const saved = localStorage.getItem("usecase:list:viewMode");
+  return saved === "table" ? "table" : "card";
+}
+
+function getInitialQuickPreset(initialReview) {
+  if (initialReview && REVIEW_KINDS.has(initialReview)) {
+    return initialReview;
+  }
+  const saved = localStorage.getItem("usecase:list:quickPreset");
+  if (saved === "all" || REVIEW_KINDS.has(saved)) {
+    return saved;
+  }
+  return "all";
+}
+
 function toPositiveNumberOrFallback(value, fallback) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -90,7 +114,10 @@ function UseCaseList() {
   const initialClient = searchParams.get("client") || ALL_CLIENTS;
   const initialPage = toPositiveNumberOrFallback(searchParams.get("page"), 1);
   const reviewFromParams = (searchParams.get("review") || "").trim();
-  const initialReview = REVIEW_KINDS.has(reviewFromParams) ? reviewFromParams : "";
+  const savedQuickPreset = localStorage.getItem("usecase:list:quickPreset") || "";
+  const initialReview = REVIEW_KINDS.has(reviewFromParams)
+    ? reviewFromParams
+    : (REVIEW_KINDS.has(savedQuickPreset) ? savedQuickPreset : "");
 
   const [useCases, setUseCases] = useState([]);
   const [domains, setDomains] = useState([]);
@@ -107,6 +134,8 @@ function UseCaseList() {
   const [passcode, setPasscode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [listMotionDirection, setListMotionDirection] = useState(1);
+  const [viewMode, setViewMode] = useState(getInitialViewMode);
+  const [quickPreset, setQuickPreset] = useState(() => getInitialQuickPreset(initialReview));
   const handledToastLocationKeyRef = useRef(null);
 
   const navigate = useNavigate();
@@ -228,6 +257,22 @@ function UseCaseList() {
   }, [search, selectedDomain, selectedClient, page, reviewFilter, setSearchParams]);
 
   useEffect(() => {
+    localStorage.setItem("usecase:list:viewMode", viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    localStorage.setItem("usecase:list:quickPreset", quickPreset);
+  }, [quickPreset]);
+
+  useEffect(() => {
+    if (reviewFilter) {
+      setQuickPreset(reviewFilter);
+      return;
+    }
+    setQuickPreset("all");
+  }, [reviewFilter]);
+
+  useEffect(() => {
     const toast = location.state?.toast;
     if (!toast?.message) {
       return;
@@ -291,6 +336,18 @@ function UseCaseList() {
     if (kind === "review") {
       setReviewFilter("");
     }
+    setPage(1);
+  };
+
+  const handleQuickPreset = (presetId) => {
+    const preset = QUICK_PRESETS.find((item) => item.id === presetId);
+    if (!preset) {
+      return;
+    }
+
+    setListMotionDirection(1);
+    setQuickPreset(preset.id);
+    setReviewFilter(preset.review);
     setPage(1);
   };
 
@@ -396,6 +453,24 @@ function UseCaseList() {
               </div>
 
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                <div className="inline-flex rounded-lg border border-border bg-surface-elevated p-1">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("card")}
+                    aria-pressed={viewMode === "card"}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "card" ? "bg-surface text-ink shadow-elevation-1" : "text-muted hover:text-ink"}`}
+                  >
+                    Card
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("table")}
+                    aria-pressed={viewMode === "table"}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "table" ? "bg-surface text-ink shadow-elevation-1" : "text-muted hover:text-ink"}`}
+                  >
+                    Table
+                  </button>
+                </div>
                 {hasActiveFilters && (
                   <Button disableMotion variant="secondary" className="w-full px-3 py-2 text-xs sm:w-auto hover:!translate-y-0" onClick={handleResetFilters}>
                     Clear Filters
@@ -413,6 +488,19 @@ function UseCaseList() {
                 {reviewFilter ? ` • Filter: ${REVIEW_LABELS[reviewFilter]}` : ""}
               </p>
               <p>Page {pagination.currentPage} of {pagination.totalPages}</p>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {QUICK_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => handleQuickPreset(preset.id)}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200 ${quickPreset === preset.id ? "border-primary/55 bg-primary-light text-primary-text shadow-elevation-1" : "border-border bg-surface-elevated text-muted hover:border-border-strong hover:text-ink"}`}
+                >
+                  {preset.label}
+                </button>
+              ))}
             </div>
 
             {hasActiveFilters && (
@@ -483,6 +571,7 @@ function UseCaseList() {
                 useCases={useCases}
                 transitionKey={listTransitionKey}
                 direction={listMotionDirection}
+                viewMode={viewMode}
               />
               <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} onPageChange={handlePageChange} />
             </>

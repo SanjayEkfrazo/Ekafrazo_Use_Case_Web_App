@@ -13,6 +13,74 @@ import {
 import { fetchDomainMedia, prefetchUseCaseById } from "../services/useCaseService";
 import ImageCarousel from "./ImageCarousel";
 
+function UseCaseDenseTable({ preparedUseCases, direction, reduceMotion, onOpen }) {
+  const handleRowKeyDown = (event, id) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onOpen(id);
+    }
+  };
+
+  return (
+    <motion.div
+      className="ui-table-container overflow-hidden"
+      initial={reduceMotion ? false : { opacity: 0, x: direction > 0 ? 10 : -10 }}
+      animate={reduceMotion ? {} : { opacity: 1, x: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } }}
+      exit={reduceMotion ? {} : { opacity: 0, x: direction > 0 ? -12 : 12, transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] } }}
+    >
+      <div className="max-h-[68vh] overflow-auto">
+        <table className="min-w-full table-fixed border-collapse">
+          <thead className="border-b border-border-strong bg-surface-elevated/95">
+            <tr>
+              <th className="sticky top-0 z-20 font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Title</th>
+              <th className="sticky top-0 z-20 font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Domain</th>
+              <th className="sticky top-0 z-20 font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Client</th>
+              <th className="sticky top-0 z-20 font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Updated</th>
+              <th className="sticky top-0 z-20 font-display px-4 py-3 text-right text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {preparedUseCases.map((item, index) => (
+              <tr
+                key={item.raw.id}
+                tabIndex={0}
+                role="button"
+                aria-label={`Open use case ${item.title}`}
+                onClick={() => onOpen(item.raw.id)}
+                onKeyDown={(event) => handleRowKeyDown(event, item.raw.id)}
+                onMouseEnter={() => {
+                  prefetchUseCaseById(item.raw.id);
+                }}
+                className={`cursor-pointer border-b border-border/80 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${index % 2 === 0 ? "bg-surface" : "bg-surface-elevated/35"} hover:bg-primary-light/35`}
+              >
+                <td className="max-w-[360px] px-4 py-3 text-ink">
+                  <p className="line-clamp-1 font-semibold">{item.title}</p>
+                  <p className="mt-0.5 line-clamp-1 text-xs text-muted">{item.description}</p>
+                </td>
+                <td className="px-4 py-3 text-ink">{item.domain}</td>
+                <td className="px-4 py-3 text-ink">{item.client}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-muted">{item.updatedLabel}</td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpen(item.raw.id);
+                    }}
+                    className="rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong"
+                  >
+                    Open
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </motion.div>
+  );
+}
+
 function UseCaseCard({
   item,
   index,
@@ -104,7 +172,7 @@ function UseCaseCard({
               images={domainImages}
               altBase={`${item.domain} visual`}
               className="h-full"
-              autoPlayMs={2000}
+              autoPlayMs={5000}
               syncStep={syncStep}
             />
           ) : (
@@ -152,14 +220,19 @@ function UseCaseCard({
   );
 }
 
-function Table({ useCases, transitionKey = "default", direction = 1 }) {
+function Table({ useCases, transitionKey = "default", direction = 1, viewMode = "card" }) {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const [domainMediaByDomain, setDomainMediaByDomain] = useState({});
   const [syncStep, setSyncStep] = useState(0);
+  const isCardMode = viewMode !== "table";
 
   useEffect(() => {
-    const periodMs = 2000;
+    if (!isCardMode) {
+      return undefined;
+    }
+
+    const periodMs = 5000;
 
     let intervalId;
     let timeoutId;
@@ -184,11 +257,16 @@ function Table({ useCases, transitionKey = "default", direction = 1 }) {
       clearTimeout(timeoutId);
       clearInterval(intervalId);
     };
-  }, []);
+  }, [isCardMode]);
 
   const domainKey = (value) => String(value || "").trim().toLowerCase();
 
   useEffect(() => {
+    if (!isCardMode) {
+      setDomainMediaByDomain({});
+      return undefined;
+    }
+
     let isCancelled = false;
 
     async function loadDomainMedia() {
@@ -251,7 +329,7 @@ function Table({ useCases, transitionKey = "default", direction = 1 }) {
     return () => {
       isCancelled = true;
     };
-  }, [useCases]);
+  }, [isCardMode, useCases]);
 
   const openUseCaseDetails = (id) => {
     navigate(`/use-cases/${id}`);
@@ -316,30 +394,40 @@ function Table({ useCases, transitionKey = "default", direction = 1 }) {
 
   return (
     <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={transitionKey}
-        className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
-        initial={reduceMotion ? false : { opacity: 0, x: direction > 0 ? 10 : -10 }}
-        animate={reduceMotion ? {} : { opacity: 1, x: 0, transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] } }}
-        exit={reduceMotion ? {} : { opacity: 0, x: direction > 0 ? -12 : 12, transition: { duration: 0.16, ease: [0.22, 1, 0.36, 1] } }}
-      >
-        {preparedUseCases.map((item, index) => (
-          <UseCaseCard
-            key={item.raw.id}
-            item={item}
-            index={index}
-            direction={direction}
-            reduceMotion={reduceMotion}
-            syncStep={syncStep}
-            domainImages={domainMediaByDomain[item.domainKey]}
-            toInitials={toInitials}
-            truncate={truncate}
-            onPrefetch={prefetchUseCaseById}
-            onOpen={openUseCaseDetails}
-            onKeyOpen={handleCardKeyDown}
-          />
-        ))}
-      </motion.div>
+      {isCardMode ? (
+        <motion.div
+          key={transitionKey}
+          className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
+          initial={reduceMotion ? false : { opacity: 0, x: direction > 0 ? 10 : -10 }}
+          animate={reduceMotion ? {} : { opacity: 1, x: 0, transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] } }}
+          exit={reduceMotion ? {} : { opacity: 0, x: direction > 0 ? -12 : 12, transition: { duration: 0.16, ease: [0.22, 1, 0.36, 1] } }}
+        >
+          {preparedUseCases.map((item, index) => (
+            <UseCaseCard
+              key={item.raw.id}
+              item={item}
+              index={index}
+              direction={direction}
+              reduceMotion={reduceMotion}
+              syncStep={syncStep}
+              domainImages={domainMediaByDomain[item.domainKey]}
+              toInitials={toInitials}
+              truncate={truncate}
+              onPrefetch={prefetchUseCaseById}
+              onOpen={openUseCaseDetails}
+              onKeyOpen={handleCardKeyDown}
+            />
+          ))}
+        </motion.div>
+      ) : (
+        <UseCaseDenseTable
+          key={transitionKey}
+          preparedUseCases={preparedUseCases}
+          direction={direction}
+          reduceMotion={reduceMotion}
+          onOpen={openUseCaseDetails}
+        />
+      )}
     </AnimatePresence>
   );
 }

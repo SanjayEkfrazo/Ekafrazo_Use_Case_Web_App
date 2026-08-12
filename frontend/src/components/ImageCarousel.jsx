@@ -63,6 +63,30 @@ function ImageCarousel({
     return () => clearInterval(timer);
   }, [autoPlayMs, visibleImages.length, isHovering, isFocused, isSyncControlled]);
 
+  useEffect(() => {
+    if (visibleImages.length <= 1) {
+      return;
+    }
+
+    const currentIndex = isSyncControlled
+      ? ((Math.floor(syncStep) % visibleImages.length) + visibleImages.length) % visibleImages.length
+      : Math.min(activeIndex, visibleImages.length - 1);
+
+    const nextIndex = (currentIndex + 1) % visibleImages.length;
+    const previousIndex = (currentIndex - 1 + visibleImages.length) % visibleImages.length;
+
+    [nextIndex, previousIndex].forEach((index) => {
+      const url = visibleImages[index]?.url;
+      if (!url) {
+        return;
+      }
+
+      const preloaded = new Image();
+      preloaded.decoding = "async";
+      preloaded.src = url;
+    });
+  }, [activeIndex, isSyncControlled, syncStep, visibleImages]);
+
   if (visibleImages.length === 0) {
     return null;
   }
@@ -99,18 +123,18 @@ function ImageCarousel({
         />
       )}
 
-      <AnimatePresence mode="wait" initial={false} custom={navDirection}>
+      <AnimatePresence mode="sync" initial={false} custom={navDirection}>
         <motion.img
           key={`${visibleImages[displayIndex].url}-${displayIndex}`}
           custom={navDirection}
           src={visibleImages[displayIndex].url}
           alt={`${altBase} ${displayIndex + 1} of ${visibleImages.length}`}
           className={`absolute inset-0 h-full w-full object-cover ${imageClassName}`}
-          loading="lazy"
+          loading="eager"
           decoding="async"
-          initial={reduceMotion ? false : { opacity: 0, x: navDirection * 42, scale: 1.03 }}
-          animate={reduceMotion ? {} : { opacity: 1, x: 0, scale: 1, transition: { duration: motionTokens.standard, ease: motionTokens.ease } }}
-          exit={reduceMotion ? {} : { opacity: 0, x: navDirection * -30, scale: 1.015, transition: { duration: motionTokens.fast, ease: motionTokens.ease } }}
+          initial={reduceMotion ? false : { opacity: 0, scale: 1.01 }}
+          animate={reduceMotion ? {} : { opacity: 1, scale: 1, transition: { duration: motionTokens.fast, ease: motionTokens.ease } }}
+          exit={reduceMotion ? {} : { opacity: 0, scale: 1.005, transition: { duration: motionTokens.fast, ease: motionTokens.ease } }}
           onError={() => {
             const sourceIndex = visibleImages[displayIndex]?.sourceIndex;
             if (sourceIndex === undefined) {

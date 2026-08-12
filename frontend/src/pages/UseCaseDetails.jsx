@@ -203,7 +203,7 @@ function UseCaseDetails() {
                         images={domainImages}
                         altBase={`${normalize(useCase.domain) || "Domain"} visual`}
                         className="h-full w-full"
-                        autoPlayMs={2000}
+                        autoPlayMs={5000}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-surface text-sm font-medium text-muted">
