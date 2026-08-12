@@ -28,6 +28,13 @@ pnpm-debug.log*
 *.sqlite
 *.sqlite3
 
+# Generated uploads (keep folder structure, ignore runtime media)
+backend/uploads/domain-gallery/*
+backend/uploads/domain-images/*
+!backend/uploads/domain-gallery/.gitkeep
+!backend/uploads/domain-images/.gitkeep
+!backend/uploads/README.md
+
 # IDE and OS files
 .DS_Store
 Thumbs.db

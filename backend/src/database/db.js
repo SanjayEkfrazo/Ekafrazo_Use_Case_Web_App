@@ -29,6 +29,18 @@ const createTableQuery = `
 
 db.exec(createTableQuery);
 
+const createDomainMediaTableQuery = `
+  CREATE TABLE IF NOT EXISTS domain_media (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    domain TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`;
+
+db.exec(createDomainMediaTableQuery);
+
 function ensureColumn(columnName, columnDefinition) {
   const columns = db.prepare("PRAGMA table_info(use_cases)").all();
   const exists = columns.some((column) => column.name === columnName);

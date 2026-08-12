@@ -10,6 +10,7 @@ const UseCaseList = lazy(() => import("../pages/UseCaseList"));
 const UseCaseCreate = lazy(() => import("../pages/UseCaseCreate"));
 const UseCaseEdit = lazy(() => import("../pages/UseCaseEdit"));
 const UseCaseDetails = lazy(() => import("../pages/UseCaseDetails"));
+const DomainMediaManager = lazy(() => import("../pages/DomainMediaManager"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 function AppRoutes() {
@@ -31,6 +32,7 @@ function AppRoutes() {
         <Route element={<AdminRoute />}>
           <Route path="/use-cases/new" element={<UseCaseCreate />} />
           <Route path="/use-cases/:id/edit" element={<UseCaseEdit />} />
+          <Route path="/domain-media" element={<DomainMediaManager />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

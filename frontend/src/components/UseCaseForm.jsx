@@ -1,7 +1,5 @@
-// Shared form used by both the Create and Edit pages
-// Receives initial values and a submit handler as props
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Loader2, X } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import CreatableSelect from "react-select/creatable";
 import FormInput from "./FormInput";
 import FormTextarea from "./FormTextarea";
@@ -27,7 +25,6 @@ const requiredFields = [
   { key: "title", label: "Title" },
   { key: "description", label: "Description" },
   { key: "domain", label: "Domain" },
-  { key: "domain_image_url", label: "Domain image" },
   { key: "client_name", label: "Client" },
   { key: "technology_stack", label: "Technology" },
   { key: "deployment_url", label: "Deployment" },
@@ -35,8 +32,15 @@ const requiredFields = [
 ];
 
 function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabel = "Save Use Case" }) {
-  const [values, setValues] = useState({ ...emptyForm, ...initialValues });
+  const [values, setValues] = useState({ ...emptyForm, ...initialValues, domain_image_url: "" });
   const [existingDomains, setExistingDomains] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitPhase, setSubmitPhase] = useState("idle");
+  const [submitError, setSubmitError] = useState("");
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
   const normalizeDomain = (value) => String(value || "").trim().toLowerCase();
 
   const domainOptions = useMemo(() => {
@@ -58,11 +62,11 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
     });
 
     merged.sort((a, b) => a.label.localeCompare(b.label));
-
     return merged;
   }, [existingDomains]);
 
   const knownDomainValues = domainOptions.map((option) => option.value);
+
   const findDomainMatch = (domainValue) => {
     const normalized = normalizeDomain(domainValue);
     if (!normalized) {
@@ -70,22 +74,6 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
     }
     return knownDomainValues.find((domain) => normalizeDomain(domain) === normalized) || "";
   };
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitPhase, setSubmitPhase] = useState("idle");
-  const [submitError, setSubmitError] = useState("");
-  const [selectedDomainImageFile, setSelectedDomainImageFile] = useState(null);
-  const [selectedDomainImagePreviewUrl, setSelectedDomainImagePreviewUrl] = useState("");
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      if (selectedDomainImagePreviewUrl) {
-        URL.revokeObjectURL(selectedDomainImagePreviewUrl);
-      }
-    };
-  }, [selectedDomainImagePreviewUrl]);
 
   useEffect(() => {
     async function loadDomains() {
@@ -135,31 +123,6 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
     return "";
   };
 
-  const validateDomainImageValue = (nextValues = values, nextFile = selectedDomainImageFile) => {
-    const imageUrl = String(nextValues.domain_image_url || "").trim();
-
-    if (!imageUrl && !nextFile) {
-      return "Domain image is required";
-    }
-
-    if (imageUrl) {
-      const urlError = validateUseCaseField("domain_image_url", imageUrl);
-      if (urlError) {
-        return urlError;
-      }
-    }
-
-    if (nextFile && (!nextFile.type || !nextFile.type.startsWith("image/"))) {
-      return "Only image files are allowed";
-    }
-
-    if (nextFile && nextFile.size > 5 * 1024 * 1024) {
-      return "Image must be 5MB or smaller";
-    }
-
-    return "";
-  };
-
   const setFieldTouched = (field) => {
     setTouched((current) => ({ ...current, [field]: true }));
   };
@@ -171,18 +134,11 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
       return;
     }
 
-    if (field === "domain_image_url") {
-      const imageError = validateDomainImageValue(nextValues);
-      setErrors((current) => ({ ...current, domain_image_url: imageError || undefined }));
-      return;
-    }
-
     const fieldValue = nextValues[field];
     const fieldError = validateUseCaseField(field, fieldValue);
     setErrors((current) => ({ ...current, [field]: fieldError || undefined }));
   };
 
-  // Update a single field as the user types
   const handleChange = (event) => {
     const { name, value } = event.target;
     setValues((current) => {
@@ -202,7 +158,6 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
     }
   };
 
-  // Keep domain canonical when users create or type values with different case.
   const handleDomainChange = (selectedOption) => {
     const nextRawValue = selectedOption?.value || "";
     const canonicalDomain = findDomainMatch(nextRawValue);
@@ -225,71 +180,32 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
     }
   };
 
-  const handleDomainImageUpload = (event) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-
-    if (!file) {
+  const focusFirstErrorField = (validationErrors) => {
+    const firstErrorField = requiredFields.find((field) => validationErrors[field.key])?.key;
+    if (!firstErrorField) {
       return;
     }
 
-    setFieldTouched("domain_image_url");
-    setSelectedDomainImageFile(file);
-    setSubmitError("");
-
-    if (selectedDomainImagePreviewUrl) {
-      URL.revokeObjectURL(selectedDomainImagePreviewUrl);
-    }
-
-    const previewUrl = URL.createObjectURL(file);
-    setSelectedDomainImagePreviewUrl(previewUrl);
-
-    if (hasSubmitted) {
-      const imageError = validateDomainImageValue(values, file);
-      setErrors((current) => ({ ...current, domain_image_url: imageError || undefined }));
-    } else {
-      setErrors((current) => ({ ...current, domain_image_url: undefined }));
+    const element = document.getElementById(firstErrorField);
+    if (element) {
+      element.focus();
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   };
 
-  const handleRemoveDomainImage = () => {
-    if (selectedDomainImagePreviewUrl) {
-      URL.revokeObjectURL(selectedDomainImagePreviewUrl);
-    }
-    setSelectedDomainImagePreviewUrl("");
-    setSelectedDomainImageFile(null);
-    setSubmitError("");
-    setFieldTouched("domain_image_url");
-    setValues((current) => ({ ...current, domain_image_url: "" }));
-    if (hasSubmitted) {
-      const imageError = validateDomainImageValue({ ...values, domain_image_url: "" }, null);
-      setErrors((current) => ({ ...current, domain_image_url: imageError || undefined }));
-      return;
-    }
-    setErrors((current) => ({ ...current, domain_image_url: undefined }));
-  };
-
-  // Validate and submit the form
   const handleSubmit = async (event) => {
     event.preventDefault();
     setHasSubmitted(true);
     const payload = {
       ...values,
       domain: (values.domain || "").trim(),
-      domain_image_url: (values.domain_image_url || "").trim(),
+      domain_image_url: "",
     };
 
     const validationErrors = validateUseCaseForm(payload);
-    const domainError = validateDomainValue();
+    const domainError = validateDomainValue(payload.domain);
     if (domainError) {
       validationErrors.domain = domainError;
-    }
-
-    const domainImageError = validateDomainImageValue(payload, selectedDomainImageFile);
-    if (domainImageError) {
-      validationErrors.domain_image_url = domainImageError;
-    } else {
-      delete validationErrors.domain_image_url;
     }
 
     setErrors(validationErrors);
@@ -297,7 +213,6 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
       title: true,
       description: true,
       domain: true,
-      domain_image_url: true,
       client_name: true,
       technology_stack: true,
       deployment_url: true,
@@ -312,45 +227,20 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
     setIsSubmitting(true);
     setSubmitError("");
     try {
-      setSubmitPhase(selectedDomainImageFile ? "uploading" : "saving");
-      await onSubmit(payload, { domainImageFile: selectedDomainImageFile, setSubmitPhase });
+      setSubmitPhase("saving");
+      await onSubmit(payload, { setSubmitPhase });
     } catch (error) {
       const message = String(error?.message || "Failed to save use case");
       setSubmitError(message);
-
-      if (selectedDomainImageFile) {
-        setErrors((current) => ({
-          ...current,
-          domain_image_url: `Image upload failed: ${message}`,
-        }));
-      }
     } finally {
       setSubmitPhase("idle");
       setIsSubmitting(false);
     }
   };
 
-  const effectiveDomainImagePreviewUrl = selectedDomainImagePreviewUrl || String(values.domain_image_url || "").trim();
   const completedRequiredCount = requiredFields.reduce((count, field) => {
-    if (field.key === "domain_image_url") {
-      return effectiveDomainImagePreviewUrl ? count + 1 : count;
-    }
     return String(values[field.key] || "").trim() ? count + 1 : count;
   }, 0);
-
-  const focusFirstErrorField = (validationErrors) => {
-    const firstErrorField = requiredFields.find((field) => validationErrors[field.key])?.key;
-    if (!firstErrorField) {
-      return;
-    }
-
-    const targetId = firstErrorField === "domain_image_url" ? "domain_image" : firstErrorField;
-    const element = document.getElementById(targetId);
-    if (element) {
-      element.focus();
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -524,62 +414,8 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
           </div>
 
           <div className="rounded-xl border border-border bg-surface-elevated p-3">
-            <h3 className="font-display text-base font-semibold text-ink">Media</h3>
-            <p className="mt-1 text-xs text-muted">Upload a domain image and verify preview before saving.</p>
-            <ul className="mt-2 space-y-1 text-xs text-muted">
-              <li>Accepted: image files only (JPG, PNG, WEBP, GIF)</li>
-              <li>Maximum size: 5MB</li>
-              <li>If upload fails, a clear error will appear below this field</li>
-            </ul>
-            <div className="mt-2.5 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
-              <div className="rounded-xl border-2 border-dashed border-border bg-surface px-3 py-3 transition-all duration-200 hover:border-primary hover:bg-primary-light motion-reduce:transition-none">
-                <input
-                  id="domain_image"
-                  name="domain_image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleDomainImageUpload}
-                  disabled={isSubmitting}
-                  className="block w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-solid hover:file:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
-                />
-                {selectedDomainImageFile && <p className="mt-2 text-xs text-muted">Selected image will upload on save.</p>}
-                {selectedDomainImageFile && !errors.domain_image_url && (
-                  <p className="mt-1 text-xs text-success-text">
-                    Ready to upload: {selectedDomainImageFile.name} ({(selectedDomainImageFile.size / (1024 * 1024)).toFixed(2)} MB)
-                  </p>
-                )}
-                {errors.domain_image_url && (
-                  <p className="mt-2 inline-flex items-center gap-1 text-xs text-danger-text">
-                    <AlertTriangle size={12} /> {errors.domain_image_url}
-                  </p>
-                )}
-              </div>
-
-              {effectiveDomainImagePreviewUrl && !errors.domain_image_url && (
-                <div className="relative inline-flex w-fit">
-                  <img
-                    src={effectiveDomainImagePreviewUrl}
-                    alt="Domain"
-                    className="h-28 w-28 rounded-lg border border-border object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveDomainImage}
-                    aria-label="Remove selected image"
-                    className="absolute -right-2 -top-2 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface-elevated text-danger-text transition-colors duration-200 hover:bg-danger-light"
-                  >
-                    <X size={13} />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-surface-elevated p-3 xl:col-span-2">
             <h3 className="font-display text-base font-semibold text-ink">Resources</h3>
-            <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-2 [&_input]:py-1.5">
+            <div className="mt-2.5 grid grid-cols-1 gap-2 [&_input]:py-1.5">
               <FormInput
                 label="Live Demo URL"
                 name="deployment_url"
@@ -605,7 +441,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-end gap-2.5 border-t border-border pt-3">
-          {submitError && !errors.domain_image_url && (
+          {submitError && (
             <p className="mr-auto inline-flex items-center gap-1 text-xs text-danger-text">
               <AlertTriangle size={12} /> {submitError}
             </p>

@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const usecaseRoutes = require("./routes/usecase.routes");
+const domainMediaRoutes = require("./routes/domainMedia.routes");
 const authRoutes = require("./routes/auth.routes");
 const { errorHandler, notFoundHandler } = require("./middlewares/errorHandler");
 const { CLIENT_ORIGIN } = require("./config/server.config");
@@ -30,6 +31,7 @@ app.get("/api/health", (req, res) => {
 // Mount use case routes under /api/usecases
 app.use("/api/auth", authRoutes);
 app.use("/api/usecases", usecaseRoutes);
+app.use("/api/domain-media", domainMediaRoutes);
 
 // Handle unknown routes and unexpected errors
 app.use(notFoundHandler);

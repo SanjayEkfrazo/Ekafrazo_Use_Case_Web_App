@@ -9,7 +9,6 @@ function validateUseCase(data) {
     "title",
     "description",
     "domain",
-    "domain_image_url",
     "deployment_url",
     "resource_url",
     "client_name",
@@ -33,10 +32,6 @@ function validateUseCase(data) {
 
   if (data.resource_url && !/^https?:\/\//i.test(String(data.resource_url).trim())) {
     errors.push("resource url must start with http:// or https://");
-  }
-
-  if (data.domain_image_url && !/^https?:\/\//i.test(String(data.domain_image_url).trim())) {
-    errors.push("domain image url must start with http:// or https://");
   }
 
   return errors;

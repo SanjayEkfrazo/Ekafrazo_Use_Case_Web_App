@@ -5,7 +5,8 @@ import Loader from "../components/Loader";
 import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Navbar from "../components/Navbar";
-import { fetchUseCaseById, deleteUseCase } from "../services/useCaseService";
+import ImageCarousel from "../components/ImageCarousel";
+import { fetchUseCaseById, deleteUseCase, fetchDomainMedia } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
 
@@ -19,7 +20,7 @@ function UseCaseDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isDomainImageBroken, setIsDomainImageBroken] = useState(false);
+  const [domainImages, setDomainImages] = useState([]);
 
   const formatDate = (value) => {
     const date = new Date(value);
@@ -86,20 +87,49 @@ function UseCaseDetails() {
   };
 
   useEffect(() => {
+    let isCancelled = false;
+
     async function loadUseCase() {
       try {
         const response = await fetchUseCaseById(id);
-        setUseCase(response.data);
-        setIsDomainImageBroken(false);
+        const data = response.data;
+        if (isCancelled) {
+          return;
+        }
+
+        setUseCase(data);
+        const currentDomain = String(data?.domain || "").trim();
+
+        if (currentDomain) {
+          try {
+            const mediaResponse = await fetchDomainMedia({ domain: currentDomain });
+            if (!isCancelled) {
+              setDomainImages((mediaResponse?.data || []).map((item) => String(item.image_url || "").trim()).filter(Boolean));
+            }
+          } catch (_error) {
+            if (!isCancelled) {
+              setDomainImages([]);
+            }
+          }
+        } else {
+          setDomainImages([]);
+        }
+
       } catch (error) {
         showToast(error.message, "error");
         navigate("/use-cases");
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     }
 
     loadUseCase();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [id, navigate, showToast]);
 
   const deploymentUrl = normalize(useCase?.deployment_url);
@@ -152,6 +182,21 @@ function UseCaseDetails() {
 
               <div className="space-y-4 p-4 md:p-5">
                 <header className="rounded-xl border border-border bg-surface-elevated p-4 md:p-5">
+                  <div className="mb-4 h-56 w-full md:h-72">
+                    {domainImages.length > 0 ? (
+                      <ImageCarousel
+                        images={domainImages}
+                        altBase={`${normalize(useCase.domain) || "Domain"} visual`}
+                        className="h-full w-full"
+                        autoPlayMs={2000}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-surface text-sm font-medium text-muted">
+                        {`No image added yet • ${toInitials(useCase.domain)}`}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
                     <div className="min-w-0">
                       <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">Case Study</p>
@@ -283,25 +328,6 @@ function UseCaseDetails() {
                   </div>
                 </section>
 
-                <section className="rounded-xl border border-border bg-surface-elevated p-4">
-                  <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Domain Visual</h3>
-                  {normalize(useCase.domain_image_url) && !isDomainImageBroken ? (
-                    <a href={normalize(useCase.domain_image_url)} target="_blank" rel="noreferrer" className="mt-2.5 block">
-                      <img
-                        src={normalize(useCase.domain_image_url)}
-                        alt={`${normalize(useCase.domain) || "Domain"} visual`}
-                        className="h-56 w-full rounded-xl border border-border object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        onError={() => setIsDomainImageBroken(true)}
-                      />
-                    </a>
-                  ) : (
-                    <div className="mt-2.5 flex h-56 w-full items-center justify-center rounded-lg border border-border bg-surface text-sm font-medium text-muted">
-                      {normalize(useCase.domain_image_url) ? `Image not available • ${toInitials(useCase.domain)}` : "No image added yet"}
-                    </div>
-                  )}
-                </section>
               </div>
             </section>
           )}

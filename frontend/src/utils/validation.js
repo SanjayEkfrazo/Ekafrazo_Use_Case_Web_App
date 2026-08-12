@@ -4,13 +4,12 @@
 export function validateUseCaseField(field, rawValue) {
   const value = typeof rawValue === "string" ? rawValue.trim() : rawValue;
 
-  if (["title", "description", "domain", "domain_image_url", "deployment_url", "resource_url", "client_name", "technology_stack"].includes(field)) {
+  if (["title", "description", "domain", "deployment_url", "resource_url", "client_name", "technology_stack"].includes(field)) {
     if (!value) {
       const labels = {
         title: "Title",
         description: "Description",
         domain: "Domain",
-        domain_image_url: "Domain image",
         deployment_url: "Demo URL",
         resource_url: "Presentation or file URL",
         client_name: "Client or company",
@@ -32,10 +31,6 @@ export function validateUseCaseField(field, rawValue) {
     return "Presentation or file URL must start with http:// or https://";
   }
 
-  if (field === "domain_image_url" && value && !/^https?:\/\//i.test(value)) {
-    return "Domain image URL must start with http:// or https://";
-  }
-
   return "";
 }
 
@@ -46,7 +41,6 @@ export function validateUseCaseForm(values) {
     ["title", "Title"],
     ["description", "Description"],
     ["domain", "Domain"],
-    ["domain_image_url", "Domain image"],
     ["deployment_url", "Demo URL"],
     ["resource_url", "Presentation or file URL"],
     ["client_name", "Client or company"],

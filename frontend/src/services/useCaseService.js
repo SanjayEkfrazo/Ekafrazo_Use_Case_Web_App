@@ -58,6 +58,44 @@ export function fetchUseCaseDomains() {
   return api.get("/usecases/domains");
 }
 
+export function fetchDomainMedia({ domain = "", domains = [] } = {}) {
+  const params = new URLSearchParams();
+  if (String(domain || "").trim()) {
+    params.set("domain", String(domain).trim());
+  }
+  if (Array.isArray(domains) && domains.length > 0) {
+    const normalizedDomains = domains
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+
+    if (normalizedDomains.length > 0) {
+      params.set("domains", normalizedDomains.join(","));
+    }
+  }
+
+  const query = params.toString();
+  return api.get(`/domain-media${query ? `?${query}` : ""}`);
+}
+
+export function uploadDomainMediaImages(domain, files) {
+  const formData = new FormData();
+  formData.append("domain", domain);
+  Array.from(files || []).forEach((file) => {
+    formData.append("images", file);
+  });
+  return api.postForm("/domain-media/upload", formData);
+}
+
+export function deleteDomainMediaImage(id) {
+  return api.delete(`/domain-media/${id}`);
+}
+
+export function replaceDomainMediaImage(id, file) {
+  const formData = new FormData();
+  formData.append("image", file);
+  return api.putForm(`/domain-media/${id}`, formData);
+}
+
 // Fetch a single use case by id
 export async function fetchUseCaseById(id, { preferCache = true } = {}) {
   const key = String(id || "").trim();

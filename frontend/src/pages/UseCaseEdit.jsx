@@ -4,14 +4,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import UseCaseForm from "../components/UseCaseForm";
 import Loader from "../components/Loader";
-import { fetchUseCaseById, updateUseCase, uploadDomainImage } from "../services/useCaseService";
+import { fetchUseCaseById, updateUseCase } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 
 const COMPARABLE_FIELDS = [
   "title",
   "description",
   "domain",
-  "domain_image_url",
   "deployment_url",
   "resource_url",
   "client_name",
@@ -55,22 +54,13 @@ function UseCaseEdit() {
   }, [id]);
 
   // Handle form submission by calling the API service
-  const handleSubmit = async (values, { domainImageFile, setSubmitPhase } = {}) => {
+  const handleSubmit = async (values, { setSubmitPhase } = {}) => {
     try {
-      let payload = { ...values };
+      const payload = { ...values, domain_image_url: "" };
 
-      if (!domainImageFile && !hasMeaningfulChanges(payload, useCase)) {
+      if (!hasMeaningfulChanges(payload, { ...useCase, domain_image_url: "" })) {
         showToast("No fields were edited. Update at least one field before saving.", "error");
         return;
-      }
-
-      if (domainImageFile) {
-        setSubmitPhase?.("uploading");
-        const uploadResponse = await uploadDomainImage(domainImageFile);
-        payload = {
-          ...payload,
-          domain_image_url: uploadResponse?.data?.url || "",
-        };
       }
 
       setSubmitPhase?.("saving");

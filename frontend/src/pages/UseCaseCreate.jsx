@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import UseCaseForm from "../components/UseCaseForm";
-import { createUseCase, uploadDomainImage } from "../services/useCaseService";
+import { createUseCase } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 
 function UseCaseCreate() {
@@ -10,21 +10,10 @@ function UseCaseCreate() {
   const { showToast } = useToast();
 
   // Handle form submission by calling the API service
-  const handleSubmit = async (values, { domainImageFile, setSubmitPhase } = {}) => {
+  const handleSubmit = async (values, { setSubmitPhase } = {}) => {
     try {
-      let payload = { ...values };
-
-      if (domainImageFile) {
-        setSubmitPhase?.("uploading");
-        const uploadResponse = await uploadDomainImage(domainImageFile);
-        payload = {
-          ...payload,
-          domain_image_url: uploadResponse?.data?.url || "",
-        };
-      }
-
       setSubmitPhase?.("saving");
-      await createUseCase(payload);
+      await createUseCase({ ...values, domain_image_url: "" });
       navigate("/use-cases", {
         state: {
           toast: {
