@@ -1,6 +1,7 @@
 // Sidebar navigation shown on the left of every page
 import { memo } from "react";
 import { NavLink } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "../hooks/useAuth";
 
 const navItems = [
@@ -58,10 +59,15 @@ function Icon({ name }) {
 
 function Sidebar() {
   const { isAdmin } = useAuth();
+  const reduceMotion = useReducedMotion();
   const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
   return (
-    <aside className="app-shell-sidebar flex-col">
+    <motion.aside
+      className="app-shell-sidebar flex-col"
+      initial={reduceMotion ? false : { x: -34, opacity: 0 }}
+      animate={reduceMotion ? {} : { x: 0, opacity: 1, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } }}
+    >
       {/* Brand mark */}
       <div className="mb-8 flex items-center gap-2 px-2">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-gradient font-display text-sm font-bold text-on-solid shadow-glow-brand">
@@ -87,20 +93,33 @@ function Sidebar() {
               to={item.to}
               end
               className={({ isActive }) =>
-                `relative flex items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                `relative flex items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-sidebar-active-bg text-sidebar-active before:absolute before:left-0 before:h-5 before:w-0.5 before:rounded-full before:bg-primary"
+                    ? "bg-sidebar-active-bg text-sidebar-active"
                     : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
                 }`
               }
             >
-              <Icon name={item.icon} />
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  {isActive && !reduceMotion ? (
+                    <motion.span
+                      layoutId="sidebar-active-pill"
+                      className="absolute inset-0 rounded-md border border-primary/25 bg-sidebar-active-bg"
+                      transition={{ type: "spring", stiffness: 360, damping: 28 }}
+                    />
+                  ) : null}
+                  <span className="relative z-10 inline-flex">
+                    <Icon name={item.icon} />
+                  </span>
+                  <span className="relative z-10">{item.label}</span>
+                </>
+              )}
             </NavLink>
           );
         })}
       </nav>
-    </aside>
+    </motion.aside>
   );
 }
 

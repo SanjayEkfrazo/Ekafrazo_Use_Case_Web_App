@@ -1,8 +1,12 @@
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { motionTokens } from "../utils/motion";
 
 // A single toast notification bubble
 
 function Toast({ message, type, onClose }) {
+  const reduceMotion = useReducedMotion();
+
   const styles = {
     success: "border border-success/35 bg-surface/95 text-ink",
     error: "border border-danger/40 bg-surface/95 text-ink",
@@ -18,7 +22,11 @@ function Toast({ message, type, onClose }) {
   const Icon = type === "error" ? AlertCircle : CheckCircle2;
 
   return (
-    <div
+    <motion.div
+      layout
+      initial={reduceMotion ? false : { opacity: 0, y: 22, scale: 0.95 }}
+      animate={reduceMotion ? {} : { opacity: 1, y: 0, scale: 1, transition: { duration: motionTokens.standard, ease: motionTokens.ease } }}
+      exit={reduceMotion ? {} : { opacity: 0, y: 16, scale: 0.96, transition: { duration: motionTokens.fast, ease: motionTokens.ease } }}
       className={`toast-enter pointer-events-auto relative overflow-hidden rounded-2xl px-4 py-3.5 shadow-card-hover backdrop-blur-sm ${styles[type] || styles.success}`}
       role="status"
       aria-live="polite"
@@ -45,7 +53,7 @@ function Toast({ message, type, onClose }) {
       </div>
 
       <div className={`toast-progress absolute bottom-0 left-0 h-0.5 w-full ${type === "error" ? "bg-danger/55" : "bg-success/55"}`} />
-    </div>
+    </motion.div>
   );
 }
 

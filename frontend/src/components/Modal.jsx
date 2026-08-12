@@ -1,9 +1,12 @@
 // Reusable modal dialog wrapper
 // Renders its children inside a centered card with a backdrop
 import { useEffect, useRef } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motionTokens, softScaleIn } from "../utils/motion";
 
 function Modal({ isOpen, onClose, children, panelClassName = "", backdropClassName = "" }) {
   const panelRef = useRef(null);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (!isOpen) {
@@ -47,21 +50,31 @@ function Modal({ isOpen, onClose, children, panelClassName = "", backdropClassNa
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className={`fixed inset-0 z-40 flex items-center justify-center px-4 ${backdropClassName || "bg-overlay/60 backdrop-blur-sm"}`}>
-      {/* Clicking the backdrop closes the modal */}
-      <div className="absolute inset-0" onClick={onClose} />
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        className={`ui-modal-panel modal-panel-enter relative z-10 w-full max-w-md p-6 motion-reduce:transition-none ${panelClassName || ""}`}
-      >
-        {children}
-      </div>
-    </div>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className={`fixed inset-0 z-40 flex items-center justify-center px-4 ${backdropClassName || "bg-overlay/75 backdrop-blur-md"}`}
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={reduceMotion ? {} : { opacity: 1, transition: { duration: motionTokens.standard } }}
+          exit={reduceMotion ? {} : { opacity: 0, transition: { duration: motionTokens.fast } }}
+        >
+          {/* Clicking the backdrop closes the modal */}
+          <div className="absolute inset-0" onClick={onClose} />
+          <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            className={`ui-modal-panel relative z-10 w-full max-w-md p-6 motion-reduce:transition-none ${panelClassName || ""}`}
+            initial={reduceMotion ? false : softScaleIn.initial}
+            animate={reduceMotion ? {} : softScaleIn.animate}
+            exit={reduceMotion ? {} : softScaleIn.exit}
+          >
+            {children}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

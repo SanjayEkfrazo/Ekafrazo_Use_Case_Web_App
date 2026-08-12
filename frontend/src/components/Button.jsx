@@ -1,6 +1,8 @@
 // Reusable button with a few style variants
+import { motion, useReducedMotion } from "framer-motion";
 
-function Button({ children, variant = "primary", onClick, type = "button", disabled = false, className = "" }) {
+function Button({ children, variant = "primary", onClick, type = "button", disabled = false, className = "", disableMotion = false }) {
+  const reduceMotion = useReducedMotion();
   const baseStyles = "ui-button";
 
   const variants = {
@@ -12,14 +14,17 @@ function Button({ children, variant = "primary", onClick, type = "button", disab
   };
 
   return (
-    <button
+    <motion.button
       type={type}
       onClick={onClick}
       disabled={disabled}
       className={`${baseStyles} ${variants[variant]} ${className}`}
+      whileHover={reduceMotion || disabled || disableMotion ? undefined : { y: -2, scale: 1.015 }}
+      whileTap={reduceMotion || disabled || disableMotion ? undefined : { scale: 0.97, y: 0 }}
+      transition={reduceMotion || disableMotion ? undefined : { type: "spring", stiffness: 320, damping: 20 }}
     >
       {children}
-    </button>
+    </motion.button>
   );
 }
 

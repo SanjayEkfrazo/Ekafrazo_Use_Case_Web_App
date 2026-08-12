@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import CreatableSelect from "react-select/creatable";
+import { motion, useReducedMotion } from "framer-motion";
 import FormInput from "./FormInput";
 import FormTextarea from "./FormTextarea";
 import Button from "./Button";
 import { validateUseCaseForm, validateCustomDomain, validateUseCaseField } from "../utils/validation";
 import { DOMAIN_OPTIONS } from "../utils/constants";
 import { fetchUseCaseDomains } from "../services/useCaseService";
+import useAutoMotionState from "../hooks/useAutoMotionState";
 
 const emptyForm = {
   title: "",
@@ -40,6 +42,8 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
   const [submitPhase, setSubmitPhase] = useState("idle");
   const [submitError, setSubmitError] = useState("");
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const { isIdle, tick } = useAutoMotionState({ enabled: !reduceMotion, idleMs: 3000, tickMs: 2100 });
 
   const normalizeDomain = (value) => String(value || "").trim().toLowerCase();
 
@@ -241,11 +245,20 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
   const completedRequiredCount = requiredFields.reduce((count, field) => {
     return String(values[field.key] || "").trim() ? count + 1 : count;
   }, 0);
+  const autoPanelIndex = isIdle ? tick % 5 : -1;
 
   return (
     <form onSubmit={handleSubmit}>
-      <section className="rounded-xl border border-border bg-surface p-3 shadow-card md:p-4">
-        <div className="mb-3 rounded-xl border border-border bg-surface-elevated px-3 py-2.5">
+      <motion.section
+        className="rounded-xl border border-border bg-surface p-3 shadow-card md:p-4"
+        initial={reduceMotion ? false : { opacity: 0, y: 22, scale: 0.99 }}
+        animate={reduceMotion ? {} : { opacity: 1, y: 0, scale: 1, transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] } }}
+      >
+        <motion.div
+          className={`mb-3 rounded-xl border border-border bg-surface-elevated px-3 py-2.5 ${autoPanelIndex === 0 ? "auto-panel-pulse" : ""}`}
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+          animate={reduceMotion ? {} : { opacity: 1, y: 0, transition: { duration: 0.28, delay: 0.06 } }}
+        >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-ink">Form Status</p>
@@ -254,15 +267,27 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
             <p className="text-xs text-muted"><span className="text-danger-text">*</span> Required fields</p>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-border/60">
-            <div
+            <motion.div
               className="h-full rounded-full bg-gradient-to-r from-primary to-brand-via transition-all duration-300 motion-reduce:transition-none"
               style={{ width: `${Math.round((completedRequiredCount / requiredFields.length) * 100)}%` }}
+              animate={
+                reduceMotion
+                  ? {}
+                  : {
+                    boxShadow: isIdle ? ["0 0 0 rgba(56,139,253,0)", "0 0 14px rgba(56,139,253,0.45)", "0 0 0 rgba(56,139,253,0)"] : "0 0 0 rgba(56,139,253,0)",
+                  }
+              }
+              transition={{ duration: 1.1, ease: "easeInOut" }}
             />
           </div>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-          <div className="rounded-xl border border-border bg-surface-elevated p-3 xl:col-span-2">
+          <motion.div
+            className={`rounded-xl border border-border bg-surface-elevated p-3 xl:col-span-2 ${autoPanelIndex === 1 ? "auto-panel-pulse" : ""}`}
+            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+            animate={reduceMotion ? {} : { opacity: 1, y: 0, transition: { duration: 0.3, delay: 0.1 } }}
+          >
             <h3 className="font-display text-base font-semibold text-ink">General Information</h3>
             <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-2 [&_input]:py-1.5">
               <div className="md:col-span-2">
@@ -378,9 +403,13 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                 placeholder="e.g. Acme Corp"
               />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="rounded-xl border border-border bg-surface-elevated p-3 xl:col-span-2">
+          <motion.div
+            className={`rounded-xl border border-border bg-surface-elevated p-3 xl:col-span-2 ${autoPanelIndex === 2 ? "auto-panel-pulse" : ""}`}
+            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+            animate={reduceMotion ? {} : { opacity: 1, y: 0, transition: { duration: 0.3, delay: 0.16 } }}
+          >
             <h3 className="font-display text-base font-semibold text-ink">Business Overview</h3>
             <div className="mt-2.5 [&_textarea]:py-1.5">
               <FormTextarea
@@ -395,9 +424,13 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                 rows={3}
               />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="rounded-xl border border-border bg-surface-elevated p-3">
+          <motion.div
+            className={`rounded-xl border border-border bg-surface-elevated p-3 ${autoPanelIndex === 3 ? "auto-panel-pulse" : ""}`}
+            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+            animate={reduceMotion ? {} : { opacity: 1, y: 0, transition: { duration: 0.3, delay: 0.22 } }}
+          >
             <h3 className="font-display text-base font-semibold text-ink">Technology</h3>
             <div className="mt-2.5 [&_input]:py-1.5">
               <FormInput
@@ -411,9 +444,13 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                 placeholder="e.g. Python, React, PostgreSQL"
               />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="rounded-xl border border-border bg-surface-elevated p-3">
+          <motion.div
+            className={`rounded-xl border border-border bg-surface-elevated p-3 ${autoPanelIndex === 4 ? "auto-panel-pulse" : ""}`}
+            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+            animate={reduceMotion ? {} : { opacity: 1, y: 0, transition: { duration: 0.3, delay: 0.28 } }}
+          >
             <h3 className="font-display text-base font-semibold text-ink">Resources</h3>
             <div className="mt-2.5 grid grid-cols-1 gap-2 [&_input]:py-1.5">
               <FormInput
@@ -437,7 +474,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                 placeholder="https://drive.google.com/..."
               />
             </div>
-          </div>
+          </motion.div>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-end gap-2.5 border-t border-border pt-3">
@@ -460,7 +497,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
             )}
           </Button>
         </div>
-      </section>
+      </motion.section>
     </form>
   );
 }

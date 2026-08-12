@@ -106,6 +106,7 @@ function UseCaseList() {
   const [isUnlockOpen, setIsUnlockOpen] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [listMotionDirection, setListMotionDirection] = useState(1);
   const handledToastLocationKeyRef = useRef(null);
 
   const navigate = useNavigate();
@@ -115,6 +116,7 @@ function UseCaseList() {
   const { isDark, toggleTheme } = useTheme();
 
   const hasActiveFilters = search.trim() || selectedDomain !== ALL_DOMAINS || selectedClient !== ALL_CLIENTS || page > 1 || Boolean(reviewFilter);
+  const listTransitionKey = [debouncedSearch.trim(), selectedDomain, selectedClient, reviewFilter, pagination.currentPage].join("|");
 
   // Load use cases from the API using the current filters
   const loadUseCases = useCallback(async () => {
@@ -243,31 +245,53 @@ function UseCaseList() {
 
   // Reset back to page 1 whenever the search term changes
   const handleSearchChange = (value) => {
+    setListMotionDirection(1);
     setSearch(value);
     setPage(1);
   };
 
   // Reset back to page 1 whenever domain filter changes
   const handleDomainChange = (event) => {
+    setListMotionDirection(1);
     setSelectedDomain(event.target.value);
     setPage(1);
   };
 
   const handleClientChange = (event) => {
+    setListMotionDirection(1);
     setSelectedClient(event.target.value);
     setPage(1);
   };
 
   const handlePageChange = (nextPage) => {
+    setListMotionDirection(nextPage >= pagination.currentPage ? 1 : -1);
     setPage(nextPage);
   };
 
   const handleResetFilters = () => {
+    setListMotionDirection(-1);
     setSearch("");
     setSelectedDomain(ALL_DOMAINS);
     setSelectedClient(ALL_CLIENTS);
     setPage(1);
     setReviewFilter("");
+  };
+
+  const handleClearSingleFilter = (kind) => {
+    setListMotionDirection(-1);
+    if (kind === "search") {
+      setSearch("");
+    }
+    if (kind === "domain") {
+      setSelectedDomain(ALL_DOMAINS);
+    }
+    if (kind === "client") {
+      setSelectedClient(ALL_CLIENTS);
+    }
+    if (kind === "review") {
+      setReviewFilter("");
+    }
+    setPage(1);
   };
 
   const handleUnlock = async () => {
@@ -300,7 +324,7 @@ function UseCaseList() {
 
   return (
     <>
-      <div className="page-enter">
+      <div className="usecase-auto-shell">
         <div className="p-2 md:p-3">
           <PageHeaderCard
             title="Use Case Repository"
@@ -373,11 +397,11 @@ function UseCaseList() {
 
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                 {hasActiveFilters && (
-                  <Button variant="secondary" className="w-full px-3 py-2 text-xs sm:w-auto" onClick={handleResetFilters}>
+                  <Button disableMotion variant="secondary" className="w-full px-3 py-2 text-xs sm:w-auto hover:!translate-y-0" onClick={handleResetFilters}>
                     Clear Filters
                   </Button>
                 )}
-                {isAdmin && <Button onClick={() => navigate("/use-cases/new")} className="w-full xl:w-auto">Create Use Case</Button>}
+                {isAdmin && <Button disableMotion onClick={() => navigate("/use-cases/new")} className="w-full xl:w-auto hover:!translate-y-0">Create Use Case</Button>}
               </div>
             </div>
 
@@ -390,6 +414,50 @@ function UseCaseList() {
               </p>
               <p>Page {pagination.currentPage} of {pagination.totalPages}</p>
             </div>
+
+            {hasActiveFilters && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {search.trim() ? (
+                  <button
+                    type="button"
+                    onClick={() => handleClearSingleFilter("search")}
+                    className="filter-chip-motion"
+                  >
+                    Search: {search.trim()} x
+                  </button>
+                ) : null}
+
+                {selectedDomain !== ALL_DOMAINS ? (
+                  <button
+                    type="button"
+                    onClick={() => handleClearSingleFilter("domain")}
+                    className="filter-chip-motion"
+                  >
+                    Domain: {selectedDomain} x
+                  </button>
+                ) : null}
+
+                {selectedClient !== ALL_CLIENTS ? (
+                  <button
+                    type="button"
+                    onClick={() => handleClearSingleFilter("client")}
+                    className="filter-chip-motion"
+                  >
+                    Client: {selectedClient} x
+                  </button>
+                ) : null}
+
+                {reviewFilter ? (
+                  <button
+                    type="button"
+                    onClick={() => handleClearSingleFilter("review")}
+                    className="filter-chip-motion"
+                  >
+                    Filter: {REVIEW_LABELS[reviewFilter]} x
+                  </button>
+                ) : null}
+              </div>
+            )}
           </div>
 
           {isLoading ? (
@@ -413,6 +481,8 @@ function UseCaseList() {
             <>
               <Table
                 useCases={useCases}
+                transitionKey={listTransitionKey}
+                direction={listMotionDirection}
               />
               <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} onPageChange={handlePageChange} />
             </>

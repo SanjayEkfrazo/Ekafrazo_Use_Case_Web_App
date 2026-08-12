@@ -1,11 +1,160 @@
 // Responsive card grid that lists use cases
 import { memo, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  AnimatePresence,
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import { fetchDomainMedia, prefetchUseCaseById } from "../services/useCaseService";
 import ImageCarousel from "./ImageCarousel";
 
-function Table({ useCases }) {
+function UseCaseCard({
+  item,
+  index,
+  direction,
+  reduceMotion,
+  syncStep,
+  domainImages,
+  toInitials,
+  truncate,
+  onPrefetch,
+  onOpen,
+  onKeyOpen,
+}) {
+  const useCase = item.raw;
+  const pointerX = useMotionValue(50);
+  const pointerY = useMotionValue(50);
+  const rotateXRaw = useTransform(pointerY, [0, 100], [7, -7]);
+  const rotateYRaw = useTransform(pointerX, [0, 100], [-7, 7]);
+  const rotateX = useSpring(rotateXRaw, { stiffness: 220, damping: 26, mass: 0.8 });
+  const rotateY = useSpring(rotateYRaw, { stiffness: 220, damping: 26, mass: 0.8 });
+  const zoomOrigin = useMotionTemplate`${pointerX}% ${pointerY}%`;
+
+  const handleMouseMove = (event) => {
+    if (reduceMotion) {
+      return;
+    }
+
+    const bounds = event.currentTarget.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) {
+      return;
+    }
+
+    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+    pointerX.set(Math.min(100, Math.max(0, x)));
+    pointerY.set(Math.min(100, Math.max(0, y)));
+  };
+
+  const resetPointer = () => {
+    pointerX.set(50);
+    pointerY.set(50);
+  };
+
+  return (
+    <motion.article
+      layout
+      key={useCase.id}
+      role="button"
+      tabIndex={0}
+      aria-label={`Open use case ${item.title}`}
+      onMouseEnter={() => {
+        onPrefetch(useCase.id);
+      }}
+      onFocus={() => {
+        onPrefetch(useCase.id);
+      }}
+      onTouchStart={() => onPrefetch(useCase.id)}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={resetPointer}
+      onBlur={resetPointer}
+      onClick={() => onOpen(useCase.id)}
+      onKeyDown={(event) => onKeyOpen(event, useCase.id)}
+      className="usecase-card-pro ui-card relative flex min-h-[330px] cursor-pointer flex-col gap-3 overflow-hidden p-3 outline-none motion-reduce:transition-none"
+      initial={reduceMotion ? false : { opacity: 0, x: direction > 0 ? 18 : -18, scale: 0.96, filter: "blur(6px)" }}
+      animate={reduceMotion ? {} : { opacity: 1, x: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.42, delay: (index % 9) * 0.055, ease: [0.22, 1, 0.36, 1] } }}
+      exit={reduceMotion ? {} : { opacity: 0, x: direction > 0 ? -20 : 20, scale: 0.97, filter: "blur(4px)", transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] } }}
+      whileHover={reduceMotion ? undefined : { scale: 0.992 }}
+      transition={reduceMotion ? undefined : { type: "spring", stiffness: 220, damping: 24 }}
+      style={
+        reduceMotion
+          ? undefined
+          : {
+            rotateX,
+            rotateY,
+            transformPerspective: 980,
+            transformStyle: "preserve-3d",
+          }
+      }
+    >
+      <motion.div
+        className="relative z-20 flex min-h-[302px] flex-col gap-3"
+        whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+        transition={reduceMotion ? undefined : { type: "spring", stiffness: 260, damping: 24 }}
+        style={reduceMotion ? undefined : { transformOrigin: zoomOrigin }}
+      >
+        <motion.div className="h-40" whileHover={reduceMotion ? undefined : { scale: 1.03 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
+          {domainImages?.length > 0 ? (
+            <ImageCarousel
+              images={domainImages}
+              altBase={`${item.domain} visual`}
+              className="h-full"
+              autoPlayMs={2000}
+              syncStep={syncStep}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-surface-elevated">
+              <motion.div
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand-gradient text-[11px] font-semibold text-on-solid shadow-glow-brand"
+                aria-label="Domain initials fallback"
+                whileHover={reduceMotion ? undefined : { rotate: 6, scale: 1.08 }}
+                transition={{ type: "spring", stiffness: 320, damping: 16 }}
+              >
+                {toInitials(useCase.domain)}
+              </motion.div>
+            </div>
+          )}
+        </motion.div>
+
+        <div className="min-w-0 flex-1">
+          <h3 className="line-clamp-1 text-[15px] font-semibold leading-snug text-ink">{item.title}</h3>
+          <div className="mt-1 text-xs text-muted">
+            <p><span className="font-medium text-ink">Domain:</span> {item.domain}</p>
+            <p><span className="font-medium text-ink">Client:</span> {item.client}</p>
+          </div>
+        </div>
+
+        <p className="line-clamp-3 text-sm text-ink/90">{truncate(item.description, 140)}</p>
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-2">
+          <p className="text-[11px] text-muted">Updated {item.updatedLabel}</p>
+          <motion.button
+            type="button"
+            onMouseEnter={() => onPrefetch(useCase.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onOpen(useCase.id);
+            }}
+            className="rounded-lg border border-border bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong motion-reduce:transition-none"
+            whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+            transition={reduceMotion ? undefined : { type: "spring", stiffness: 360, damping: 20 }}
+          >
+            View Details
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.article>
+  );
+}
+
+function Table({ useCases, transitionKey = "default", direction = 1 }) {
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
   const [domainMediaByDomain, setDomainMediaByDomain] = useState({});
   const [syncStep, setSyncStep] = useState(0);
 
@@ -166,71 +315,32 @@ function Table({ useCases }) {
   );
 
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-      {preparedUseCases.map((item) => {
-        const useCase = item.raw;
-
-        return (
-          <article
-            key={useCase.id}
-            role="button"
-            tabIndex={0}
-            aria-label={`Open use case ${item.title}`}
-            onMouseEnter={() => prefetchUseCaseById(useCase.id)}
-            onFocus={() => prefetchUseCaseById(useCase.id)}
-            onTouchStart={() => prefetchUseCaseById(useCase.id)}
-            onClick={() => openUseCaseDetails(useCase.id)}
-            onKeyDown={(event) => handleCardKeyDown(event, useCase.id)}
-            className="ui-card flex min-h-[330px] cursor-pointer flex-col gap-3 overflow-hidden p-3 outline-none motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <div className="h-40">
-              {domainMediaByDomain[item.domainKey]?.length > 0 ? (
-                <ImageCarousel
-                  images={domainMediaByDomain[item.domainKey]}
-                  altBase={`${item.domain} visual`}
-                  className="h-full"
-                  autoPlayMs={2000}
-                  syncStep={syncStep}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-surface-elevated">
-                  <div
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand-gradient text-[11px] font-semibold text-on-solid shadow-glow-brand"
-                    aria-label="Domain initials fallback"
-                  >
-                    {toInitials(useCase.domain)}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-1 text-[15px] font-semibold leading-snug text-ink">{item.title}</h3>
-              <div className="mt-1 text-xs text-muted">
-                <p><span className="font-medium text-ink">Domain:</span> {item.domain}</p>
-                <p><span className="font-medium text-ink">Client:</span> {item.client}</p>
-              </div>
-            </div>
-
-            <p className="line-clamp-3 text-sm text-ink/90">{truncate(item.description, 140)}</p>
-            <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-2">
-              <p className="text-[11px] text-muted">Updated {item.updatedLabel}</p>
-              <button
-                type="button"
-                onMouseEnter={() => prefetchUseCaseById(useCase.id)}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  openUseCaseDetails(useCase.id);
-                }}
-                className="rounded-lg border border-border bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong motion-reduce:transition-none"
-              >
-                View Details
-              </button>
-            </div>
-          </article>
-        );
-      })}
-    </div>
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={transitionKey}
+        className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
+        initial={reduceMotion ? false : { opacity: 0, x: direction > 0 ? 10 : -10 }}
+        animate={reduceMotion ? {} : { opacity: 1, x: 0, transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] } }}
+        exit={reduceMotion ? {} : { opacity: 0, x: direction > 0 ? -12 : 12, transition: { duration: 0.16, ease: [0.22, 1, 0.36, 1] } }}
+      >
+        {preparedUseCases.map((item, index) => (
+          <UseCaseCard
+            key={item.raw.id}
+            item={item}
+            index={index}
+            direction={direction}
+            reduceMotion={reduceMotion}
+            syncStep={syncStep}
+            domainImages={domainMediaByDomain[item.domainKey]}
+            toInitials={toInitials}
+            truncate={truncate}
+            onPrefetch={prefetchUseCaseById}
+            onOpen={openUseCaseDetails}
+            onKeyOpen={handleCardKeyDown}
+          />
+        ))}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

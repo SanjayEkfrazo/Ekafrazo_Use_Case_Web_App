@@ -1,6 +1,7 @@
 ﻿// Top navigation bar shown above the page content
 import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import Button from "./Button";
 import Modal from "./Modal";
 import FormInput from "./FormInput";
@@ -15,6 +16,7 @@ function Navbar({ title, subtitle, compact = false }) {
   const [isUnlockOpen, setIsUnlockOpen] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const handleUnlock = async () => {
     if (!passcode.trim()) {
@@ -46,7 +48,11 @@ function Navbar({ title, subtitle, compact = false }) {
 
   return (
     <>
-      <header className={`app-navbar ${compact ? "px-5 py-3 md:px-6" : "px-6 py-5 md:px-8"}`}>
+      <motion.header
+        className={`app-navbar ${compact ? "px-5 py-3 md:px-6" : "px-6 py-5 md:px-8"}`}
+        initial={reduceMotion ? false : { opacity: 0, y: -14 }}
+        animate={reduceMotion ? {} : { opacity: 1, y: 0, transition: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } }}
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -57,14 +63,17 @@ function Navbar({ title, subtitle, compact = false }) {
           </div>
 
           <div className="flex items-start gap-3">
-            <button
+            <motion.button
               type="button"
               onClick={toggleTheme}
               aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
               className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface-elevated text-muted transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-border-strong hover:text-ink motion-reduce:transition-none motion-reduce:transform-none"
+              whileHover={reduceMotion ? undefined : { y: -2, scale: 1.04, rotate: isDark ? -8 : 8 }}
+              whileTap={reduceMotion ? undefined : { scale: 0.94, rotate: 0 }}
+              transition={reduceMotion ? undefined : { type: "spring", stiffness: 320, damping: 18 }}
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
+            </motion.button>
             {isAdmin ? (
               <Button variant="dangerSoft" onClick={handleLock} className="px-3 py-2 text-xs">
                 Disable Admin Mode
@@ -76,7 +85,7 @@ function Navbar({ title, subtitle, compact = false }) {
             )}
           </div>
         </div>
-      </header>
+      </motion.header>
 
       <Modal
         isOpen={isUnlockOpen}

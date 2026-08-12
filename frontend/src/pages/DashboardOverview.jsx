@@ -12,12 +12,14 @@ import {
   Rocket,
   Sun,
 } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import Button from "../components/Button";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 import PageHeaderCard from "../components/dashboard/PageHeaderCard";
 import FormInput from "../components/FormInput";
 import Modal from "../components/Modal";
 import { useAuth } from "../hooks/useAuth";
+import useAutoMotionState from "../hooks/useAutoMotionState";
 import { useTheme } from "../hooks/useTheme";
 import { useToast } from "../hooks/useToast";
 import { formatRelativeDate } from "../utils/dashboard";
@@ -39,6 +41,8 @@ function DashboardOverview() {
   const [isUnlockOpen, setIsUnlockOpen] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const { isIdle, tick } = useAutoMotionState({ enabled: !reduceMotion, idleMs: 3800, tickMs: 2400 });
 
   const commandCenterModel = useMemo(() => {
     const totalUseCases = Number(dashboardData.totalUseCases || 0);
@@ -232,7 +236,7 @@ function DashboardOverview() {
 
   return (
     <>
-      <div className="command-center-shell page-enter">
+      <div className="command-center-shell">
         <div className="command-center-atmosphere" aria-hidden />
 
         <div className="relative z-10 space-y-3 p-2.5 md:p-3">
@@ -279,13 +283,16 @@ function DashboardOverview() {
 
           <section className="command-center-panel px-3 py-3 md:px-3.5 md:py-3.5">
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-5">
-              {commandCenterModel.kpiCards.map((card) => {
+              {commandCenterModel.kpiCards.map((card, index) => {
                 const Icon = card.icon;
+                const autoPulse = isIdle && tick % commandCenterModel.kpiCards.length === index;
 
                 return (
-                  <article
+                  <motion.article
                     key={card.label}
-                    className={`command-center-kpi group relative flex h-[104px] w-full flex-col overflow-hidden rounded-[14px] px-3 py-2.5 text-left ${card.accent}`}
+                    className={`command-center-kpi group relative flex h-[104px] w-full flex-col overflow-hidden rounded-[14px] px-3 py-2.5 text-left ${card.accent} ${autoPulse ? "command-center-kpi-auto" : ""}`}
+                    initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.985 }}
+                    animate={reduceMotion ? {} : { opacity: 1, y: 0, scale: 1, transition: { duration: 0.34, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] } }}
                   >
                     <span className="absolute right-2.5 top-2.5 inline-flex rounded-[10px] border border-border/80 bg-surface/70 p-1.5 text-primary transition-colors duration-200 group-hover:border-primary/35">
                       <Icon className="h-4 w-4" strokeWidth={1.9} />
@@ -298,14 +305,18 @@ function DashboardOverview() {
                         {card.metaNode ? card.metaNode : <p className="truncate text-[11px] text-muted">{card.meta}</p>}
                       </div>
                     </div>
-                  </article>
+                  </motion.article>
                 );
               })}
             </div>
           </section>
 
-          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-            <section className="command-center-panel flex min-h-0 flex-col p-3">
+          <motion.div
+            className="grid grid-cols-1 gap-3 xl:grid-cols-2"
+            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+            animate={reduceMotion ? {} : { opacity: 1, y: 0, transition: { duration: 0.38, delay: 0.2, ease: [0.22, 1, 0.36, 1] } }}
+          >
+            <motion.section className="command-center-panel flex min-h-0 flex-col p-3" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
               <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="font-display text-sm font-semibold text-ink md:text-base">Use Case Readiness Status</h3>
                 <button
@@ -338,9 +349,9 @@ function DashboardOverview() {
                   ))}
                 </div>
               )}
-            </section>
+            </motion.section>
 
-            <section className="command-center-panel flex min-h-0 flex-col p-3">
+            <motion.section className="command-center-panel flex min-h-0 flex-col p-3" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
               <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="font-display text-sm font-semibold text-ink md:text-base">Domain / Portfolio Coverage</h3>
                 <button
@@ -385,9 +396,9 @@ function DashboardOverview() {
                   })}
                 </div>
               )}
-            </section>
+            </motion.section>
 
-            <section className="command-center-panel flex min-h-0 flex-col p-3">
+            <motion.section className="command-center-panel flex min-h-0 flex-col p-3" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
               <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="font-display text-sm font-semibold text-ink md:text-base">Quality & Governance</h3>
                 {isAdmin && (
@@ -439,9 +450,9 @@ function DashboardOverview() {
                   </ul>
                 )}
               </div>
-            </section>
+            </motion.section>
 
-            <section className="command-center-panel flex min-h-0 flex-col p-3">
+            <motion.section className="command-center-panel flex min-h-0 flex-col p-3" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
               <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="font-display text-sm font-semibold text-ink md:text-base">Recent Activity</h3>
                 <button
@@ -472,8 +483,8 @@ function DashboardOverview() {
                   ))}
                 </div>
               )}
-            </section>
-          </div>
+            </motion.section>
+          </motion.div>
 
         </div>
       </div>

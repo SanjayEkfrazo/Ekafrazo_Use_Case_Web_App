@@ -1,6 +1,7 @@
 // Use Case details page: shows full information for one use case
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import Loader from "../components/Loader";
 import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -9,12 +10,15 @@ import ImageCarousel from "../components/ImageCarousel";
 import { fetchUseCaseById, deleteUseCase, fetchDomainMedia } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
+import useAutoMotionState from "../hooks/useAutoMotionState";
 
 function UseCaseDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { isAdmin } = useAuth();
+  const reduceMotion = useReducedMotion();
+  const { isIdle, tick } = useAutoMotionState({ enabled: !reduceMotion, idleMs: 3200, tickMs: 2100 });
 
   const [useCase, setUseCase] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -168,12 +172,19 @@ function UseCaseDetails() {
     }
   };
 
+  const autoPanelIndex = isIdle ? tick % 4 : -1;
+
   return (
-    <div className="page-enter min-h-full">
+    <div className="usecase-auto-shell min-h-full">
       <Navbar compact title="Use Case Details" subtitle="Review business summary, technology, and resources" />
 
-      <div className="p-4 md:p-6">
-        <div className="mx-auto w-full max-w-6xl">
+      <motion.div
+        className="p-4 md:p-6"
+        initial={reduceMotion ? false : { opacity: 0 }}
+        animate={reduceMotion ? {} : { opacity: 1, transition: { duration: 0.36, ease: [0.22, 1, 0.36, 1] } }}
+      >
+        <div className="mx-auto w-full max-w-6xl usecase-auto-stage">
+          <div className="usecase-stage-scan" aria-hidden />
           {isLoading ? (
             <Loader rows={6} />
           ) : (
@@ -181,7 +192,11 @@ function UseCaseDetails() {
               <div className="h-[3px] bg-brand-gradient" />
 
               <div className="space-y-4 p-4 md:p-5">
-                <header className="rounded-xl border border-border bg-surface-elevated p-4 md:p-5">
+                <motion.header
+                  className={`rounded-xl border border-border bg-surface-elevated p-4 md:p-5 ${autoPanelIndex === 0 ? "auto-panel-pulse" : ""}`}
+                  initial={reduceMotion ? false : { opacity: 0, scale: 0.985 }}
+                  animate={reduceMotion ? {} : { opacity: 1, scale: 1, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
+                >
                   <div className="mb-4 h-56 w-full md:h-72">
                     {domainImages.length > 0 ? (
                       <ImageCarousel
@@ -266,14 +281,22 @@ function UseCaseDetails() {
                       <div className="hidden lg:block" aria-hidden="true" />
                     )}
                   </div>
-                </header>
+                </motion.header>
 
-                <section className="rounded-xl border border-border bg-surface-elevated p-4">
+                <motion.section
+                  className={`rounded-xl border border-border bg-surface-elevated p-4 ${autoPanelIndex === 1 ? "auto-panel-pulse" : ""}`}
+                  initial={reduceMotion ? false : { opacity: 0 }}
+                  animate={reduceMotion ? {} : { opacity: 1, transition: { duration: 0.34, delay: 0.08, ease: [0.22, 1, 0.36, 1] } }}
+                >
                   <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Business Overview</h3>
                   <p className="mt-2 text-sm leading-relaxed text-ink">{normalize(useCase.description) || "No summary added yet."}</p>
-                </section>
+                </motion.section>
 
-                <section className="rounded-xl border border-border bg-surface-elevated p-4">
+                <motion.section
+                  className={`rounded-xl border border-border bg-surface-elevated p-4 ${autoPanelIndex === 2 ? "auto-panel-pulse" : ""}`}
+                  initial={reduceMotion ? false : { opacity: 0 }}
+                  animate={reduceMotion ? {} : { opacity: 1, transition: { duration: 0.34, delay: 0.14, ease: [0.22, 1, 0.36, 1] } }}
+                >
                   <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Technology Stack</h3>
                   {techStackItems.length > 0 ? (
                     <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -289,9 +312,13 @@ function UseCaseDetails() {
                   ) : (
                     <p className="mt-2 text-sm text-muted">Not provided yet.</p>
                   )}
-                </section>
+                </motion.section>
 
-                <section className="rounded-xl border border-border bg-surface-elevated p-4">
+                <motion.section
+                  className={`rounded-xl border border-border bg-surface-elevated p-4 ${autoPanelIndex === 3 ? "auto-panel-pulse" : ""}`}
+                  initial={reduceMotion ? false : { opacity: 0 }}
+                  animate={reduceMotion ? {} : { opacity: 1, transition: { duration: 0.34, delay: 0.2, ease: [0.22, 1, 0.36, 1] } }}
+                >
                   <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Resources</h3>
                   <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-2">
                     <div className="rounded-lg border border-border bg-surface p-3">
@@ -326,13 +353,13 @@ function UseCaseDetails() {
                       )}
                     </div>
                   </div>
-                </section>
+                </motion.section>
 
               </div>
             </section>
           )}
         </div>
-      </div>
+      </motion.div>
 
       <ConfirmDialog
         isOpen={isAdmin && showDeleteDialog}
