@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Pencil, Trash2, UploadCloud } from "lucide-react";
 import CreatableSelect from "react-select/creatable";
-import Navbar from "../components/Navbar";
 import Button from "../components/Button";
 import Loader from "../components/Loader";
 import ConfirmDialog from "../components/ConfirmDialog";
+import PageNavCard from "../components/PageNavCard";
 import { DOMAIN_OPTIONS } from "../utils/constants";
 import { validateCustomDomain } from "../utils/validation";
 import {
@@ -309,10 +309,11 @@ function DomainMediaManager() {
   };
 
   return (
-    <div className="page-enter">
-      <Navbar compact title="Domain Media" subtitle="Manage domain-level images for browse and details carousels" />
+    <>
+      <div className="usecase-auto-shell page-enter">
+        <PageNavCard title="Domain Media" subtitle="Manage domain-level images for browse and details carousels" />
 
-      <div className="p-4 md:p-6">
+        <div className="p-4 md:p-6">
         <div className="mx-auto w-full max-w-6xl space-y-4">
           {successMessage && (
             <section className="rounded-xl border border-success/35 bg-success-light/45 px-3 py-2.5 text-sm text-success-text">
@@ -324,7 +325,7 @@ function DomainMediaManager() {
           )}
 
           <section className="rounded-2xl border border-border bg-surface p-4 shadow-card md:p-5">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
               <div>
                 <label htmlFor="domain-picker" className="text-xs font-medium uppercase tracking-wide text-muted">
                   Domain
@@ -405,14 +406,9 @@ function DomainMediaManager() {
                     }}
                   />
                 </div>
-                <p className="mt-1 text-xs text-muted">
-                  Select an existing domain or create one. Custom domain must start with a letter, be 2-50 characters,
-                  and use only letters, numbers, spaces, &, /, +, and -.
-                </p>
-                {domainError && <p className="mt-1 text-xs text-danger-text">{domainError}</p>}
               </div>
 
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border-strong bg-surface-elevated px-3 py-2 text-sm font-semibold text-ink transition-all duration-200 hover:border-primary hover:bg-primary/10">
+              <label className="inline-flex h-[38px] cursor-pointer items-center justify-center gap-2 self-end whitespace-nowrap rounded-xl border border-dashed border-border-strong bg-surface-elevated px-3 text-sm font-semibold text-ink transition-all duration-200 hover:border-primary hover:bg-primary/10">
                 <UploadCloud className="h-4 w-4" />
                 {isUploading ? "Uploading..." : "Upload Images"}
                 <input
@@ -425,7 +421,9 @@ function DomainMediaManager() {
                 />
               </label>
             </div>
-            <p className="mt-2 text-xs text-muted">Upload multiple images. These will power carousel visuals for all use cases in the selected domain.</p>
+            <p className="mt-2 text-xs text-muted">Select an existing domain or create one. Custom domain must start with a letter, be 2-50 characters, and use only letters, numbers, spaces, &, /, +, and -.</p>
+            {domainError && <p className="mt-1 text-xs text-danger-text">{domainError}</p>}
+            <p className="mt-1 text-xs text-muted">Upload multiple images. These will power carousel visuals for all use cases in the selected domain.</p>
           </section>
 
           <section className="rounded-2xl border border-border bg-surface p-4 shadow-card md:p-5">
@@ -595,6 +593,7 @@ function DomainMediaManager() {
           </section>
         </div>
       </div>
+      </div>
 
       <ConfirmDialog
         isOpen={Boolean(pendingDeleteImage)}
@@ -613,7 +612,7 @@ function DomainMediaManager() {
         onConfirm={handleReplace}
         onCancel={() => setPendingReplace(null)}
       />
-    </div>
+    </>
   );
 }
 

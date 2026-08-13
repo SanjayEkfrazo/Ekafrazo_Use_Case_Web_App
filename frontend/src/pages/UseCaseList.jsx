@@ -1,20 +1,16 @@
 // Use Cases page: lists all use cases with search, sort, and pagination
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Moon, Sun } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import Table from "../components/Table";
 import Pagination from "../components/Pagination";
 import Loader from "../components/Loader";
 import EmptyState from "../components/EmptyState";
 import Button from "../components/Button";
-import FormInput from "../components/FormInput";
-import Modal from "../components/Modal";
-import PageHeaderCard from "../components/dashboard/PageHeaderCard";
+import PageNavCard from "../components/PageNavCard";
 import { fetchUseCases, fetchUseCaseDomains } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
-import { useTheme } from "../hooks/useTheme";
 import { DEFAULT_PAGE_SIZE } from "../utils/constants";
 
 const ALL_DOMAINS = "All Domains";
@@ -130,9 +126,6 @@ function UseCaseList() {
   const [selectedClient, setSelectedClient] = useState(initialClient);
   const [page, setPage] = useState(initialPage);
   const [reviewFilter, setReviewFilter] = useState(initialReview);
-  const [isUnlockOpen, setIsUnlockOpen] = useState(false);
-  const [passcode, setPasscode] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [listMotionDirection, setListMotionDirection] = useState(1);
   const [viewMode, setViewMode] = useState(getInitialViewMode);
   const [quickPreset, setQuickPreset] = useState(() => getInitialQuickPreset(initialReview));
@@ -141,8 +134,7 @@ function UseCaseList() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
-  const { isAdmin, unlockAdmin, lockAdmin } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { isAdmin } = useAuth();
 
   const hasActiveFilters = search.trim() || selectedDomain !== ALL_DOMAINS || selectedClient !== ALL_CLIENTS || page > 1 || Boolean(reviewFilter);
   const listTransitionKey = [debouncedSearch.trim(), selectedDomain, selectedClient, reviewFilter, pagination.currentPage].join("|");
@@ -351,65 +343,10 @@ function UseCaseList() {
     setPage(1);
   };
 
-  const handleUnlock = async () => {
-    if (!passcode.trim()) {
-      showToast("Passcode is required", "error");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await unlockAdmin(passcode.trim());
-      showToast("Admin mode enabled");
-      setPasscode("");
-      setIsUnlockOpen(false);
-    } catch (error) {
-      showToast(error.message, "error");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleLock = async () => {
-    try {
-      await lockAdmin();
-      showToast("Admin mode disabled");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  };
-
   return (
     <>
       <div className="usecase-auto-shell">
-        <div className="p-2 md:p-3">
-          <PageHeaderCard
-            title="Use Case Repository"
-            subtitle="Search and browse business use cases"
-            actions={(
-              <>
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surface-elevated text-muted transition-all duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:text-ink"
-                >
-                  {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                </button>
-
-                {isAdmin ? (
-                  <Button onClick={handleLock} className="h-9 px-3 text-xs">
-                    Admin Mode On
-                  </Button>
-                ) : (
-                  <Button variant="ghost" onClick={() => setIsUnlockOpen(true)} className="h-9 border border-border px-3 text-xs">
-                    Enable Admin Mode
-                  </Button>
-                )}
-              </>
-            )}
-          />
-        </div>
+        <PageNavCard title="Use Case Repository" subtitle="Search and browse business use cases" />
 
         <div className="p-4 md:p-6">
           <div className="mb-4 rounded-2xl border border-border bg-surface p-3 shadow-card md:p-4">
@@ -579,47 +516,6 @@ function UseCaseList() {
         </div>
       </div>
 
-      <Modal
-        isOpen={isUnlockOpen}
-        onClose={() => {
-          if (isSubmitting) {
-            return;
-          }
-          setIsUnlockOpen(false);
-          setPasscode("");
-        }}
-      >
-        <h2 className="font-display text-lg font-semibold text-ink">Enable Admin Mode</h2>
-        <p className="mt-2 text-sm text-muted">Enter the admin passcode to enable create, edit, and delete actions.</p>
-
-        <div className="mt-4">
-          <FormInput
-            label="Admin Passcode"
-            name="admin_passcode"
-            type="password"
-            value={passcode}
-            onChange={(event) => setPasscode(event.target.value)}
-            placeholder="Enter passcode"
-            className="input-terminal"
-          />
-        </div>
-
-        <div className="mt-6 flex justify-end gap-3">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setIsUnlockOpen(false);
-              setPasscode("");
-            }}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleUnlock} disabled={isSubmitting}>
-            {isSubmitting ? "Enabling..." : "Enable Admin Mode"}
-          </Button>
-        </div>
-      </Modal>
     </>
   );
 }

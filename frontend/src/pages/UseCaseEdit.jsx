@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import Navbar from "../components/Navbar";
+import PageNavCard from "../components/PageNavCard";
 import UseCaseForm from "../components/UseCaseForm";
 import Loader from "../components/Loader";
 import { fetchUseCaseById, updateUseCase } from "../services/useCaseService";
@@ -85,7 +85,8 @@ function UseCaseEdit() {
 
   return (
     <div className="usecase-auto-shell">
-      <Navbar compact title="Edit Use Case" subtitle="Update use case details and links" />
+      <PageNavCard title="Edit Use Case" subtitle="Update use case details and links" />
+
       <motion.div
         className="p-4 md:p-6"
         initial={reduceMotion ? false : { opacity: 0, y: 20 }}

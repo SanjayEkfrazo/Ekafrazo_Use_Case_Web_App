@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import Loader from "../components/Loader";
 import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
-import Navbar from "../components/Navbar";
+import PageNavCard from "../components/PageNavCard";
 import ImageCarousel from "../components/ImageCarousel";
 import { fetchUseCaseById, deleteUseCase, fetchDomainMedia } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
@@ -176,7 +176,7 @@ function UseCaseDetails() {
 
   return (
     <div className="usecase-auto-shell min-h-full">
-      <Navbar compact title="Use Case Details" subtitle="Review business summary, technology, and resources" />
+      <PageNavCard title="Use Case Details" subtitle="Review business summary, technology, and resources" />
 
       <motion.div
         className="p-4 md:p-6"

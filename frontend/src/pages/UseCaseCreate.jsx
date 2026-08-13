@@ -1,7 +1,7 @@
 // Create Use Case page: shows a blank form and creates a new use case on submit
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import Navbar from "../components/Navbar";
+import PageNavCard from "../components/PageNavCard";
 import UseCaseForm from "../components/UseCaseForm";
 import { createUseCase } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
@@ -33,7 +33,8 @@ function UseCaseCreate() {
 
   return (
     <div className="usecase-auto-shell">
-      <Navbar compact title="Create Use Case" subtitle="Add a new use case to the repository" />
+      <PageNavCard title="Create Use Case" subtitle="Add a new use case to the repository" />
+
       <motion.div
         className="p-4 md:p-6"
         initial={reduceMotion ? false : { opacity: 0, y: 20 }}
