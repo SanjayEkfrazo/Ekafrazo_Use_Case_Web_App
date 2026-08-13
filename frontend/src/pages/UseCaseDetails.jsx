@@ -147,8 +147,8 @@ function UseCaseDetails() {
 
   const resolvedDeploymentUrl = shouldSwapLinks ? resourceUrl : deploymentUrl;
   const resolvedResourceUrl = shouldSwapLinks ? deploymentUrl : resourceUrl;
-  const demoActionClass = "mt-2 inline-flex w-full items-center justify-center rounded-lg border border-primary/25 bg-primary-light px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/20 motion-reduce:transform-none motion-reduce:transition-none";
-  const presentationActionClass = "mt-2 inline-flex w-full items-center justify-center rounded-lg border border-success/25 bg-success-light px-3 py-2 text-sm font-semibold text-success-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-success/40 hover:bg-success/20 motion-reduce:transform-none motion-reduce:transition-none";
+  const demoActionClass = "mt-2 inline-flex w-full items-center justify-center rounded-lg border border-primary/35 bg-primary/12 px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/55 hover:bg-primary/18 motion-reduce:transform-none motion-reduce:transition-none";
+  const presentationActionClass = "mt-2 inline-flex w-full items-center justify-center rounded-lg border border-primary/35 bg-primary/12 px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/55 hover:bg-primary/18 motion-reduce:transform-none motion-reduce:transition-none";
   const techStackItems = normalize(useCase?.technology_stack)
     .split(/[,;|\n]+/)
     .map((item) => item.trim())
@@ -225,14 +225,14 @@ function UseCaseDetails() {
                       <Button
                         variant="ghost"
                         onClick={handleBack}
-                        className="whitespace-nowrap border border-primary/40 bg-primary-light text-primary-text hover:border-primary/55 hover:bg-primary/20"
+                        className="whitespace-nowrap"
                       >
                         Back to Use Cases
                       </Button>
                       <Button
-                        variant="secondary"
+                        variant="ghost"
                         onClick={handleCopyLink}
-                        className="whitespace-nowrap border border-success/45 bg-success-light text-success-text hover:border-success/60 hover:bg-success/20"
+                        className="whitespace-nowrap"
                       >
                         Copy Link
                       </Button>
@@ -262,9 +262,9 @@ function UseCaseDetails() {
                     {isAdmin ? (
                       <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                         <Button
-                          variant="secondary"
+                          variant="primary"
                           onClick={() => navigate(`/use-cases/${useCase.id}/edit`)}
-                          className="whitespace-nowrap border border-warning/45 !bg-warning-light text-warning-text hover:-translate-y-0.5 hover:border-warning/65 hover:!bg-warning-light/70 hover:shadow-card"
+                          className="whitespace-nowrap"
                         >
                           Edit
                         </Button>
@@ -272,7 +272,7 @@ function UseCaseDetails() {
                           variant="danger"
                           onClick={() => setShowDeleteDialog(true)}
                           disabled={isDeleting}
-                          className="whitespace-nowrap border border-danger/75 bg-danger-light text-danger-text hover:border-danger/90 hover:bg-danger/20"
+                          className="whitespace-nowrap"
                         >
                           {isDeleting ? "Deleting..." : "Delete"}
                         </Button>

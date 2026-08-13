@@ -75,7 +75,7 @@ function Navbar({ title, subtitle, compact = false }) {
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </motion.button>
             {isAdmin ? (
-              <Button variant="dangerSoft" onClick={handleLock} className="px-3 py-2 text-xs">
+              <Button onClick={handleLock} className="px-3 py-2 text-xs">
                 Disable Admin Mode
               </Button>
             ) : (

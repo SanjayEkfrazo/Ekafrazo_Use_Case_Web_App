@@ -412,7 +412,7 @@ function DomainMediaManager() {
                 {domainError && <p className="mt-1 text-xs text-danger-text">{domainError}</p>}
               </div>
 
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface-elevated px-3 py-2 text-sm font-semibold text-ink transition-all duration-200 hover:border-border-strong">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border-strong bg-surface-elevated px-3 py-2 text-sm font-semibold text-ink transition-all duration-200 hover:border-primary hover:bg-primary/10">
                 <UploadCloud className="h-4 w-4" />
                 {isUploading ? "Uploading..." : "Upload Images"}
                 <input
@@ -536,7 +536,7 @@ function DomainMediaManager() {
                         <p className="text-xs text-muted">{group.images.length} image{group.images.length > 1 ? "s" : ""}</p>
                       </div>
 
-                      <label className="inline-flex cursor-pointer items-center gap-1 rounded-xl border border-border bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink transition-all duration-200 hover:border-border-strong">
+                      <label className="inline-flex cursor-pointer items-center gap-1 rounded-xl border border-border bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink transition-all duration-200 hover:border-primary">
                         <UploadCloud className="h-3.5 w-3.5" />
                         Add More
                         <input
@@ -574,7 +574,7 @@ function DomainMediaManager() {
                             {isDeletingId === item.id ? "Deleting..." : "Delete"}
                           </Button>
 
-                          <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-border bg-surface px-2 py-1 text-xs font-semibold text-ink transition-all duration-200 hover:border-border-strong">
+                          <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-border bg-surface px-2 py-1 text-xs font-semibold text-ink transition-all duration-200 hover:border-primary">
                             <Pencil className="mr-1 h-3.5 w-3.5" />
                             {isReplacingId === item.id ? "Updating..." : "Replace Image"}
                             <input

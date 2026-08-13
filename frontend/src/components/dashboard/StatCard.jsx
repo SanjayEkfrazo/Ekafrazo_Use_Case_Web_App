@@ -7,7 +7,7 @@ function StatCard({ icon: Icon, label, value, helperText, compact = false, tight
   const compactLabelClass = tight ? "mt-1 text-[11px]" : "mt-1.5 text-xs";
 
   return (
-    <article className={`group rounded-2xl border border-border bg-surface shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:shadow-card-hover motion-reduce:transform-none motion-reduce:transition-none ${compact ? compactPadding : "p-5 2xl:p-6"}`}>
+    <article className={`group rounded-2xl border border-border bg-surface shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-glow-primary motion-reduce:transform-none motion-reduce:transition-none ${compact ? compactPadding : "p-5 2xl:p-6"}`}>
       <div className="flex items-start justify-between gap-3">
         <div className={`rounded-xl border border-border bg-surface-elevated text-primary transition-colors duration-200 group-hover:border-primary/35 motion-reduce:transition-none ${compact ? compactIconPadding : "p-2.5"}`}>
           <Icon className="h-5 w-5" strokeWidth={1.8} />

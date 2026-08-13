@@ -268,13 +268,18 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-border/60">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-primary to-brand-via transition-all duration-300 motion-reduce:transition-none"
+              className="h-full rounded-full bg-primary transition-all duration-300 motion-reduce:transition-none"
               style={{ width: `${Math.round((completedRequiredCount / requiredFields.length) * 100)}%` }}
               animate={
                 reduceMotion
                   ? {}
                   : {
-                    boxShadow: isIdle ? ["0 0 0 rgba(56,139,253,0)", "0 0 14px rgba(56,139,253,0.45)", "0 0 0 rgba(56,139,253,0)"] : "0 0 0 rgba(56,139,253,0)",
+                    boxShadow:
+                      completedRequiredCount === requiredFields.length
+                        ? ["0 0 0 rgba(139,92,246,0)", "0 0 22px rgba(139,92,246,0.42)", "0 0 0 rgba(139,92,246,0)"]
+                        : isIdle
+                          ? ["0 0 0 rgba(139,92,246,0)", "0 0 10px rgba(139,92,246,0.24)", "0 0 0 rgba(139,92,246,0)"]
+                          : "0 0 0 rgba(139,92,246,0)",
                   }
               }
               transition={{ duration: 1.1, ease: "easeInOut" }}
@@ -360,7 +365,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                     option: (base, state) => ({
                       ...base,
                       backgroundColor: state.isFocused
-                        ? "rgb(var(--color-primary-subtle))"
+                        ? "rgb(var(--color-primary) / 0.14)"
                         : "rgb(var(--color-surface))",
                       color: state.isFocused
                         ? "rgb(var(--color-primary-text))"
@@ -378,7 +383,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
                     placeholder: () => "text-muted-dim",
                     menu: () => "z-20 mt-1 overflow-hidden rounded-lg border border-border bg-surface shadow-card",
                     option: (state) =>
-                      `cursor-pointer px-3 py-2 text-sm ${state.isFocused ? "bg-primary-light text-primary-text" : "text-ink"}`,
+                      `cursor-pointer px-3 py-2 text-sm ${state.isFocused ? "bg-primary/15 text-primary-text" : "text-ink"}`,
                   }}
                 />
                 <p className="text-xs text-muted">

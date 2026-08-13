@@ -2,9 +2,9 @@ import { memo } from "react";
 
 const CHART_COLORS = [
   "rgb(var(--color-primary))",
-  "rgb(var(--color-success))",
-  "rgb(var(--color-warning))",
-  "rgb(var(--color-danger))",
+  "rgb(var(--color-primary-text))",
+  "rgb(var(--color-secondary))",
+  "rgb(var(--color-primary-hover))",
   "rgb(var(--color-gradient-via))",
   "rgb(var(--color-gradient-to))",
 ];

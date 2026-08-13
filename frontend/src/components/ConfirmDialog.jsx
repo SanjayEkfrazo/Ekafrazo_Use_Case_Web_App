@@ -7,8 +7,8 @@ function ConfirmDialog({ isOpen, title, description, onConfirm, onCancel, confir
     <Modal
       isOpen={isOpen}
       onClose={onCancel}
-      backdropClassName="bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.12),rgba(0,0,0,0.7))] backdrop-blur-md"
-      panelClassName="rounded-2xl border border-border bg-surface-elevated shadow-card-hover"
+      backdropClassName="bg-[rgba(11,7,20,0.75)] backdrop-blur-md"
+      panelClassName="rounded-2xl border border-border bg-surface-elevated shadow-elevation-3"
     >
       <h2 className="font-display text-lg font-semibold text-ink">{title}</h2>
       <p className="mt-2 text-sm text-muted">{description}</p>

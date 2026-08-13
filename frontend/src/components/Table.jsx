@@ -51,7 +51,7 @@ function UseCaseDenseTable({ preparedUseCases, direction, reduceMotion, onOpen }
                 onMouseEnter={() => {
                   prefetchUseCaseById(item.raw.id);
                 }}
-                className={`cursor-pointer border-b border-border/80 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${index % 2 === 0 ? "bg-surface" : "bg-surface-elevated/35"} hover:bg-primary-light/35`}
+                className={`cursor-pointer border-b border-border/80 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${index % 2 === 0 ? "bg-surface" : "bg-surface-elevated/35"} hover:bg-primary/8`}
               >
                 <td className="max-w-[360px] px-4 py-3 text-ink">
                   <p className="line-clamp-1 font-semibold">{item.title}</p>
@@ -67,7 +67,7 @@ function UseCaseDenseTable({ preparedUseCases, direction, reduceMotion, onOpen }
                       event.stopPropagation();
                       onOpen(item.raw.id);
                     }}
-                    className="rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong"
+                    className="rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-primary"
                   >
                     Open
                   </button>
@@ -207,7 +207,7 @@ function UseCaseCard({
               event.stopPropagation();
               onOpen(useCase.id);
             }}
-            className="rounded-lg border border-border bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-border-strong motion-reduce:transition-none"
+            className="rounded-lg border border-border bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-primary motion-reduce:transition-none"
             whileHover={reduceMotion ? undefined : { scale: 1.03 }}
             whileTap={reduceMotion ? undefined : { scale: 0.97 }}
             transition={reduceMotion ? undefined : { type: "spring", stiffness: 360, damping: 20 }}

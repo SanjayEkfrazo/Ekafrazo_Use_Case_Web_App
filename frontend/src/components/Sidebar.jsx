@@ -95,8 +95,8 @@ function Sidebar() {
               className={({ isActive }) =>
                 `relative flex items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-sidebar-active-bg text-sidebar-active"
-                    : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
+                    ? "border-l-2 border-l-primary bg-sidebar-active-bg text-sidebar-active shadow-glow-primary"
+                    : "border-l-2 border-l-transparent text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
                 }`
               }
             >
@@ -109,7 +109,7 @@ function Sidebar() {
                       transition={{ type: "spring", stiffness: 360, damping: 28 }}
                     />
                   ) : null}
-                  <span className="relative z-10 inline-flex">
+                  <span className={`relative z-10 inline-flex ${isActive ? "text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.45)]" : ""}`}>
                     <Icon name={item.icon} />
                   </span>
                   <span className="relative z-10">{item.label}</span>

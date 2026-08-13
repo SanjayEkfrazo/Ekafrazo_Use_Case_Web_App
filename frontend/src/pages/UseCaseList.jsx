@@ -398,7 +398,7 @@ function UseCaseList() {
                 </button>
 
                 {isAdmin ? (
-                  <Button variant="dangerSoft" onClick={handleLock} className="h-9 px-3 text-xs">
+                  <Button onClick={handleLock} className="h-9 px-3 text-xs">
                     Admin Mode On
                   </Button>
                 ) : (
@@ -458,7 +458,7 @@ function UseCaseList() {
                     type="button"
                     onClick={() => setViewMode("card")}
                     aria-pressed={viewMode === "card"}
-                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "card" ? "bg-surface text-ink shadow-elevation-1" : "text-muted hover:text-ink"}`}
+                    className={`rounded-md border-b-2 px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "card" ? "border-primary bg-primary/12 text-primary-text shadow-elevation-1" : "border-transparent text-muted hover:text-ink"}`}
                   >
                     Card
                   </button>
@@ -466,7 +466,7 @@ function UseCaseList() {
                     type="button"
                     onClick={() => setViewMode("table")}
                     aria-pressed={viewMode === "table"}
-                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "table" ? "bg-surface text-ink shadow-elevation-1" : "text-muted hover:text-ink"}`}
+                    className={`rounded-md border-b-2 px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "table" ? "border-primary bg-primary/12 text-primary-text shadow-elevation-1" : "border-transparent text-muted hover:text-ink"}`}
                   >
                     Table
                   </button>
@@ -496,7 +496,7 @@ function UseCaseList() {
                   key={preset.id}
                   type="button"
                   onClick={() => handleQuickPreset(preset.id)}
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200 ${quickPreset === preset.id ? "border-primary/55 bg-primary-light text-primary-text shadow-elevation-1" : "border-border bg-surface-elevated text-muted hover:border-border-strong hover:text-ink"}`}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200 ${quickPreset === preset.id ? "border-primary/60 bg-primary/15 text-primary-text shadow-elevation-1" : "border-border bg-surface-elevated text-muted hover:border-primary/45 hover:text-ink"}`}
                 >
                   {preset.label}
                 </button>

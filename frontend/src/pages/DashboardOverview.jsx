@@ -269,7 +269,7 @@ function DashboardOverview() {
               </span>
 
               {isAdmin ? (
-                <Button variant="dangerSoft" onClick={handleLock} className="h-9 px-3 text-xs">
+                <Button onClick={handleLock} className="h-9 px-3 text-xs">
                   Admin Mode On
                 </Button>
               ) : (
@@ -420,7 +420,7 @@ function DashboardOverview() {
                 </div>
                 <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-border/55">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-[rgb(var(--color-gradient-to))]/70 via-primary/80 to-[rgb(var(--color-success))]/85"
+                    className="h-full rounded-full bg-gradient-to-r from-primary/65 via-primary/85 to-primary-text/75"
                     style={{ width: `${Math.min(commandCenterModel.qualityScore, 100)}%` }}
                   />
                 </div>

@@ -116,7 +116,7 @@ function ImageCarousel({
         <motion.div
           key={`aura-${tick}`}
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-primary/15 via-[rgb(var(--color-gradient-via))]/18 to-transparent"
+          className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-primary/10 via-primary-text/15 to-transparent"
           initial={{ opacity: 0, x: "-12%" }}
           animate={{ opacity: [0, 0.38, 0], x: ["-12%", "12%", "20%"] }}
           transition={{ duration: 2.1, ease: [0.22, 1, 0.36, 1] }}
@@ -152,7 +152,7 @@ function ImageCarousel({
               key={`dot-${index}`}
               aria-hidden
               className={`h-1.5 rounded-full transition-all duration-200 ${
-                index === displayIndex ? "w-4 bg-primary" : "w-1.5 bg-muted"
+                index === displayIndex ? "w-4 bg-primary" : "w-1.5 bg-border-strong"
               }`}
             />
           ))}

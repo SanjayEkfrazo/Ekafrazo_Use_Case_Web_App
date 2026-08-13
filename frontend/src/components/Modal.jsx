@@ -54,7 +54,7 @@ function Modal({ isOpen, onClose, children, panelClassName = "", backdropClassNa
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className={`fixed inset-0 z-40 flex items-center justify-center px-4 ${backdropClassName || "bg-overlay/75 backdrop-blur-md"}`}
+          className={`fixed inset-0 z-40 flex items-center justify-center px-4 ${backdropClassName || "bg-[rgba(11,7,20,0.75)] backdrop-blur-md"}`}
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={reduceMotion ? {} : { opacity: 1, transition: { duration: motionTokens.standard } }}
           exit={reduceMotion ? {} : { opacity: 0, transition: { duration: motionTokens.fast } }}

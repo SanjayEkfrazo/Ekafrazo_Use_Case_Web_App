@@ -70,7 +70,7 @@ function DomainGrid({ domains, onExplore, className = "", maxItems = 8, dense = 
                 className={`group flex w-full items-center justify-between rounded-xl border border-border bg-surface-elevated text-left transition-all duration-200 hover:border-border-strong motion-reduce:transition-none ${dense ? "px-2.5 py-1.5" : "px-3 py-2"}`}
               >
                 <div className={`flex min-w-0 items-center ${dense ? "gap-2" : "gap-2.5"}`}>
-                  <div className={`inline-flex rounded-lg border border-border bg-surface text-primary ${dense ? "px-1.5 py-1" : "px-1.5 py-1.5"}`}>
+                  <div className={`inline-flex rounded-lg border border-primary/35 bg-primary/15 text-primary ${dense ? "px-1.5 py-1" : "px-1.5 py-1.5"}`}>
                     <Icon className="h-4 w-4" strokeWidth={1.9} />
                   </div>
                   <p className={`truncate font-semibold text-ink ${dense ? "text-xs" : "text-sm"}`}>{domain.name}</p>

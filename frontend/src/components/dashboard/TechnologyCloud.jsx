@@ -18,10 +18,10 @@ function TechnologyCloud({ technologies, className = "", maxItems = 18 }) {
             {visibleTechnologies.map((item) => (
               <div
                 key={item.name}
-                className="rounded-full border border-border bg-surface-elevated px-3 py-1.5 text-xs transition-colors duration-200 hover:border-border-strong motion-reduce:transition-none"
+                className="group rounded-full border border-border bg-surface-elevated px-3 py-1.5 text-xs transition-colors duration-200 hover:border-primary hover:bg-primary hover:text-on-solid motion-reduce:transition-none"
               >
-                <span className="font-semibold text-ink">{item.name}</span>
-                <span className="ml-1.5 rounded-full bg-primary-light px-1.5 py-0.5 text-[11px] font-semibold text-primary-text">{item.count}</span>
+                <span className="font-semibold text-ink group-hover:text-on-solid">{item.name}</span>
+                <span className="ml-1.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[11px] font-semibold text-primary-text group-hover:bg-white/20 group-hover:text-on-solid">{item.count}</span>
               </div>
             ))}
           </div>
