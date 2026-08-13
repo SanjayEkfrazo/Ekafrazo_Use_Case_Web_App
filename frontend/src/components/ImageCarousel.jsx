@@ -116,7 +116,7 @@ function ImageCarousel({
         <motion.div
           key={`aura-${tick}`}
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-primary/10 via-primary-text/15 to-transparent"
+          className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-secondary/8 via-secondary/14 to-transparent"
           initial={{ opacity: 0, x: "-12%" }}
           animate={{ opacity: [0, 0.38, 0], x: ["-12%", "12%", "20%"] }}
           transition={{ duration: 2.1, ease: [0.22, 1, 0.36, 1] }}

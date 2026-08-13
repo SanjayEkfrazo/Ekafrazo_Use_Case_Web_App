@@ -51,7 +51,7 @@ function UseCaseDenseTable({ preparedUseCases, direction, reduceMotion, onOpen }
                 onMouseEnter={() => {
                   prefetchUseCaseById(item.raw.id);
                 }}
-                className={`cursor-pointer border-b border-border/80 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${index % 2 === 0 ? "bg-surface" : "bg-surface-elevated/35"} hover:bg-primary/8`}
+                className={`cursor-pointer border-b border-border/80 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${index % 2 === 0 ? "bg-surface" : "bg-surface-elevated/35"} hover:bg-primary/6`}
               >
                 <td className="max-w-[360px] px-4 py-3 text-ink">
                   <p className="line-clamp-1 font-semibold">{item.title}</p>

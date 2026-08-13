@@ -2,11 +2,11 @@ import { memo } from "react";
 
 const CHART_COLORS = [
   "rgb(var(--color-primary))",
-  "rgb(var(--color-primary-text))",
+  "rgb(var(--color-highlight))",
   "rgb(var(--color-secondary))",
   "rgb(var(--color-primary-hover))",
-  "rgb(var(--color-gradient-via))",
-  "rgb(var(--color-gradient-to))",
+  "rgb(var(--color-secondary-hover))",
+  "rgb(var(--color-primary-active))",
 ];
 
 function createDonutGradient(items) {

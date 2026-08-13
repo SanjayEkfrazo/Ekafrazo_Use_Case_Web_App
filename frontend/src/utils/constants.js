@@ -4,8 +4,8 @@
 export const STATUS_OPTIONS = [
   { value: "Draft", color: "bg-surface-elevated text-muted", dot: "bg-muted" },
   { value: "In Review", color: "border-warning/45 bg-warning/15 text-warning-text", dot: "bg-warning" },
-  { value: "Approved", color: "border-primary/45 bg-primary/15 text-primary-text", dot: "bg-primary" },
-  { value: "In Progress", color: "border-primary/45 bg-primary/15 text-primary-text", dot: "bg-primary" },
+  { value: "Approved", color: "border-success/45 bg-success/15 text-success-text", dot: "bg-success" },
+  { value: "In Progress", color: "border-warning/45 bg-warning/15 text-warning-text", dot: "bg-warning" },
   { value: "Completed", color: "border-success/45 bg-success/15 text-success-text", dot: "bg-success" },
   { value: "On Hold", color: "border-danger/45 bg-danger/15 text-danger-text", dot: "bg-danger" },
 ];
@@ -13,7 +13,7 @@ export const STATUS_OPTIONS = [
 // Options shown in the Priority dropdown, each with a badge color
 export const PRIORITY_OPTIONS = [
   { value: "Low", color: "bg-surface-elevated text-muted", dot: "bg-muted" },
-  { value: "Medium", color: "border-primary/45 bg-primary/15 text-primary-text", dot: "bg-primary" },
+  { value: "Medium", color: "border-warning/45 bg-warning/15 text-warning-text", dot: "bg-warning" },
   { value: "High", color: "border-warning/45 bg-warning/15 text-warning-text", dot: "bg-warning" },
   { value: "Critical", color: "border-danger/45 bg-danger/15 text-danger-text", dot: "bg-danger" },
 ];

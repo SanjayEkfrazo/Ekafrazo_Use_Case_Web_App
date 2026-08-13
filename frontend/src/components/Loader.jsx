@@ -7,7 +7,7 @@ function Loader({ rows = 5 }) {
       {Array.from({ length: rows }).map((_, index) => (
         <div
           key={index}
-          className="h-12 w-full rounded-lg bg-gradient-to-r from-surface-elevated via-border to-surface-elevated bg-[length:200%_100%] animate-shimmer"
+          className="h-12 w-full rounded-lg bg-gradient-to-r from-surface via-border to-surface bg-[length:200%_100%] animate-shimmer"
         />
       ))}
     </div>

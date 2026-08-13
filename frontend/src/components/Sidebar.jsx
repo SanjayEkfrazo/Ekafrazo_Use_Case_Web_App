@@ -109,7 +109,7 @@ function Sidebar() {
                       transition={{ type: "spring", stiffness: 360, damping: 28 }}
                     />
                   ) : null}
-                  <span className={`relative z-10 inline-flex ${isActive ? "text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.45)]" : ""}`}>
+                  <span className={`relative z-10 inline-flex ${isActive ? "text-primary drop-shadow-[0_0_10px_rgba(111,42,126,0.45)]" : ""}`}>
                     <Icon name={item.icon} />
                   </span>
                   <span className="relative z-10">{item.label}</span>

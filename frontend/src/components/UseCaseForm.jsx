@@ -488,7 +488,7 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
               <AlertTriangle size={12} /> {submitError}
             </p>
           )}
-          <Button type="button" variant="secondary" onClick={onCancel}>
+          <Button type="button" variant="ghost" onClick={onCancel}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
