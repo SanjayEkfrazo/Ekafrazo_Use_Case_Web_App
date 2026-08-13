@@ -1,13 +1,11 @@
 // Edit Use Case page: loads existing data, prefills the form, and updates on submit
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
 import PageNavCard from "../components/PageNavCard";
 import UseCaseForm from "../components/UseCaseForm";
 import Loader from "../components/Loader";
 import { fetchUseCaseById, updateUseCase } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
-import useAutoMotionState from "../hooks/useAutoMotionState";
 
 const COMPARABLE_FIELDS = [
   "title",
@@ -35,8 +33,6 @@ function UseCaseEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const reduceMotion = useReducedMotion();
-  const { isIdle } = useAutoMotionState({ enabled: !reduceMotion, idleMs: 3300, tickMs: 2500 });
 
   const [useCase, setUseCase] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,23 +80,18 @@ function UseCaseEdit() {
   };
 
   return (
-    <div className="usecase-auto-shell">
-      <PageNavCard title="Edit Use Case" subtitle="Update use case details and links" />
+    <div className="usecase-auto-shell usecase-edit-page">
+      <PageNavCard compact className="px-3 py-1.5 md:px-4 md:py-2" title="Edit Use Case" subtitle="Update use case details and links" />
 
-      <motion.div
-        className="p-4 md:p-6"
-        initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-        animate={reduceMotion ? {} : { opacity: 1, y: 0, transition: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } }}
-      >
-        <div className={`mx-auto max-w-6xl usecase-auto-stage ${isIdle ? "usecase-auto-idle" : ""}`}>
-          <div className="usecase-stage-scan" aria-hidden />
+      <div className="px-3 pb-1.5 pt-1 md:px-4 md:pb-2.5 md:pt-1.5">
+        <div className="usecase-auto-stage">
           {isLoading ? (
             <Loader rows={6} />
           ) : (
-            <UseCaseForm initialValues={useCase} onSubmit={handleSubmit} onCancel={() => navigate("/use-cases")} submitLabel="Save Changes" />
+            <UseCaseForm compact initialValues={useCase} onSubmit={handleSubmit} onCancel={() => navigate("/use-cases")} submitLabel="Save Changes" />
           )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

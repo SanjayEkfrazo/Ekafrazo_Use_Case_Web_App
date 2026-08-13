@@ -1,7 +1,6 @@
 // Use Case details page: shows full information for one use case
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
 import Loader from "../components/Loader";
 import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -10,15 +9,12 @@ import ImageCarousel from "../components/ImageCarousel";
 import { fetchUseCaseById, deleteUseCase, fetchDomainMedia } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
-import useAutoMotionState from "../hooks/useAutoMotionState";
 
 function UseCaseDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { isAdmin } = useAuth();
-  const reduceMotion = useReducedMotion();
-  const { isIdle, tick } = useAutoMotionState({ enabled: !reduceMotion, idleMs: 3200, tickMs: 2100 });
 
   const [useCase, setUseCase] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -147,8 +143,8 @@ function UseCaseDetails() {
 
   const resolvedDeploymentUrl = shouldSwapLinks ? resourceUrl : deploymentUrl;
   const resolvedResourceUrl = shouldSwapLinks ? deploymentUrl : resourceUrl;
-  const demoActionClass = "mt-2 inline-flex w-full items-center justify-center rounded-lg border border-primary/35 bg-primary/12 px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/55 hover:bg-primary/18 motion-reduce:transform-none motion-reduce:transition-none";
-  const presentationActionClass = "mt-2 inline-flex w-full items-center justify-center rounded-lg border border-primary/35 bg-primary/12 px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/55 hover:bg-primary/18 motion-reduce:transform-none motion-reduce:transition-none";
+  const demoActionClass = "mt-1.5 inline-flex w-full items-center justify-center rounded-lg border border-primary/35 bg-primary/12 px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/55 hover:bg-primary/18 motion-reduce:transform-none motion-reduce:transition-none";
+  const presentationActionClass = "mt-1.5 inline-flex w-full items-center justify-center rounded-lg border border-primary/35 bg-primary/12 px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/55 hover:bg-primary/18 motion-reduce:transform-none motion-reduce:transition-none";
   const techStackItems = normalize(useCase?.technology_stack)
     .split(/[,;|\n]+/)
     .map((item) => item.trim())
@@ -172,32 +168,26 @@ function UseCaseDetails() {
     }
   };
 
-  const autoPanelIndex = isIdle ? tick % 4 : -1;
-
   return (
-    <div className="usecase-auto-shell min-h-full">
-      <PageNavCard title="Use Case Details" subtitle="Review business summary, technology, and resources" />
+    <div className="usecase-auto-shell usecase-details-page min-h-full">
+      <PageNavCard
+        compact
+        className="px-3 py-1.5 md:px-4 md:py-2"
+        title="Use Case Details"
+        subtitle="Review business summary, technology, and resources"
+      />
 
-      <motion.div
-        className="p-4 md:p-6"
-        initial={reduceMotion ? false : { opacity: 0 }}
-        animate={reduceMotion ? {} : { opacity: 1, transition: { duration: 0.36, ease: [0.22, 1, 0.36, 1] } }}
-      >
-        <div className="mx-auto w-full max-w-6xl usecase-auto-stage">
-          <div className="usecase-stage-scan" aria-hidden />
+      <div className="px-3 pb-1 pt-1 md:px-4 md:pb-2 md:pt-1.5">
+        <div className="w-full usecase-auto-stage">
           {isLoading ? (
             <Loader rows={6} />
           ) : (
             <section className="rounded-2xl border border-border bg-surface shadow-card">
               <div className="h-[3px] bg-brand-gradient" />
 
-              <div className="space-y-4 p-4 md:p-5">
-                <motion.header
-                  className={`rounded-xl border border-border bg-surface-elevated p-4 md:p-5 ${autoPanelIndex === 0 ? "auto-panel-pulse" : ""}`}
-                  initial={reduceMotion ? false : { opacity: 0, scale: 0.985 }}
-                  animate={reduceMotion ? {} : { opacity: 1, scale: 1, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
-                >
-                  <div className="mb-4 h-56 w-full md:h-72">
+              <div className="space-y-2 p-2.5 md:p-3">
+                <header className="rounded-xl border border-border bg-surface-elevated p-2.5 md:p-3">
+                  <div className="mb-2.5 h-44 w-full sm:h-48 md:h-56 lg:h-60">
                     {domainImages.length > 0 ? (
                       <ImageCarousel
                         images={domainImages}
@@ -212,10 +202,10 @@ function UseCaseDetails() {
                     )}
                   </div>
 
-                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                  <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
                     <div className="min-w-0">
                       <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">Case Study</p>
-                      <h2 className="mt-1 break-words text-2xl font-semibold leading-tight text-ink [overflow-wrap:anywhere] md:text-[1.9rem]">{normalize(useCase.title) || "Untitled use case"}</h2>
+                      <h2 className="mt-0.5 break-words text-2xl font-semibold leading-tight text-ink [overflow-wrap:anywhere] md:text-[1.9rem]">{normalize(useCase.title) || "Untitled use case"}</h2>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 lg:justify-end">
@@ -281,47 +271,37 @@ function UseCaseDetails() {
                       <div className="hidden lg:block" aria-hidden="true" />
                     )}
                   </div>
-                </motion.header>
+                </header>
 
-                <motion.section
-                  className={`rounded-xl border border-border bg-surface-elevated p-4 ${autoPanelIndex === 1 ? "auto-panel-pulse" : ""}`}
-                  initial={reduceMotion ? false : { opacity: 0 }}
-                  animate={reduceMotion ? {} : { opacity: 1, transition: { duration: 0.34, delay: 0.08, ease: [0.22, 1, 0.36, 1] } }}
-                >
-                  <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Business Overview</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink">{normalize(useCase.description) || "No summary added yet."}</p>
-                </motion.section>
+                <div className="grid gap-2.5 xl:grid-cols-2">
+                  <section className="rounded-xl border border-border bg-surface-elevated p-2.5">
+                    <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Business Overview</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-ink">{normalize(useCase.description) || "No summary added yet."}</p>
+                  </section>
 
-                <motion.section
-                  className={`rounded-xl border border-border bg-surface-elevated p-4 ${autoPanelIndex === 2 ? "auto-panel-pulse" : ""}`}
-                  initial={reduceMotion ? false : { opacity: 0 }}
-                  animate={reduceMotion ? {} : { opacity: 1, transition: { duration: 0.34, delay: 0.14, ease: [0.22, 1, 0.36, 1] } }}
-                >
-                  <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Technology Stack</h3>
-                  {techStackItems.length > 0 ? (
-                    <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      {techStackItems.map((item) => (
-                        <span
-                          key={item}
-                          className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[11px] font-medium text-ink"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="mt-2 text-sm text-muted">Not provided yet.</p>
-                  )}
-                </motion.section>
+                  <section className="rounded-xl border border-border bg-surface-elevated p-2.5">
+                    <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Technology Stack</h3>
+                    {techStackItems.length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {techStackItems.map((item) => (
+                          <span
+                            key={item}
+                            className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[11px] font-medium text-ink"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-1.5 text-sm text-muted">Not provided yet.</p>
+                    )}
+                  </section>
+                </div>
 
-                <motion.section
-                  className={`rounded-xl border border-border bg-surface-elevated p-4 ${autoPanelIndex === 3 ? "auto-panel-pulse" : ""}`}
-                  initial={reduceMotion ? false : { opacity: 0 }}
-                  animate={reduceMotion ? {} : { opacity: 1, transition: { duration: 0.34, delay: 0.2, ease: [0.22, 1, 0.36, 1] } }}
-                >
+                <section className="rounded-xl border border-border bg-surface-elevated p-2.5">
                   <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Resources</h3>
-                  <div className="mt-2.5 grid grid-cols-1 gap-2 md:grid-cols-2">
-                    <div className="rounded-lg border border-border bg-surface p-3">
+                  <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                    <div className="rounded-lg border border-border bg-surface p-2.5">
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted">Live Demo</p>
                       {resolvedDeploymentUrl ? (
                         <a
@@ -337,7 +317,7 @@ function UseCaseDetails() {
                       )}
                     </div>
 
-                    <div className="rounded-lg border border-border bg-surface p-3">
+                    <div className="rounded-lg border border-border bg-surface p-2.5">
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted">Presentation</p>
                       {resolvedResourceUrl ? (
                         <a
@@ -353,13 +333,13 @@ function UseCaseDetails() {
                       )}
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
               </div>
             </section>
           )}
         </div>
-      </motion.div>
+      </div>
 
       <ConfirmDialog
         isOpen={isAdmin && showDeleteDialog}

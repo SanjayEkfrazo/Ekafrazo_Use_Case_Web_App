@@ -8,7 +8,7 @@ function DashboardLayout() {
 
   return (
     <div className="flex h-full min-h-full flex-col overflow-hidden bg-app">
-      <div className="panel-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-2 md:p-3">
+      <div className="panel-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-1.5 md:p-2.5">
         <div className="mx-auto min-h-full w-full max-w-[1700px]">
           <Outlet context={{ dashboardData }} />
         </div>

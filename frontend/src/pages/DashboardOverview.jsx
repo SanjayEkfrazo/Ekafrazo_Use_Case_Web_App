@@ -239,7 +239,7 @@ function DashboardOverview() {
       <div className="command-center-shell">
         <div className="command-center-atmosphere" aria-hidden />
 
-        <div className="relative z-10 space-y-3 p-2.5 md:p-3">
+        <div className="relative z-10 space-y-2 p-1.5 md:p-2">
           <PageHeaderCard
           className="command-center-panel"
           title="Use Case Command Center"
@@ -281,8 +281,8 @@ function DashboardOverview() {
           )}
           />
 
-          <section className="command-center-panel px-3 py-3 md:px-3.5 md:py-3.5">
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-5">
+          <section className="command-center-panel px-2 py-2 md:px-2.5 md:py-2.5">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-5">
               {commandCenterModel.kpiCards.map((card, index) => {
                 const Icon = card.icon;
                 const autoPulse = isIdle && tick % commandCenterModel.kpiCards.length === index;
@@ -290,7 +290,7 @@ function DashboardOverview() {
                 return (
                   <motion.article
                     key={card.label}
-                    className={`command-center-kpi group relative flex h-[104px] w-full flex-col overflow-hidden rounded-[14px] px-3 py-2.5 text-left ${card.accent} ${autoPulse ? "command-center-kpi-auto" : ""}`}
+                    className={`command-center-kpi group relative flex h-[90px] w-full flex-col overflow-hidden rounded-[14px] px-3 py-2 text-left md:h-[96px] ${card.accent} ${autoPulse ? "command-center-kpi-auto" : ""}`}
                     initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.985 }}
                     animate={reduceMotion ? {} : { opacity: 1, y: 0, scale: 1, transition: { duration: 0.34, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] } }}
                   >
@@ -299,9 +299,9 @@ function DashboardOverview() {
                     </span>
 
                     <div className="flex min-h-0 flex-1 flex-col justify-end pr-8">
-                      <p className="font-display text-[1.55rem] font-semibold leading-none tabular-nums text-ink">{card.value}</p>
+                      <p className="font-display text-[1.45rem] font-semibold leading-none tabular-nums text-ink md:text-[1.55rem]">{card.value}</p>
                       <p className="mt-1 truncate text-[11px] font-semibold uppercase tracking-[0.04em] text-ink">{card.label}</p>
-                      <div className="mt-1.5 flex h-[18px] items-center">
+                      <div className="mt-1 flex h-[17px] items-center">
                         {card.metaNode ? card.metaNode : <p className="truncate text-[11px] text-muted">{card.meta}</p>}
                       </div>
                     </div>
@@ -312,17 +312,17 @@ function DashboardOverview() {
           </section>
 
           <motion.div
-            className="grid grid-cols-1 gap-3 xl:grid-cols-2"
+            className="grid grid-cols-1 gap-2 xl:grid-cols-2"
             initial={reduceMotion ? false : { opacity: 0, y: 18 }}
             animate={reduceMotion ? {} : { opacity: 1, y: 0, transition: { duration: 0.38, delay: 0.2, ease: [0.22, 1, 0.36, 1] } }}
           >
-            <motion.section className="command-center-panel flex min-h-0 flex-col p-3" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
-              <div className="mb-2 flex items-center justify-between gap-2">
+            <motion.section className="command-center-panel flex min-h-0 flex-col p-2 md:p-2.5" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
+              <div className="mb-1.5 flex items-center justify-between gap-2">
                 <h3 className="font-display text-sm font-semibold text-ink md:text-base">Use Case Readiness Status</h3>
                 <button
                   type="button"
                   onClick={() => navigate("/use-cases")}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-text transition-colors duration-200 hover:text-primary"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary transition-colors duration-200 hover:text-primary-hover"
                 >
                   View repository
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -330,9 +330,9 @@ function DashboardOverview() {
               </div>
 
               {commandCenterModel.statusRows.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-muted">No readiness data available yet.</p>
+                <p className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted">No readiness data available yet.</p>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {commandCenterModel.statusRows.map((status) => (
                     <div key={status.key}>
                       <div className="flex items-center justify-between gap-2 text-xs">
@@ -351,13 +351,13 @@ function DashboardOverview() {
               )}
             </motion.section>
 
-            <motion.section className="command-center-panel flex min-h-0 flex-col p-3" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
-              <div className="mb-2 flex items-center justify-between gap-2">
+            <motion.section className="command-center-panel flex min-h-0 flex-col p-2 md:p-2.5" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
+              <div className="mb-1.5 flex items-center justify-between gap-2">
                 <h3 className="font-display text-sm font-semibold text-ink md:text-base">Domain / Portfolio Coverage</h3>
                 <button
                   type="button"
                   onClick={() => navigate("/use-cases")}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-text transition-colors duration-200 hover:text-primary"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary transition-colors duration-200 hover:text-primary-hover"
                 >
                   View all domains
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -365,7 +365,7 @@ function DashboardOverview() {
               </div>
 
               {commandCenterModel.domainRows.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-muted">No domain coverage data available yet.</p>
+                <p className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted">No domain coverage data available yet.</p>
               ) : (
                 <div className="panel-scrollbar min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
                   {commandCenterModel.domainRows.map((domain) => {
@@ -398,14 +398,14 @@ function DashboardOverview() {
               )}
             </motion.section>
 
-            <motion.section className="command-center-panel flex min-h-0 flex-col p-3" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
-              <div className="mb-2 flex items-center justify-between gap-2">
+            <motion.section className="command-center-panel flex min-h-0 flex-col p-2 md:p-2.5" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
+              <div className="mb-1.5 flex items-center justify-between gap-2">
                 <h3 className="font-display text-sm font-semibold text-ink md:text-base">Quality & Governance</h3>
                 {isAdmin && (
                   <button
                     type="button"
                     onClick={() => navigate("/use-cases?review=incomplete")}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-text transition-colors duration-200 hover:text-primary"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary transition-colors duration-200 hover:text-primary-hover"
                   >
                     Quality review
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -413,12 +413,12 @@ function DashboardOverview() {
                 )}
               </div>
 
-              <div className="rounded-xl border border-border/70 bg-surface-elevated/80 px-2.5 py-2">
+              <div className="rounded-xl border border-border/70 bg-surface-elevated/80 px-2.5 py-1.5">
                 <div className="flex items-end justify-between gap-2">
                   <p className="text-xs font-medium text-muted">Repository Quality Score</p>
                   <p className="font-display text-lg font-semibold leading-none text-ink">{commandCenterModel.qualityScore}%</p>
                 </div>
-                <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-border/55">
+                <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-border/55">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-primary/65 via-primary/85 to-primary-text/75"
                     style={{ width: `${Math.min(commandCenterModel.qualityScore, 100)}%` }}
@@ -426,7 +426,7 @@ function DashboardOverview() {
                 </div>
               </div>
 
-              <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+              <div className="mt-1.5 grid grid-cols-1 gap-1.5 sm:grid-cols-3">
                 {commandCenterModel.governanceRows.map((item) => (
                   <article key={item.label} className="rounded-lg border border-border/70 bg-surface-elevated/75 px-2.5 py-2">
                     <p className="text-[11px] text-muted">{item.label}</p>
@@ -435,7 +435,7 @@ function DashboardOverview() {
                 ))}
               </div>
 
-              <div className="mt-2.5 min-h-[56px] rounded-lg border border-border/70 bg-surface-elevated/75 px-2.5 py-2">
+              <div className="mt-2 min-h-[52px] rounded-lg border border-border/70 bg-surface-elevated/75 px-2.5 py-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">What to do next</p>
                 {commandCenterModel.nextActions.length === 0 ? (
                   <p className="mt-1 text-xs text-ink">Repository quality looks healthy. Continue regular update reviews.</p>
@@ -452,13 +452,13 @@ function DashboardOverview() {
               </div>
             </motion.section>
 
-            <motion.section className="command-center-panel flex min-h-0 flex-col p-3" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
-              <div className="mb-2 flex items-center justify-between gap-2">
+            <motion.section className="command-center-panel flex min-h-0 flex-col p-2 md:p-2.5" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
+              <div className="mb-1.5 flex items-center justify-between gap-2">
                 <h3 className="font-display text-sm font-semibold text-ink md:text-base">Recent Activity</h3>
                 <button
                   type="button"
                   onClick={() => navigate("/use-cases?sortBy=updated_at&sortOrder=desc")}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-text transition-colors duration-200 hover:text-primary"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary transition-colors duration-200 hover:text-primary-hover"
                 >
                   View all
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -466,7 +466,7 @@ function DashboardOverview() {
               </div>
 
               {commandCenterModel.recentlyUpdated.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-muted">No recent activity available yet.</p>
+                <p className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted">No recent activity available yet.</p>
               ) : (
                 <div className="panel-scrollbar min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
                   {commandCenterModel.recentlyUpdated.map((item) => (

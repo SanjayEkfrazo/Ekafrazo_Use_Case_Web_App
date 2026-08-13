@@ -8,7 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { useToast } from "../hooks/useToast";
 
-function PageNavCard({ title, subtitle, className = "", extraActions = null }) {
+function PageNavCard({ title, subtitle, className = "", extraActions = null, compact = false }) {
   const { isAdmin, unlockAdmin, lockAdmin } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { showToast } = useToast();
@@ -46,7 +46,7 @@ function PageNavCard({ title, subtitle, className = "", extraActions = null }) {
 
   return (
     <>
-      <div className="p-2 md:p-3">
+      <div className={compact ? "px-2 pb-0 pt-1.5 md:px-3 md:pb-0.5 md:pt-2" : "p-2 md:p-3"}>
         <PageHeaderCard
           className={className}
           title={title}

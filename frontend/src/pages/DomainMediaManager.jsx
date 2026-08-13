@@ -314,7 +314,7 @@ function DomainMediaManager() {
         <PageNavCard title="Domain Media" subtitle="Manage domain-level images for browse and details carousels" />
 
         <div className="p-4 md:p-6">
-        <div className="mx-auto w-full max-w-6xl space-y-4">
+          <div className="w-full space-y-4">
           {successMessage && (
             <section className="rounded-xl border border-success/35 bg-success-light/45 px-3 py-2.5 text-sm text-success-text">
               <div className="flex items-center gap-2">

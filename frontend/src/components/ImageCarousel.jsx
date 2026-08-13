@@ -9,6 +9,7 @@ function ImageCarousel({
   className = "",
   imageClassName = "",
   autoPlayMs = 0,
+  disableAnimation = false,
   syncStep,
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -17,7 +18,7 @@ function ImageCarousel({
   const [isFocused, setIsFocused] = useState(false);
   const [navDirection, setNavDirection] = useState(1);
   const reduceMotion = useReducedMotion();
-  const { isIdle, tick } = useAutoMotionState({ enabled: !reduceMotion, idleMs: 3000, tickMs: 2600 });
+  const { isIdle, tick } = useAutoMotionState({ enabled: !reduceMotion && !disableAnimation, idleMs: 3000, tickMs: 2600 });
   const isSyncControlled = Number.isFinite(syncStep);
   const safeImages = useMemo(
     () => images.map((url) => String(url || "").trim()).filter(Boolean),
@@ -96,7 +97,32 @@ function ImageCarousel({
     ? ((Math.floor(syncStep) % visibleImages.length) + visibleImages.length) % visibleImages.length
     : clampedIndex;
 
-  const showAutoAura = !reduceMotion && isIdle && !isHovering && !isFocused;
+  const showAutoAura = !disableAnimation && !reduceMotion && isIdle && !isHovering && !isFocused;
+
+  if (disableAnimation) {
+    return (
+      <div
+        className={`group relative overflow-hidden rounded-xl border border-border bg-surface-elevated ${className}`}
+        role="region"
+        aria-label={`${altBase} carousel`}
+      >
+        <img
+          src={visibleImages[displayIndex].url}
+          alt={`${altBase} ${displayIndex + 1} of ${visibleImages.length}`}
+          className={`absolute inset-0 h-full w-full object-cover ${imageClassName}`}
+          loading="eager"
+          decoding="async"
+          onError={() => {
+            const sourceIndex = visibleImages[displayIndex]?.sourceIndex;
+            if (sourceIndex === undefined) {
+              return;
+            }
+            setBrokenByIndex((current) => ({ ...current, [sourceIndex]: true }));
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
