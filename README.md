@@ -1,21 +1,20 @@
 # Use Case Management System
 
-A full-stack application to manage enterprise use cases and domain media.
+Manage enterprise use cases and domain media with a simple full-stack app.
 
-It includes:
+## What This Project Includes
 
-- A React + Vite frontend
-- An Express backend API
-- A SQLite database using Node built-in node:sqlite
-- Public and admin access modes
+- UI app built with React + Vite
+- Backend API built with Node.js + Express
+- SQLite database (using Node built-in `node:sqlite`)
+- Public mode and Admin mode
 
-## Key Features
+## Main Features
 
-- Use case listing with search, sorting, pagination, and detail view
-- Admin-only create, edit, and delete for use cases
-- Domain media management (upload, replace, delete)
-- Dashboard summary endpoints and admin dashboard pages
-- Backend-enforced admin authorization via signed HTTP-only cookie
+- View use cases with search, sort, pagination, and details
+- Admin can create, edit, and delete use cases
+- Admin can upload and manage domain media
+- Dashboard pages with summary insights
 
 ## Tech Stack
 
@@ -23,25 +22,59 @@ It includes:
 |---|---|
 | Frontend | React, Vite, Tailwind CSS, React Router, Framer Motion |
 | Backend | Node.js, Express, Multer, CORS |
-| Database | SQLite (node:sqlite) |
+| Database | SQLite (`node:sqlite`) |
 
-## Project Layout
+### Version Details
 
-There are two Node projects in this repository:
+#### Frontend
 
-- frontend (UI app)
-- backend (API server)
+| Package | Version |
+|---|---|
+| react | 18.3.1 |
+| react-dom | 18.3.1 |
+| vite | 5.4.8 |
+| @vitejs/plugin-react | 4.3.1 |
+| tailwindcss | 3.4.13 |
+| postcss | 8.4.47 |
+| autoprefixer | 10.4.20 |
+| react-router-dom | 6.26.2 |
+| framer-motion | 13.1.0 |
+| lucide-react | 1.29.0 |
+| react-select | 5.10.2 |
 
-Dependencies are installed separately inside each folder.
+#### Backend
+
+| Package | Version |
+|---|---|
+| node.js | 20+ recommended |
+| express | 4.21.0 |
+| cors | 2.8.5 |
+| dotenv | 17.2.1 |
+| multer | 2.2.0 |
+| nodemon (dev) | 3.1.4 |
+
+#### Database
+
+| Component | Details |
+|---|---|
+| sqlite engine | Node built-in `node:sqlite` |
+| external sqlite npm package | Not required |
+
+## Folder Structure (Simple View)
+
+- `frontend/` -> React app
+- `backend/` -> API server
+
+Both folders have their own dependencies. Install each one separately.
 
 ## Prerequisites
 
-- Node.js 20+ recommended
+- Node.js 20+
 - npm
 
-## Quick Start
+## Quick Setup (Local Development)
 
-### 1) Backend Setup
+### 1) Setup Backend
 
 Windows PowerShell:
 
@@ -59,7 +92,7 @@ npm install
 cp .env.example .env
 ```
 
-Edit backend/.env and set secure values:
+Now edit `backend/.env`:
 
 ```env
 PORT=5000
@@ -68,10 +101,10 @@ ADMIN_PASSCODE=choose-a-strong-passcode
 ADMIN_SESSION_SECRET=choose-a-long-random-secret
 ```
 
-Important:
+Important security notes:
 
-- ADMIN_PASSCODE cannot be default values like change-me or admin123.
-- ADMIN_SESSION_SECRET must be non-default and strong.
+- Do not use weak passcodes like `admin123`
+- Use a long random value for `ADMIN_SESSION_SECRET`
 
 Start backend:
 
@@ -79,11 +112,11 @@ Start backend:
 npm start
 ```
 
-Backend runs at http://localhost:5000
+Backend URL: `http://localhost:5000`
 
-### 2) Frontend Setup
+### 2) Setup Frontend
 
-In a second terminal:
+Open a second terminal:
 
 ```bash
 cd frontend
@@ -91,134 +124,197 @@ npm install
 npm run dev
 ```
 
-Frontend runs at http://localhost:5173
+Frontend URL: `http://localhost:5173`
 
-### 3) Optional Seed Data
+### 3) (Optional) Add Seed Data
 
 ```bash
 cd backend
 npm run seed:reset
 ```
 
-## Available Scripts
+## After Deployment: Start and Test (Beginner Friendly)
 
-### Backend (backend/package.json)
+Use these steps on your server/VM after code is deployed.
 
-- npm start: start API server
-- npm run dev: start server with nodemon
-- npm run seed: seed sample data
-- npm run seed:reset: reset and re-seed data
+### Step 1: Go to project root
 
-### Frontend (frontend/package.json)
+```bash
+cd usecase-management-system
+```
 
-- npm run dev: start Vite dev server
-- npm run build: production build
-- npm run preview: preview production build
+### Step 2: Install dependencies
 
-## Authentication and Roles
+```bash
+npm install --prefix backend
+npm install --prefix frontend
+```
 
-Default role is public.
+### Step 3: Configure backend env
 
-Public role can:
+Create and edit `backend/.env` with real values:
 
-- View use case pages
-- Read data endpoints
+```env
+PORT=5000
+CLIENT_ORIGIN=https://your-frontend-domain.com
+ADMIN_PASSCODE=your-strong-passcode
+ADMIN_SESSION_SECRET=your-long-random-secret
+```
 
-Admin role can:
+### Step 4: Start backend
 
-- Create, update, and delete use cases
-- Manage domain media uploads
+```bash
+npm --prefix backend start
+```
 
-Admin mode flow:
+### Step 5: Build frontend
 
-1. Call unlock endpoint with passcode.
-2. Backend issues signed cookie.
-3. Protected endpoints require that valid admin cookie.
-4. Logout clears admin cookie.
+```bash
+npm --prefix frontend run build
+```
 
-## API Reference
+### Step 6: Start frontend preview
 
-Base URL: http://localhost:5000/api
+```bash
+npm --prefix frontend run preview
+```
 
-### Health
+## How To Test the App (Step by Step)
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | /health | API health check |
+### 1. Check backend health
 
-### Auth
+Open in browser:
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | /auth/me | Return current role |
-| POST | /auth/unlock | Unlock admin mode with passcode |
-| POST | /auth/logout | Clear admin session |
+`http://<your-backend-host>:5000/api/health`
 
-### Use Cases
+Expected: JSON response with success/health message.
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | /usecases | List use cases |
-| GET | /usecases/summary | Dashboard summary |
-| GET | /usecases/domains | Domain filter options |
-| GET | /usecases/:id | Get single use case |
-| POST | /usecases | Create use case (admin) |
-| PUT | /usecases/:id | Update use case (admin) |
-| DELETE | /usecases/:id | Delete use case (admin) |
-| POST | /usecases/upload-domain-image | Upload domain image (admin) |
+### 2. Check frontend loads
 
-### Domain Media
+Open your frontend URL.
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | /domain-media | List domain media |
-| POST | /domain-media/upload | Upload domain media images (admin) |
-| PUT | /domain-media/:id | Replace one media image (admin) |
-| DELETE | /domain-media/:id | Delete media item (admin) |
+Expected: Home page/dashboard opens without crash.
 
-## Request Flow (High Level)
+### 3. Check public data
 
-1. Frontend page triggers a service call.
-2. Service calls backend API endpoint.
-3. Route forwards to controller.
-4. Controller uses service and validation logic.
-5. Database module executes SQLite operations.
-6. API responds with JSON.
-7. UI updates state and feedback messages.
+Open use case list page.
 
-## Storage and Upload Notes
+Expected: Use cases are visible.
 
-- Database file: backend/usecases.db
-- Upload static route: /uploads
+### 4. Check admin unlock
+
+Login/unlock admin mode using `ADMIN_PASSCODE`.
+
+Expected: Admin-only actions become available.
+
+### 5. Check create/edit/delete
+
+Create one test use case, edit it, then delete it.
+
+Expected: All 3 operations succeed.
+
+### 6. Check media upload
+
+Upload one domain image and one gallery image.
+
+Expected: Files appear in UI and backend upload folders.
+
+### 7. Check logout and permissions
+
+Logout admin and try to edit/create again.
+
+Expected: Request is blocked for public user.
+
+## Icons Legend (Quick Understanding)
+
+- 🚀 Start command
+- 🛠 Setup step
+- 🧪 Testing step
+- 🔐 Security setting
+- 📁 Folder/location
+- ✅ Expected successful result
+- ❌ Something failed, check troubleshooting
+
+## Useful Scripts
+
+### Backend (`backend/package.json`)
+
+- `npm start` -> start API server
+- `npm run dev` -> start with nodemon
+- `npm run seed` -> seed sample data
+- `npm run seed:reset` -> reset + seed
+
+### Frontend (`frontend/package.json`)
+
+- `npm run dev` -> start Vite dev server
+- `npm run build` -> production build
+- `npm run preview` -> preview built frontend
+
+## Authentication Basics
+
+### Public user can
+
+- View use cases and details
+
+### Admin user can
+
+- Create, edit, delete use cases
+- Upload and manage media
+
+Admin flow:
+
+1. Send passcode to unlock endpoint
+2. Backend sets signed HTTP-only cookie
+3. Protected APIs allow access with valid cookie
+4. Logout clears cookie
+
+## API Base URL
+
+`http://localhost:5000/api`
+
+### Core Endpoints
+
+- `GET /health`
+- `GET /auth/me`
+- `POST /auth/unlock`
+- `POST /auth/logout`
+- `GET /usecases`
+- `GET /usecases/:id`
+- `POST /usecases` (admin)
+- `PUT /usecases/:id` (admin)
+- `DELETE /usecases/:id` (admin)
+- `GET /domain-media`
+- `POST /domain-media/upload` (admin)
+
+## Storage Notes
+
+- Database file: `backend/usecases.db`
+- Upload route: `/uploads`
 - Upload folders:
-	- backend/uploads/domain-gallery
-	- backend/uploads/domain-images
-
-Repository keeps folder structure and ignores runtime media binaries.
+  - `backend/uploads/domain-gallery`
+  - `backend/uploads/domain-images`
 
 ## Troubleshooting
 
 ### Frontend cannot call backend
 
-- Check CLIENT_ORIGIN in backend/.env.
-- Ensure backend and frontend ports match expected values.
+- Check `CLIENT_ORIGIN` in `backend/.env`
+- Check backend and frontend ports
 
 ### Admin unlock fails
 
-- Verify ADMIN_PASSCODE is set in backend/.env.
-- Restart backend after env changes.
+- Verify `ADMIN_PASSCODE` in `backend/.env`
+- Restart backend after env changes
 
-### Backend fails at startup with admin secret/passcode error
+### Backend fails on startup with secret/passcode error
 
-- Replace default ADMIN_PASSCODE and ADMIN_SESSION_SECRET values.
+- Replace weak/default values in env
 
-## Suggested Reading Order
+## Beginner Tip: Read Code in This Order
 
-For quick codebase understanding:
-
-1. backend/src/server.js
-2. backend/src/app.js
-3. backend/src/routes
-4. backend/src/controllers
-5. frontend/src/routes/AppRoutes.jsx
-6. frontend/src/services
+1. `backend/src/server.js`
+2. `backend/src/app.js`
+3. `backend/src/routes`
+4. `backend/src/controllers`
+5. `frontend/src/routes/AppRoutes.jsx`
+6. `frontend/src/services`
