@@ -1,113 +1,89 @@
 # Use Case Management System
 
-A full-stack app to manage business use cases with a clean, easy-to-follow architecture.
+A full-stack application to manage enterprise use cases and domain media.
 
-The project focuses on one thing: showing how a real CRUD flow moves from UI to API to database and back.
+It includes:
 
-## What This Application Does
+- A React + Vite frontend
+- An Express backend API
+- A SQLite database using Node built-in node:sqlite
+- Public and admin access modes
 
-1. Stores business use cases in SQLite.
-2. Lets users browse, search, and view details.
-3. Allows admins to create, edit, and delete use cases.
-4. Keeps frontend and backend responsibilities clearly separated.
+## Key Features
 
-## User Roles
-
-### Public User (default)
-
-1. Can open dashboard.
-2. Can view use case list and details.
-3. Cannot create, edit, or delete.
-
-### Admin User
-
-1. Starts as Public.
-2. Clicks Unlock Admin in the top-right header.
-3. Enters the admin passcode.
-4. Gets admin mode and can create, edit, and delete.
-5. Can click Logout Admin to return to Public mode.
+- Use case listing with search, sorting, pagination, and detail view
+- Admin-only create, edit, and delete for use cases
+- Domain media management (upload, replace, delete)
+- Dashboard summary endpoints and admin dashboard pages
+- Backend-enforced admin authorization via signed HTTP-only cookie
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React (Vite), Tailwind CSS, React Router |
-| Backend | Node.js, Express |
+| Frontend | React, Vite, Tailwind CSS, React Router, Framer Motion |
+| Backend | Node.js, Express, Multer, CORS |
 | Database | SQLite (node:sqlite) |
 
-## Project Structure
+## Project Layout
 
-```
-usecase-management-system/
-├── backend/
-│   ├── src/
-│   │   ├── app.js
-│   │   ├── server.js
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── database/
-│   │   ├── middlewares/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   └── utils/
-│   └── .env.example
-├── frontend/
-│   └── src/
-│       ├── components/
-│       ├── hooks/
-│       ├── layouts/
-│       ├── pages/
-│       ├── routes/
-│       ├── services/
-│       └── utils/
-└── .gitignore
-```
+There are two Node projects in this repository:
+
+- frontend (UI app)
+- backend (API server)
+
+Dependencies are installed separately inside each folder.
+
+## Prerequisites
+
+- Node.js 20+ recommended
+- npm
 
 ## Quick Start
 
-### Prerequisites
+### 1) Backend Setup
 
-1. Node.js 18+
-2. npm
+Windows PowerShell:
 
-### 1. Run Backend
+```powershell
+cd backend
+npm install
+Copy-Item .env.example .env
+```
+
+macOS/Linux:
 
 ```bash
 cd backend
 npm install
-copy .env.example .env
-npm start
-```
-
-If you are on macOS/Linux, use:
-
-```bash
 cp .env.example .env
 ```
 
-Backend URL: http://localhost:5000
-
-### 2. Configure Backend Environment
-
-Open backend/.env and set secure values:
+Edit backend/.env and set secure values:
 
 ```env
 PORT=5000
 CLIENT_ORIGIN=http://localhost:5173
-ADMIN_PASSCODE=your-admin-passcode
-ADMIN_SESSION_SECRET=your-long-random-secret
+ADMIN_PASSCODE=choose-a-strong-passcode
+ADMIN_SESSION_SECRET=choose-a-long-random-secret
 ```
 
-Meaning:
+Important:
 
-1. ADMIN_PASSCODE is what you enter in Unlock Admin popup.
-2. ADMIN_SESSION_SECRET signs the admin session cookie.
-3. CLIENT_ORIGIN is allowed frontend URL for CORS.
+- ADMIN_PASSCODE cannot be default values like change-me or admin123.
+- ADMIN_SESSION_SECRET must be non-default and strong.
 
-### 3. Run Frontend
+Start backend:
 
-Open a second terminal:
+```bash
+npm start
+```
+
+Backend runs at http://localhost:5000
+
+### 2) Frontend Setup
+
+In a second terminal:
 
 ```bash
 cd frontend
@@ -115,74 +91,134 @@ npm install
 npm run dev
 ```
 
-Frontend URL: http://localhost:5173
+Frontend runs at http://localhost:5173
 
-### 4. Seed Optional Sample Data
+### 3) Optional Seed Data
 
 ```bash
 cd backend
 npm run seed:reset
 ```
 
-## How Request Flow Works
+## Available Scripts
 
-Example: create use case
+### Backend (backend/package.json)
 
-1. User submits form in frontend.
-2. Frontend service sends POST /api/usecases.
-3. Express route receives request.
-4. Controller calls service layer.
-5. Service validates and applies business logic.
-6. Database layer executes SQL insert.
-7. Response returns to frontend.
-8. UI shows toast and refreshes list.
+- npm start: start API server
+- npm run dev: start server with nodemon
+- npm run seed: seed sample data
+- npm run seed:reset: reset and re-seed data
+
+### Frontend (frontend/package.json)
+
+- npm run dev: start Vite dev server
+- npm run build: production build
+- npm run preview: preview production build
+
+## Authentication and Roles
+
+Default role is public.
+
+Public role can:
+
+- View use case pages
+- Read data endpoints
+
+Admin role can:
+
+- Create, update, and delete use cases
+- Manage domain media uploads
+
+Admin mode flow:
+
+1. Call unlock endpoint with passcode.
+2. Backend issues signed cookie.
+3. Protected endpoints require that valid admin cookie.
+4. Logout clears admin cookie.
 
 ## API Reference
 
 Base URL: http://localhost:5000/api
 
-### Auth and Role
+### Health
 
-| Method | Endpoint | Description |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | /auth/me | Get current role (public or admin) |
+| GET | /health | API health check |
+
+### Auth
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | /auth/me | Return current role |
 | POST | /auth/unlock | Unlock admin mode with passcode |
-| POST | /auth/logout | Lock admin mode |
+| POST | /auth/logout | Clear admin session |
 
 ### Use Cases
 
-| Method | Endpoint | Description |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | /usecases | List use cases with search, sort, pagination |
+| GET | /usecases | List use cases |
 | GET | /usecases/summary | Dashboard summary |
-| GET | /usecases/:id | Get one use case |
-| POST | /usecases | Create use case (admin only) |
-| PUT | /usecases/:id | Update use case (admin only) |
-| DELETE | /usecases/:id | Delete use case (admin only) |
+| GET | /usecases/domains | Domain filter options |
+| GET | /usecases/:id | Get single use case |
+| POST | /usecases | Create use case (admin) |
+| PUT | /usecases/:id | Update use case (admin) |
+| DELETE | /usecases/:id | Delete use case (admin) |
+| POST | /usecases/upload-domain-image | Upload domain image (admin) |
 
-## Main Features
+### Domain Media
 
-1. Dashboard summary and recently updated list.
-2. Search, sorting, and pagination.
-3. Details page for each use case.
-4. Shared create/edit form.
-5. Client-side and server-side validation.
-6. Confirm dialog for delete.
-7. Toast feedback for success and errors.
-8. Public and Admin mode with backend-protected write APIs.
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | /domain-media | List domain media |
+| POST | /domain-media/upload | Upload domain media images (admin) |
+| PUT | /domain-media/:id | Replace one media image (admin) |
+| DELETE | /domain-media/:id | Delete media item (admin) |
 
-## Security and Git Hygiene
+## Request Flow (High Level)
 
-1. One root .gitignore is used for the whole repository.
-2. .env files are ignored.
-3. .env.example files are tracked.
-4. Local database files are ignored.
+1. Frontend page triggers a service call.
+2. Service calls backend API endpoint.
+3. Route forwards to controller.
+4. Controller uses service and validation logic.
+5. Database module executes SQLite operations.
+6. API responds with JSON.
+7. UI updates state and feedback messages.
 
-## Learning Notes
+## Storage and Upload Notes
 
-1. SQL is isolated in backend/src/database.
-2. Business logic is isolated in backend/src/services.
-3. Controllers stay thin.
-4. Frontend API calls are centralized in frontend/src/services/api.js.
+- Database file: backend/usecases.db
+- Upload static route: /uploads
+- Upload folders:
+	- backend/uploads/domain-gallery
+	- backend/uploads/domain-images
 
-Start reading from backend/src/server.js and frontend/src/main.jsx to understand the full flow quickly.
+Repository keeps folder structure and ignores runtime media binaries.
+
+## Troubleshooting
+
+### Frontend cannot call backend
+
+- Check CLIENT_ORIGIN in backend/.env.
+- Ensure backend and frontend ports match expected values.
+
+### Admin unlock fails
+
+- Verify ADMIN_PASSCODE is set in backend/.env.
+- Restart backend after env changes.
+
+### Backend fails at startup with admin secret/passcode error
+
+- Replace default ADMIN_PASSCODE and ADMIN_SESSION_SECRET values.
+
+## Suggested Reading Order
+
+For quick codebase understanding:
+
+1. backend/src/server.js
+2. backend/src/app.js
+3. backend/src/routes
+4. backend/src/controllers
+5. frontend/src/routes/AppRoutes.jsx
+6. frontend/src/services

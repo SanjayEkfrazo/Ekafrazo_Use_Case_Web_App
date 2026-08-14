@@ -452,7 +452,8 @@ body {
   }
 
   .ui-modal-panel {
-    @apply rounded-2xl border border-border bg-surface-elevated shadow-elevation-3;
+    @apply rounded-2xl border border-border bg-surface-elevated;
+    box-shadow: var(--shadow-elevation-3);
   }
 }
 
