@@ -156,7 +156,7 @@ Create and edit `backend/.env` with real values:
 
 ```env
 PORT=5000
-CLIENT_ORIGIN=https://dataandaiusecases.com
+CLIENT_ORIGIN=https://your-frontend-domain.com
 ADMIN_PASSCODE=your-strong-passcode
 ADMIN_SESSION_SECRET=your-long-random-secret
 ```
@@ -164,7 +164,10 @@ ADMIN_SESSION_SECRET=your-long-random-secret
 Create and edit `frontend/.env`:
 
 ```env
-VITE_API_BASE_URL=https://api.dataandaiusecases.com/api
+VITE_API_ORIGIN=https://your-api-domain.com
+VITE_API_PATH=/api
+# Optional override (full URL):
+# VITE_API_BASE_URL=https://your-api-domain.com/api
 ```
 
 ### Step 4: Start backend
@@ -191,7 +194,7 @@ npm --prefix frontend run preview
 
 Open in browser:
 
-`https://api.dataandaiusecases.com/api/health`
+`https://your-api-domain.com/api/health`
 
 Expected: JSON response with success/health message.
 
