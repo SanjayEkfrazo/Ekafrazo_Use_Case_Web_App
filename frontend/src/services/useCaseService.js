@@ -96,6 +96,44 @@ export function replaceDomainMediaImage(id, file) {
   return api.putForm(`/domain-media/${id}`, formData);
 }
 
+export function fetchBrowseDomainMedia({ domain = "", domains = [] } = {}) {
+  const params = new URLSearchParams();
+  if (String(domain || "").trim()) {
+    params.set("domain", String(domain).trim());
+  }
+  if (Array.isArray(domains) && domains.length > 0) {
+    const normalizedDomains = domains
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+
+    if (normalizedDomains.length > 0) {
+      params.set("domains", normalizedDomains.join(","));
+    }
+  }
+
+  const query = params.toString();
+  return api.get(`/browse-domain-media${query ? `?${query}` : ""}`);
+}
+
+export function uploadBrowseDomainMediaImages(domain, files) {
+  const formData = new FormData();
+  formData.append("domain", domain);
+  Array.from(files || []).forEach((file) => {
+    formData.append("images", file);
+  });
+  return api.postForm("/browse-domain-media/upload", formData);
+}
+
+export function deleteBrowseDomainMediaImage(id) {
+  return api.delete(`/browse-domain-media/${id}`);
+}
+
+export function replaceBrowseDomainMediaImage(id, file) {
+  const formData = new FormData();
+  formData.append("image", file);
+  return api.putForm(`/browse-domain-media/${id}`, formData);
+}
+
 // Fetch a single use case by id
 export async function fetchUseCaseById(id, { preferCache = true } = {}) {
   const key = String(id || "").trim();

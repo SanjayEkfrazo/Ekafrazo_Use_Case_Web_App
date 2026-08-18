@@ -8,15 +8,15 @@ import PageNavCard from "../components/PageNavCard";
 import { DOMAIN_OPTIONS } from "../utils/constants";
 import { validateCustomDomain } from "../utils/validation";
 import {
-  deleteDomainMediaImage,
-  fetchDomainMedia,
+  deleteBrowseDomainMediaImage,
+  fetchBrowseDomainMedia,
   fetchUseCaseDomains,
-  replaceDomainMediaImage,
-  uploadDomainMediaImages,
+  replaceBrowseDomainMediaImage,
+  uploadBrowseDomainMediaImages,
 } from "../services/useCaseService";
 import { useToast } from "../hooks/useToast";
 
-function DomainMediaManager() {
+function BrowseDomainMediaManager() {
   const { showToast } = useToast();
   const [domains, setDomains] = useState([]);
   const [selectedDomain, setSelectedDomain] = useState("");
@@ -32,6 +32,26 @@ function DomainMediaManager() {
   const [filterDomain, setFilterDomain] = useState("");
 
   const normalizeDomain = (value) => String(value || "").trim().toLowerCase();
+
+  const formatUpdatedLabel = (item) => {
+    const raw = String(item?.updated_at || item?.created_at || "").trim();
+    if (!raw) {
+      return "Unknown";
+    }
+
+    const date = new Date(raw.replace(" ", "T"));
+    if (Number.isNaN(date.getTime())) {
+      return "Unknown";
+    }
+
+    return date.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
 
   const domainOptions = useMemo(() => {
     const baseDomains = DOMAIN_OPTIONS.filter((option) => option.value && option.value !== "Other");
@@ -100,12 +120,7 @@ function DomainMediaManager() {
       grouped.get(key).images.push(item);
     });
 
-    return Array.from(grouped.values()).sort((a, b) => {
-      if (b.images.length !== a.images.length) {
-        return b.images.length - a.images.length;
-      }
-      return a.domain.localeCompare(b.domain);
-    });
+    return Array.from(grouped.values()).sort((a, b) => a.domain.localeCompare(b.domain));
   }, [allMedia]);
 
   const filteredDomainGroups = useMemo(() => {
@@ -186,10 +201,10 @@ function DomainMediaManager() {
 
   const loadAllDomainMedia = async () => {
     try {
-      const response = await fetchDomainMedia();
+      const response = await fetchBrowseDomainMedia();
       setAllMedia(response?.data || []);
     } catch (error) {
-      showToast(error.message || "Failed to load domain images", "error");
+      showToast(error.message || "Failed to load browse card images", "error");
     }
   };
 
@@ -218,9 +233,9 @@ function DomainMediaManager() {
     return () => clearTimeout(timer);
   }, [successMessage]);
 
-  const handleUpload = async ({ domain, files }) => {
+  const handleUpload = async ({ domain, file }) => {
     const resolvedDomain = String(domain || "").trim();
-    const safeFiles = Array.from(files || []);
+    const resolvedFile = file || null;
 
     if (!resolvedDomain) {
       const message = "Domain is required";
@@ -229,25 +244,25 @@ function DomainMediaManager() {
       return;
     }
 
-    if (safeFiles.length === 0) {
+    if (!resolvedFile) {
       return;
     }
 
     setIsUploading(true);
     try {
-      await uploadDomainMediaImages(resolvedDomain, safeFiles);
-      showToast("Domain images uploaded successfully");
-      setSuccessMessage(`Uploaded ${safeFiles.length} image${safeFiles.length > 1 ? "s" : ""} to ${resolvedDomain}.`);
+      await uploadBrowseDomainMediaImages(resolvedDomain, [resolvedFile]);
+      showToast("Browse card image saved successfully");
+      setSuccessMessage(`Saved browse card image for ${resolvedDomain}.`);
       await Promise.all([loadAllDomainMedia(), loadDomains()]);
     } catch (error) {
-      showToast(error.message || "Failed to upload domain images", "error");
+      showToast(error.message || "Failed to save browse card image", "error");
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleUploadFromAddCard = async (event) => {
-    const files = Array.from(event.target.files || []);
+    const file = event.target.files?.[0] || null;
     event.target.value = "";
 
     const domainValidationError = validateDomainValue(selectedDomain);
@@ -257,7 +272,7 @@ function DomainMediaManager() {
       return;
     }
 
-    await handleUpload({ domain: selectedDomain.trim(), files });
+    await handleUpload({ domain: selectedDomain.trim(), file });
   };
 
   const handleDomainChange = (option) => {
@@ -286,7 +301,7 @@ function DomainMediaManager() {
 
     setIsDeletingId(image.id);
     try {
-      await deleteDomainMediaImage(image.id);
+      await deleteBrowseDomainMediaImage(image.id);
       showToast("Image deleted successfully");
       setSuccessMessage("Image deleted successfully.");
       await loadAllDomainMedia();
@@ -316,7 +331,7 @@ function DomainMediaManager() {
 
     setIsReplacingId(pendingReplace.id);
     try {
-      await replaceDomainMediaImage(pendingReplace.id, pendingReplace.file);
+      await replaceBrowseDomainMediaImage(pendingReplace.id, pendingReplace.file);
       showToast("Image updated successfully");
       setSuccessMessage("Image updated successfully.");
       await loadAllDomainMedia();
@@ -331,7 +346,7 @@ function DomainMediaManager() {
   return (
     <>
       <div className="usecase-auto-shell page-enter">
-        <PageNavCard title="Domain Media" subtitle="Manage domain-level images for browse and details carousels" />
+        <PageNavCard title="Browse Domain Media" subtitle="Manage one image per domain for browse cards" />
 
         <div className="p-4 md:p-6">
           <div className="w-full space-y-4">
@@ -430,10 +445,9 @@ function DomainMediaManager() {
 
               <label className="inline-flex h-[38px] cursor-pointer items-center justify-center gap-2 self-end whitespace-nowrap rounded-xl border border-dashed border-border-strong bg-surface-elevated px-3 text-sm font-semibold text-ink transition-all duration-200 hover:border-primary hover:bg-primary/10">
                 <UploadCloud className="h-4 w-4" />
-                {isUploading ? "Uploading..." : "Upload Images"}
+                {isUploading ? "Saving..." : "Upload Image"}
                 <input
                   type="file"
-                  multiple
                   accept="image/*"
                   disabled={isUploading}
                   onChange={handleUploadFromAddCard}
@@ -443,7 +457,7 @@ function DomainMediaManager() {
             </div>
             <p className="mt-2 text-xs text-muted">Select an existing domain or create one. Custom domain must start with a letter, be 2-50 characters, and use only letters, numbers, spaces, &, /, +, and -.</p>
             {domainError && <p className="mt-1 text-xs text-danger-text">{domainError}</p>}
-            <p className="mt-1 text-xs text-muted">Upload multiple images. These will power carousel visuals for all use cases in the selected domain.</p>
+            <p className="mt-1 text-xs text-muted">Upload one image per domain. Uploading again will replace the current browse card image for that domain.</p>
           </section>
 
           <section className="rounded-2xl border border-border bg-surface p-4 shadow-card md:p-5">
@@ -548,37 +562,44 @@ function DomainMediaManager() {
               <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
                 {filteredDomainGroups.map((group) => (
                   <section key={group.key} className="rounded-xl border border-border bg-surface-elevated p-3">
+                    {(() => {
+                      const item = group.images?.[0] || null;
+                      if (!item) {
+                        return null;
+                      }
+
+                      return (
+                        <>
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
                       <div>
                         <h3 className="text-sm font-semibold text-ink">{group.domain}</h3>
-                        <p className="text-xs text-muted">{group.images.length} image{group.images.length > 1 ? "s" : ""}</p>
+                        <p className="text-xs text-muted">1 browse card image</p>
+                        <p className="text-[11px] text-muted">Updated: {formatUpdatedLabel(item)}</p>
                       </div>
 
                       <label className="inline-flex cursor-pointer items-center gap-1 rounded-xl border border-border bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink transition-all duration-200 hover:border-primary">
                         <UploadCloud className="h-3.5 w-3.5" />
-                        Add More
+                        Replace
                         <input
                           type="file"
-                          multiple
                           accept="image/*"
                           disabled={isUploading}
                           onChange={async (event) => {
-                            const files = Array.from(event.target.files || []);
+                            const file = event.target.files?.[0] || null;
                             event.target.value = "";
-                            await handleUpload({ domain: group.domain, files });
+                            await handleUpload({ domain: group.domain, file });
                           }}
                           className="hidden"
                         />
                       </label>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {group.images.map((item) => (
+                    <div className="mt-3">
                         <article key={item.id} className="rounded-xl border border-border bg-surface p-2">
                           <img
                             src={item.image_url}
                             alt={`${group.domain} thumbnail`}
-                            className="h-24 w-full rounded-lg border border-border object-cover"
+                            className="h-32 w-full rounded-lg border border-border object-cover"
                             loading="lazy"
                             decoding="async"
                           />
@@ -594,7 +615,7 @@ function DomainMediaManager() {
 
                           <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-border bg-surface px-2 py-1 text-xs font-semibold text-ink transition-all duration-200 hover:border-primary">
                             <Pencil className="mr-1 h-3.5 w-3.5" />
-                            {isReplacingId === item.id ? "Updating..." : "Replace Image"}
+                            {isReplacingId === item.id ? "Updating..." : "Replace"}
                             <input
                               type="file"
                               accept="image/*"
@@ -604,8 +625,10 @@ function DomainMediaManager() {
                             />
                           </label>
                         </article>
-                      ))}
                     </div>
+                        </>
+                      );
+                    })()}
                   </section>
                 ))}
               </div>
@@ -618,7 +641,7 @@ function DomainMediaManager() {
       <ConfirmDialog
         isOpen={Boolean(pendingDeleteImage)}
         title="Delete this domain image?"
-        description="This image will be removed from the selected domain and will no longer appear in browse and details carousels."
+        description="This image will be removed from the selected domain and will no longer appear in browse cards."
         confirmLabel="Delete"
         onConfirm={() => handleDelete(pendingDeleteImage)}
         onCancel={() => setPendingDeleteImage(null)}
@@ -636,4 +659,4 @@ function DomainMediaManager() {
   );
 }
 
-export default DomainMediaManager;
+export default BrowseDomainMediaManager;

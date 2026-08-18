@@ -2,14 +2,14 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 
-const uploadDir = path.join(__dirname, "..", "..", "uploads", "domain-images");
 const domainGalleryUploadDir = path.join(__dirname, "..", "..", "uploads", "domain-gallery");
-fs.mkdirSync(uploadDir, { recursive: true });
+const browseDomainGalleryUploadDir = path.join(__dirname, "..", "..", "uploads", "domain-browse-gallery");
 fs.mkdirSync(domainGalleryUploadDir, { recursive: true });
+fs.mkdirSync(browseDomainGalleryUploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, uploadDir);
+    cb(null, domainGalleryUploadDir);
   },
   filename: (_req, file, cb) => {
     const extension = path.extname(file.originalname || "").toLowerCase();
@@ -62,8 +62,38 @@ const uploadSingleDomainMediaImage = multer({
   },
 }).single("image");
 
+const browseDomainGalleryStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, browseDomainGalleryUploadDir);
+  },
+  filename: (_req, file, cb) => {
+    const extension = path.extname(file.originalname || "").toLowerCase();
+    const safeExtension = [".png", ".jpg", ".jpeg", ".webp", ".gif"].includes(extension) ? extension : ".png";
+    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${safeExtension}`);
+  },
+});
+
+const uploadBrowseDomainMediaImages = multer({
+  storage: browseDomainGalleryStorage,
+  fileFilter: imageFileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    files: 1,
+  },
+}).array("images", 1);
+
+const uploadSingleBrowseDomainMediaImage = multer({
+  storage: browseDomainGalleryStorage,
+  fileFilter: imageFileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+}).single("image");
+
 module.exports = {
   uploadDomainImage,
   uploadDomainMediaImages,
   uploadSingleDomainMediaImage,
+  uploadBrowseDomainMediaImages,
+  uploadSingleBrowseDomainMediaImage,
 };

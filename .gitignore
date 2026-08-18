@@ -30,9 +30,9 @@ pnpm-debug.log*
 
 # Generated uploads (keep folder structure, ignore runtime media)
 backend/uploads/domain-gallery/*
-backend/uploads/domain-images/*
+backend/uploads/domain-browse-gallery/*
 !backend/uploads/domain-gallery/.gitkeep
-!backend/uploads/domain-images/.gitkeep
+!backend/uploads/domain-browse-gallery/.gitkeep
 !backend/uploads/README.md
 
 # IDE and OS files

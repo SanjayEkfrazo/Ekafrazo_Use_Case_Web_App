@@ -10,8 +10,7 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { fetchDomainMedia, prefetchUseCaseById } from "../services/useCaseService";
-import ImageCarousel from "./ImageCarousel";
+import { fetchBrowseDomainMedia, prefetchUseCaseById } from "../services/useCaseService";
 
 function UseCaseDenseTable({ preparedUseCases, direction, reduceMotion, onOpen }) {
   const handleRowKeyDown = (event, id) => {
@@ -86,7 +85,6 @@ function UseCaseCard({
   index,
   direction,
   reduceMotion,
-  syncStep,
   domainImages,
   toInitials,
   truncate,
@@ -95,6 +93,7 @@ function UseCaseCard({
   onKeyOpen,
 }) {
   const useCase = item.raw;
+  const primaryImageUrl = String(domainImages?.[0] || "").trim();
   const pointerX = useMotionValue(50);
   const pointerY = useMotionValue(50);
   const rotateXRaw = useTransform(pointerY, [0, 100], [7, -7]);
@@ -167,14 +166,16 @@ function UseCaseCard({
         style={reduceMotion ? undefined : { transformOrigin: zoomOrigin }}
       >
         <motion.div className="h-40" whileHover={reduceMotion ? undefined : { scale: 1.03 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
-          {domainImages?.length > 0 ? (
-            <ImageCarousel
-              images={domainImages}
-              altBase={`${item.domain} visual`}
-              className="h-full"
-              autoPlayMs={5000}
-              syncStep={syncStep}
-            />
+          {primaryImageUrl ? (
+            <div className="relative h-full overflow-hidden rounded-xl border border-border bg-surface-elevated">
+              <img
+                src={primaryImageUrl}
+                alt={`${item.domain} visual`}
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
           ) : (
             <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-surface-elevated">
               <motion.div
@@ -224,40 +225,7 @@ function Table({ useCases, transitionKey = "default", direction = 1, viewMode = 
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const [domainMediaByDomain, setDomainMediaByDomain] = useState({});
-  const [syncStep, setSyncStep] = useState(0);
   const isCardMode = viewMode !== "table";
-
-  useEffect(() => {
-    if (!isCardMode) {
-      return undefined;
-    }
-
-    const periodMs = 5000;
-
-    let intervalId;
-    let timeoutId;
-
-    const startSyncedTicker = () => {
-      setSyncStep(Math.floor(Date.now() / periodMs));
-
-      const now = Date.now();
-      const nextBoundaryDelay = periodMs - (now % periodMs);
-
-      timeoutId = setTimeout(() => {
-        setSyncStep(Math.floor(Date.now() / periodMs));
-        intervalId = setInterval(() => {
-          setSyncStep(Math.floor(Date.now() / periodMs));
-        }, periodMs);
-      }, nextBoundaryDelay);
-    };
-
-    startSyncedTicker();
-
-    return () => {
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
-    };
-  }, [isCardMode]);
 
   const domainKey = (value) => String(value || "").trim().toLowerCase();
 
@@ -277,7 +245,7 @@ function Table({ useCases, transitionKey = "default", direction = 1, viewMode = 
       }
 
       try {
-        const response = await fetchDomainMedia({ domains });
+        const response = await fetchBrowseDomainMedia({ domains });
         if (isCancelled) {
           return;
         }
@@ -299,7 +267,7 @@ function Table({ useCases, transitionKey = "default", direction = 1, viewMode = 
           const domainResults = await Promise.all(
             domains.map(async (domain) => {
               try {
-                const perDomain = await fetchDomainMedia({ domain });
+                const perDomain = await fetchBrowseDomainMedia({ domain });
                 return [domain, perDomain?.data || []];
               } catch (_error) {
                 return [domain, []];
@@ -409,7 +377,6 @@ function Table({ useCases, transitionKey = "default", direction = 1, viewMode = 
               index={index}
               direction={direction}
               reduceMotion={reduceMotion}
-              syncStep={syncStep}
               domainImages={domainMediaByDomain[item.domainKey]}
               toInitials={toInitials}
               truncate={truncate}

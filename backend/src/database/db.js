@@ -41,6 +41,43 @@ const createDomainMediaTableQuery = `
 
 db.exec(createDomainMediaTableQuery);
 
+const createBrowseDomainMediaTableQuery = `
+  CREATE TABLE IF NOT EXISTS domain_media_browse (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    domain TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`;
+
+db.exec(createBrowseDomainMediaTableQuery);
+
+function normalizeBrowseDomainMediaSingleImage() {
+  db.exec(`
+    DELETE FROM domain_media_browse
+    WHERE id NOT IN (
+      SELECT id
+      FROM (
+        SELECT id,
+               ROW_NUMBER() OVER (
+                 PARTITION BY LOWER(TRIM(domain))
+                 ORDER BY updated_at DESC, created_at DESC, id DESC
+               ) AS row_num
+        FROM domain_media_browse
+      ) ranked
+      WHERE ranked.row_num = 1
+    )
+  `);
+
+  db.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_domain_media_browse_domain_unique
+    ON domain_media_browse (LOWER(TRIM(domain)))
+  `);
+}
+
+normalizeBrowseDomainMediaSingleImage();
+
 function ensureColumn(columnName, columnDefinition) {
   const columns = db.prepare("PRAGMA table_info(use_cases)").all();
   const exists = columns.some((column) => column.name === columnName);

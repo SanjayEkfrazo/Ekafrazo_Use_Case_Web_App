@@ -114,7 +114,7 @@ function uploadDomainImage(req, res) {
       }
     }
 
-    const imageUrl = `${req.protocol}://${req.get("host")}/uploads/domain-images/${finalFileName}`;
+    const imageUrl = `${req.protocol}://${req.get("host")}/uploads/domain-gallery/${finalFileName}`;
     return res.status(201).json({ data: { url: imageUrl }, message: "Domain image uploaded successfully" });
   } catch (error) {
     return res.status(500).json({ message: "Failed to upload domain image" });
