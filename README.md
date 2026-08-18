@@ -156,9 +156,15 @@ Create and edit `backend/.env` with real values:
 
 ```env
 PORT=5000
-CLIENT_ORIGIN=https://your-frontend-domain.com
+CLIENT_ORIGIN=https://dataandaiusecases.com
 ADMIN_PASSCODE=your-strong-passcode
 ADMIN_SESSION_SECRET=your-long-random-secret
+```
+
+Create and edit `frontend/.env`:
+
+```env
+VITE_API_BASE_URL=https://api.dataandaiusecases.com/api
 ```
 
 ### Step 4: Start backend
@@ -185,7 +191,7 @@ npm --prefix frontend run preview
 
 Open in browser:
 
-`http://<your-backend-host>:5000/api/health`
+`https://api.dataandaiusecases.com/api/health`
 
 Expected: JSON response with success/health message.
 
@@ -299,7 +305,8 @@ Admin flow:
 ### Frontend cannot call backend
 
 - Check `CLIENT_ORIGIN` in `backend/.env`
-- Check backend and frontend ports
+- Check `VITE_API_BASE_URL` in `frontend/.env`
+- Check backend and frontend ports for local development
 
 ### Admin unlock fails
 

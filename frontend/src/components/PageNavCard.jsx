@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import Button from "./Button";
 import Modal from "./Modal";
@@ -9,12 +9,18 @@ import { useTheme } from "../hooks/useTheme";
 import { useToast } from "../hooks/useToast";
 
 function PageNavCard({ title, subtitle, className = "", extraActions = null, compact = false }) {
-  const { isAdmin, unlockAdmin, lockAdmin } = useAuth();
+  const { isAdmin, unlockAdmin, lockAdmin, rememberedPasscode } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { showToast } = useToast();
   const [isUnlockOpen, setIsUnlockOpen] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isUnlockOpen) {
+      setPasscode(rememberedPasscode || "");
+    }
+  }, [isUnlockOpen, rememberedPasscode]);
 
   const handleUnlock = async () => {
     if (!passcode.trim()) {
@@ -26,7 +32,6 @@ function PageNavCard({ title, subtitle, className = "", extraActions = null, com
     try {
       await unlockAdmin(passcode.trim());
       showToast("Admin mode enabled");
-      setPasscode("");
       setIsUnlockOpen(false);
     } catch (error) {
       showToast(error.message, "error");
@@ -84,7 +89,7 @@ function PageNavCard({ title, subtitle, className = "", extraActions = null, com
             return;
           }
           setIsUnlockOpen(false);
-          setPasscode("");
+          setPasscode(rememberedPasscode || "");
         }}
       >
         <h2 className="font-display text-lg font-semibold text-ink">Enable Admin Mode</h2>
@@ -107,7 +112,7 @@ function PageNavCard({ title, subtitle, className = "", extraActions = null, com
             variant="secondary"
             onClick={() => {
               setIsUnlockOpen(false);
-              setPasscode("");
+              setPasscode(rememberedPasscode || "");
             }}
             disabled={isSubmitting}
           >

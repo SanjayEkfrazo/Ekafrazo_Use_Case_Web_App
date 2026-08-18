@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [role, setRole] = useState("public");
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [rememberedPasscode, setRememberedPasscode] = useState("");
 
   const refreshRole = useCallback(async () => {
     try {
@@ -40,7 +41,9 @@ export function AuthProvider({ children }) {
   }, [refreshRole]);
 
   const unlockAdmin = useCallback(async (passcode) => {
-    await unlockAdminRequest(passcode);
+    const normalizedPasscode = String(passcode || "").trim();
+    await unlockAdminRequest(normalizedPasscode);
+    setRememberedPasscode(normalizedPasscode);
     setRole("admin");
   }, []);
 
@@ -54,11 +57,12 @@ export function AuthProvider({ children }) {
       role,
       isAdmin: role === "admin",
       isAuthLoading,
+      rememberedPasscode,
       refreshRole,
       unlockAdmin,
       lockAdmin,
     }),
-    [role, isAuthLoading, refreshRole, unlockAdmin, lockAdmin]
+    [role, isAuthLoading, rememberedPasscode, refreshRole, unlockAdmin, lockAdmin]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

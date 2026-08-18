@@ -1,5 +1,5 @@
 ﻿// Top navigation bar shown above the page content
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import Button from "./Button";
@@ -10,13 +10,19 @@ import { useToast } from "../hooks/useToast";
 import { useTheme } from "../hooks/useTheme";
 
 function Navbar({ title, subtitle, compact = false }) {
-  const { isAdmin, unlockAdmin, lockAdmin } = useAuth();
+  const { isAdmin, unlockAdmin, lockAdmin, rememberedPasscode } = useAuth();
   const { showToast } = useToast();
   const { isDark, toggleTheme } = useTheme();
   const [isUnlockOpen, setIsUnlockOpen] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (isUnlockOpen) {
+      setPasscode(rememberedPasscode || "");
+    }
+  }, [isUnlockOpen, rememberedPasscode]);
 
   const handleUnlock = async () => {
     if (!passcode.trim()) {
@@ -28,7 +34,6 @@ function Navbar({ title, subtitle, compact = false }) {
     try {
       await unlockAdmin(passcode.trim());
       showToast("Admin mode enabled");
-      setPasscode("");
       setIsUnlockOpen(false);
     } catch (error) {
       showToast(error.message, "error");
@@ -92,7 +97,7 @@ function Navbar({ title, subtitle, compact = false }) {
         onClose={() => {
           if (isSubmitting) return;
           setIsUnlockOpen(false);
-          setPasscode("");
+          setPasscode(rememberedPasscode || "");
         }}
       >
         <h2 className="font-display text-lg font-semibold text-ink">Enable Admin Mode</h2>
@@ -115,7 +120,7 @@ function Navbar({ title, subtitle, compact = false }) {
             variant="secondary"
             onClick={() => {
               setIsUnlockOpen(false);
-              setPasscode("");
+              setPasscode(rememberedPasscode || "");
             }}
             disabled={isSubmitting}
           >

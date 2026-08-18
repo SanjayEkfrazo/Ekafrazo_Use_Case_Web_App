@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import {
   AlertTriangle,
@@ -35,7 +35,7 @@ function CoverageMeta({ count, total }) {
 function DashboardOverview() {
   const navigate = useNavigate();
   const { dashboardData } = useOutletContext();
-  const { isAdmin, unlockAdmin, lockAdmin } = useAuth();
+  const { isAdmin, unlockAdmin, lockAdmin, rememberedPasscode } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { showToast } = useToast();
   const [isUnlockOpen, setIsUnlockOpen] = useState(false);
@@ -43,6 +43,12 @@ function DashboardOverview() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const reduceMotion = useReducedMotion();
   const { isIdle, tick } = useAutoMotionState({ enabled: !reduceMotion, idleMs: 3800, tickMs: 2400 });
+
+  useEffect(() => {
+    if (isUnlockOpen) {
+      setPasscode(rememberedPasscode || "");
+    }
+  }, [isUnlockOpen, rememberedPasscode]);
 
   const commandCenterModel = useMemo(() => {
     const totalUseCases = Number(dashboardData.totalUseCases || 0);
@@ -177,7 +183,6 @@ function DashboardOverview() {
     try {
       await unlockAdmin(passcode.trim());
       showToast("Admin mode enabled");
-      setPasscode("");
       setIsUnlockOpen(false);
     } catch (error) {
       showToast(error.message, "error");
@@ -496,7 +501,7 @@ function DashboardOverview() {
             return;
           }
           setIsUnlockOpen(false);
-          setPasscode("");
+          setPasscode(rememberedPasscode || "");
         }}
       >
         <h2 className="font-display text-lg font-semibold text-ink">Enable Admin Mode</h2>
@@ -519,7 +524,7 @@ function DashboardOverview() {
             variant="secondary"
             onClick={() => {
               setIsUnlockOpen(false);
-              setPasscode("");
+              setPasscode(rememberedPasscode || "");
             }}
             disabled={isSubmitting}
           >
