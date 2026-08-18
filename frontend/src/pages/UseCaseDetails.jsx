@@ -168,6 +168,11 @@ function UseCaseDetails() {
     }
   };
 
+  const kpiItems = [
+    { label: "Domain", value: normalize(useCase?.domain) || "Unknown" },
+    { label: "Client", value: normalize(useCase?.client_name) || "Unknown" },
+  ];
+
   return (
     <div className="usecase-auto-shell usecase-details-page min-h-full">
       <PageNavCard
@@ -177,7 +182,7 @@ function UseCaseDetails() {
         subtitle="Review business summary, technology, and resources"
       />
 
-      <div className="px-3 pb-1 pt-1 md:px-4 md:pb-2 md:pt-1.5">
+      <div className="px-3 pb-1 pt-1 md:px-4 md:pb-1.5 md:pt-1.5">
         <div className="w-full usecase-auto-stage">
           {isLoading ? (
             <Loader rows={6} />
@@ -185,156 +190,132 @@ function UseCaseDetails() {
             <section className="rounded-2xl border border-border bg-surface shadow-card">
               <div className="h-[3px] bg-brand-gradient" />
 
-              <div className="space-y-2 p-2.5 md:p-3">
-                <header className="rounded-xl border border-border bg-surface-elevated p-2.5 md:p-3">
-                  <div className="mb-2.5 h-44 w-full sm:h-48 md:h-56 lg:h-60">
-                    {domainImages.length > 0 ? (
-                      <ImageCarousel
-                        images={domainImages}
-                        altBase={`${normalize(useCase.domain) || "Domain"} visual`}
-                        className="h-full w-full"
-                        autoPlayMs={5000}
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-surface text-sm font-medium text-muted">
-                        {`No image added yet • ${toInitials(useCase.domain)}`}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-                    <div className="min-w-0">
+              <div className="space-y-2 p-2.5 md:space-y-2.5 md:p-3">
+                <header className="w-full rounded-xl border border-border bg-surface-elevated p-2.5">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0 w-full lg:flex-1">
                       <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">Case Study</p>
-                      <h2 className="mt-0.5 break-words text-2xl font-semibold leading-tight text-ink [overflow-wrap:anywhere] md:text-[1.9rem]">{normalize(useCase.title) || "Untitled use case"}</h2>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                      <span className="inline-flex items-center whitespace-nowrap rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
-                        Updated: {useCase.updated_at ? formatDate(useCase.updated_at) : "Not available"}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        onClick={handleBack}
-                        className="whitespace-nowrap"
-                      >
-                        Back to Use Cases
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={handleCopyLink}
-                        className="whitespace-nowrap"
-                      >
-                        Copy Link
-                      </Button>
-                    </div>
-
-                    <p className="text-sm leading-relaxed text-muted lg:col-span-2">{normalize(useCase.description) || "No summary added yet."}</p>
-
-                    <div className="flex flex-wrap gap-1.5">
-                      <span className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
-                        Domain: {normalize(useCase.domain) || "Unknown"}
-                      </span>
-                      <span className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
-                        Client: {normalize(useCase.client_name) || "Unknown"}
-                      </span>
-                      {normalize(useCase.status) && (
-                        <span className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
-                          Status: {normalize(useCase.status)}
-                        </span>
-                      )}
-                      {normalize(useCase.priority) && (
-                        <span className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink">
-                          Priority: {normalize(useCase.priority)}
-                        </span>
-                      )}
-                    </div>
-
-                    {isAdmin ? (
-                      <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                        <Button
-                          variant="primary"
-                          onClick={() => navigate(`/use-cases/${useCase.id}/edit`)}
-                          className="whitespace-nowrap"
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="danger"
-                          onClick={() => setShowDeleteDialog(true)}
-                          disabled={isDeleting}
-                          className="whitespace-nowrap"
-                        >
-                          {isDeleting ? "Deleting..." : "Delete"}
-                        </Button>
+                      <h2 className="mt-0.5 break-words text-xl font-semibold leading-tight text-ink [overflow-wrap:anywhere] md:text-2xl">{normalize(useCase.title) || "Untitled use case"}</h2>
                       </div>
-                    ) : (
-                      <div className="hidden lg:block" aria-hidden="true" />
-                    )}
+
+                      <div className="flex min-w-0 items-center gap-2 whitespace-nowrap lg:justify-end">
+                      <span className="shrink-0 text-xs font-medium text-muted whitespace-nowrap">
+                        Updated {useCase?.updated_at ? formatDate(useCase.updated_at) : "Not available"}
+                      </span>
+                      <Button variant="ghost" onClick={handleBack} className="h-8 whitespace-nowrap px-3 text-xs">Back</Button>
+                      <Button variant="ghost" onClick={handleCopyLink} className="h-8 whitespace-nowrap px-3 text-xs">Copy Link</Button>
+                      {isAdmin && (
+                        <>
+                          <Button
+                            variant="primary"
+                            onClick={() => navigate(`/use-cases/${useCase.id}/edit`)}
+                            className="h-8 whitespace-nowrap px-3 text-xs"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="danger"
+                            onClick={() => setShowDeleteDialog(true)}
+                            disabled={isDeleting}
+                            className="h-8 whitespace-nowrap px-3 text-xs"
+                          >
+                            {isDeleting ? "Deleting..." : "Delete"}
+                          </Button>
+                        </>
+                      )}
+                      </div>
+                    </div>
+
+                    <p className="w-full text-sm leading-relaxed text-muted">{normalize(useCase.description) || "No summary added yet."}</p>
                   </div>
                 </header>
 
-                <div className="grid gap-2.5 xl:grid-cols-2">
-                  <section className="rounded-xl border border-border bg-surface-elevated p-2.5">
-                    <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Business Overview</h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-ink">{normalize(useCase.description) || "No summary added yet."}</p>
-                  </section>
-
-                  <section className="rounded-xl border border-border bg-surface-elevated p-2.5">
-                    <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Technology Stack</h3>
-                    {techStackItems.length > 0 ? (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {techStackItems.map((item) => (
-                          <span
-                            key={item}
-                            className="inline-flex items-center rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[11px] font-medium text-ink"
-                          >
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="mt-1.5 text-sm text-muted">Not provided yet.</p>
-                    )}
-                  </section>
-                </div>
-
-                <section className="rounded-xl border border-border bg-surface-elevated p-2.5">
-                  <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Resources</h3>
-                  <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
-                    <div className="rounded-lg border border-border bg-surface p-2.5">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted">Live Demo</p>
-                      {resolvedDeploymentUrl ? (
-                        <a
-                          href={resolvedDeploymentUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={demoActionClass}
-                        >
-                          Open Demo
-                        </a>
-                      ) : (
-                        <p className="mt-2 text-xs text-muted">Not provided by owner.</p>
-                      )}
-                    </div>
-
-                    <div className="rounded-lg border border-border bg-surface p-2.5">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted">Presentation</p>
-                      {resolvedResourceUrl ? (
-                        <a
-                          href={resolvedResourceUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={presentationActionClass}
-                        >
-                          Open Presentation
-                        </a>
-                      ) : (
-                        <p className="mt-2 text-xs text-muted">Not provided by owner.</p>
-                      )}
-                    </div>
-                  </div>
+                <section className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {kpiItems.map((item) => (
+                    <article key={item.label} className="rounded-lg border border-border bg-surface-elevated px-2.5 py-2">
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-muted">{item.label}</p>
+                      <p className={`mt-1 text-sm font-semibold text-ink ${item.label === "Domain" || item.label === "Client" ? "break-words" : "line-clamp-1"}`}>{item.value}</p>
+                    </article>
+                  ))}
                 </section>
 
+                <div className="grid gap-2.5 xl:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]">
+                  <section className="rounded-xl border border-border bg-surface-elevated p-2.5">
+                    <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Domain Visual</h3>
+                    <div className="mt-2 h-[220px] w-full lg:h-[248px]">
+                      {domainImages.length > 0 ? (
+                        <ImageCarousel
+                          images={domainImages}
+                          altBase={`${normalize(useCase.domain) || "Domain"} visual`}
+                          className="h-full w-full"
+                          autoPlayMs={5000}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-surface text-sm font-medium text-muted">
+                          {`No image added yet | ${toInitials(useCase.domain)}`}
+                        </div>
+                      )}
+                    </div>
+                  </section>
+
+                  <div className="space-y-2.5">
+                    <section className="rounded-xl border border-border bg-surface-elevated p-2.5">
+                      <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Technology Stack</h3>
+                      {techStackItems.length > 0 ? (
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          {techStackItems.map((item) => (
+                            <span
+                              key={item}
+                              className="inline-flex items-center rounded-full border border-border bg-surface px-2 py-0.5 font-mono text-[11px] font-medium text-ink"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-1.5 text-sm text-muted">Not provided yet.</p>
+                      )}
+                    </section>
+
+                    <section className="rounded-xl border border-border bg-surface-elevated p-2.5">
+                      <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Actions</h3>
+                      <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                        <div className="rounded-lg border border-border bg-surface p-2">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Live Demo</p>
+                          {resolvedDeploymentUrl ? (
+                            <a
+                              href={resolvedDeploymentUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={demoActionClass}
+                            >
+                              Open Demo
+                            </a>
+                          ) : (
+                            <p className="mt-2 text-xs text-muted">Not provided.</p>
+                          )}
+                        </div>
+
+                        <div className="rounded-lg border border-border bg-surface p-2">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Presentation</p>
+                          {resolvedResourceUrl ? (
+                            <a
+                              href={resolvedResourceUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={presentationActionClass}
+                            >
+                              Open Presentation
+                            </a>
+                          ) : (
+                            <p className="mt-2 text-xs text-muted">Not provided.</p>
+                          )}
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
               </div>
             </section>
           )}
