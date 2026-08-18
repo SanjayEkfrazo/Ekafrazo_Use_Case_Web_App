@@ -16,7 +16,18 @@ const app = express();
 // Allow the frontend to call this API and parse incoming JSON bodies
 app.use(
   cors({
-    origin: CLIENT_ORIGIN,
+    origin: (origin, callback) => {
+      // Allow non-browser requests and same-origin calls with no Origin header.
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (CLIENT_ORIGIN.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );

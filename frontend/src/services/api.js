@@ -1,7 +1,10 @@
 // Base API helper built on top of the Fetch API
 // Every service file uses this instead of calling fetch() directly
 
-const BASE_URL = "http://localhost:5000/api";
+const DEFAULT_API_BASE_URL = import.meta.env.PROD
+  ? "https://api.dataandaiusecases.com/api"
+  : "http://localhost:5000/api";
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/$/, "");
 
 // Perform a request and return parsed JSON, throwing a friendly error on failure
 async function request(path, options = {}) {
