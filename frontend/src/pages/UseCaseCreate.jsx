@@ -32,8 +32,8 @@ function UseCaseCreate() {
       <PageNavCard
         compact
         className="px-3 py-1.5 md:px-4 md:py-2"
-        title="Create Use Case"
-        subtitle="Add a new use case to the repository"
+        title="Create New Use Case"
+        subtitle="Add a new use case with clear business and technical details."
       />
 
       <div className="px-3 pb-2 pt-1 md:px-4 md:pb-3 md:pt-1.5">

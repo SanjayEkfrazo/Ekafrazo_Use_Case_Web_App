@@ -5,6 +5,7 @@ function NotFound() {
   return (
     <div className="page-enter flex min-h-screen flex-col items-center justify-center gap-3 bg-app px-6 text-center">
       <p className="font-display text-7xl font-bold text-transparent [background:linear-gradient(135deg,rgb(var(--color-primary))_0%,rgb(var(--color-secondary))_100%)] [background-clip:text] [-webkit-background-clip:text]">404</p>
+      <h1 className="font-display text-2xl font-semibold text-ink">Page Not Found</h1>
       <p className="text-sm text-muted">The page you are looking for does not exist.</p>
       <Link
         to="/"

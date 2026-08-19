@@ -178,8 +178,8 @@ function UseCaseDetails() {
       <PageNavCard
         compact
         className="px-3 py-1.5 md:px-4 md:py-2"
-        title="Use Case Details"
-        subtitle="Review business summary, technology, and resources"
+        title="Use Case Profile"
+        subtitle="View the full use case profile, links, and related media."
       />
 
       <div className="px-3 pb-1 pt-1 md:px-4 md:pb-1.5 md:pt-1.5">

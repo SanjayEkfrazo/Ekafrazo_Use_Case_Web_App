@@ -331,7 +331,7 @@ function DomainMediaManager() {
   return (
     <>
       <div className="usecase-auto-shell page-enter">
-        <PageNavCard title="Domain Media" subtitle="Manage domain-level images for browse and details carousels" />
+        <PageNavCard title="Detail Page Media" subtitle="Upload and manage images shown on use case detail pages." />
 
         <div className="p-4 md:p-6">
           <div className="w-full space-y-4">

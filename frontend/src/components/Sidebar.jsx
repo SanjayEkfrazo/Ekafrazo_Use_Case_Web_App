@@ -1,16 +1,16 @@
 // Sidebar navigation shown on the left of every page
-import { memo } from "react";
+import { memo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "../hooks/useAuth";
 
 const navItems = [
   { type: "heading", label: "Dashboard", adminOnly: true },
-  { to: "/dashboard/overview", label: "Overview", icon: "grid", adminOnly: true },
+  { to: "/dashboard/overview", label: "Dashboard Overview", icon: "grid", adminOnly: true },
   { to: "/browse-domain-media", label: "Browse Card Media", icon: "chart", adminOnly: true },
-  { to: "/domain-media", label: "Detail View Media", icon: "pulse", adminOnly: true },
+  { to: "/domain-media", label: "Detail Page Media", icon: "pulse", adminOnly: true },
   { type: "heading", label: "Repository" },
-  { to: "/use-cases", label: "Browse Use Cases", icon: "list" },
+  { to: "/use-cases", label: "Use Case Library", icon: "list" },
 ];
 
 // Small inline icon renderer so we avoid adding an icon library dependency
@@ -61,6 +61,7 @@ function Icon({ name }) {
 function Sidebar() {
   const { isAdmin } = useAuth();
   const reduceMotion = useReducedMotion();
+  const [logoFailed, setLogoFailed] = useState(false);
   const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
   return (
@@ -70,11 +71,25 @@ function Sidebar() {
       animate={reduceMotion ? {} : { x: 0, opacity: 1, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } }}
     >
       {/* Brand mark */}
-      <div className="mb-8 flex items-center gap-2 px-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-gradient font-display text-sm font-bold text-on-solid shadow-glow-brand">
-          EK
+      <div className="mb-8 px-2">
+        <div className="flex flex-col items-center gap-2 text-center">
+          {!logoFailed ? (
+            <img
+              src="/ekfrazo-logo.png"
+              alt="Ekfrazo"
+              className="h-12 w-auto max-w-[132px] object-contain"
+              onError={() => setLogoFailed(true)}
+            />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-gradient font-display text-base font-bold text-on-solid shadow-glow-brand">
+              EK
+            </div>
+          )}
+          <div className="max-w-[176px] leading-[1.28]">
+            <p className="font-display text-[15px] font-medium tracking-[0.015em] text-sidebar-active/95">Data & AI Use Cases Hub</p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-sidebar-text/70">Ekfrazo Platform</p>
+          </div>
         </div>
-        <span className="font-display text-sm font-semibold text-sidebar-active">Use Case Repository</span>
       </div>
 
       {/* Navigation links */}

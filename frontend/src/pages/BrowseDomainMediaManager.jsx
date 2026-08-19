@@ -346,7 +346,7 @@ function BrowseDomainMediaManager() {
   return (
     <>
       <div className="usecase-auto-shell page-enter">
-        <PageNavCard title="Browse Domain Media" subtitle="Manage one image per domain for browse cards" />
+        <PageNavCard title="Browse Card Media" subtitle="Manage domain images shown on browse cards." />
 
         <div className="p-4 md:p-6">
           <div className="w-full space-y-4">

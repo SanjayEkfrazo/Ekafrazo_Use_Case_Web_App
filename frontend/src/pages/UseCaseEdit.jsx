@@ -81,7 +81,7 @@ function UseCaseEdit() {
 
   return (
     <div className="usecase-auto-shell usecase-edit-page">
-      <PageNavCard compact className="px-3 py-1.5 md:px-4 md:py-2" title="Edit Use Case" subtitle="Update use case details and links" />
+      <PageNavCard compact className="px-3 py-1.5 md:px-4 md:py-2" title="Edit Use Case" subtitle="Update this use case and keep the information accurate." />
 
       <div className="px-3 pb-1.5 pt-1 md:px-4 md:pb-2.5 md:pt-1.5">
         <div className="usecase-auto-stage">

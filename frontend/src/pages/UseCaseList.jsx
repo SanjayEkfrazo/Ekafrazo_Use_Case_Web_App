@@ -346,7 +346,7 @@ function UseCaseList() {
   return (
     <>
       <div className="usecase-auto-shell">
-        <PageNavCard title="Use Case Repository" subtitle="Search and browse business use cases" />
+        <PageNavCard title="Use Case Library" subtitle="Search and explore all data and AI use cases." />
 
         <div className="p-4 md:p-6">
           <div className="mb-4 rounded-2xl border border-border bg-surface p-3 shadow-card md:p-4">

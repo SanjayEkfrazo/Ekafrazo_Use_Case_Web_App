@@ -247,8 +247,8 @@ function DashboardOverview() {
         <div className="relative z-10 space-y-2 p-1.5 md:p-2">
           <PageHeaderCard
           className="command-center-panel"
-          title="Use Case Command Center"
-          subtitle="Repository overview • portfolio health • readiness • activity"
+          title="Dashboard Overview"
+          subtitle="Track repository health, updates, and key use case metrics."
           actions={(
             <>
               <button
