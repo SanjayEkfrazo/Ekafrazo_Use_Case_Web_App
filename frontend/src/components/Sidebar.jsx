@@ -7,6 +7,7 @@ import { useAuth } from "../hooks/useAuth";
 const navItems = [
   { type: "heading", label: "Dashboard", adminOnly: true },
   { to: "/dashboard/overview", label: "Dashboard Overview", icon: "grid", adminOnly: true },
+  { to: "/access-audit", label: "Access Audit", icon: "shield", adminOnly: true },
   { to: "/browse-domain-media", label: "Browse Card Media", icon: "chart", adminOnly: true },
   { to: "/domain-media", label: "Detail Page Media", icon: "pulse", adminOnly: true },
   { type: "heading", label: "Repository" },

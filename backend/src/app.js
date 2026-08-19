@@ -8,6 +8,7 @@ const usecaseRoutes = require("./routes/usecase.routes");
 const domainMediaRoutes = require("./routes/domainMedia.routes");
 const browseDomainMediaRoutes = require("./routes/browseDomainMedia.routes");
 const authRoutes = require("./routes/auth.routes");
+const accessRoutes = require("./routes/access.routes");
 const { errorHandler, notFoundHandler } = require("./middlewares/errorHandler");
 const { CLIENT_ORIGIN } = require("./config/server.config");
 
@@ -42,6 +43,7 @@ app.get("/api/health", (req, res) => {
 
 // Mount use case routes under /api/usecases
 app.use("/api/auth", authRoutes);
+app.use("/api/access", accessRoutes);
 app.use("/api/usecases", usecaseRoutes);
 app.use("/api/domain-media", domainMediaRoutes);
 app.use("/api/browse-domain-media", browseDomainMediaRoutes);

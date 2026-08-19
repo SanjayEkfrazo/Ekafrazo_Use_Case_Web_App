@@ -965,6 +965,11 @@ body {
   border-radius: 8px;
 }
 
+.input-terminal[type="password"]::-ms-reveal,
+.input-terminal[type="password"]::-ms-clear {
+  display: none;
+}
+
 @keyframes shimmer {
   0% {
     background-position: 200% 0;

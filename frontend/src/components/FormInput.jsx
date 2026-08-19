@@ -1,7 +1,22 @@
 // Reusable labeled text input with inline validation error
 import { memo } from "react";
 
-function FormInput({ label, name, value, onChange, onBlur, error, placeholder = "", type = "text", className = "", required = false }) {
+function FormInput({
+  label,
+  name,
+  value,
+  onChange,
+  onBlur,
+  error,
+  placeholder = "",
+  type = "text",
+  className = "",
+  required = false,
+  autoComplete,
+  spellCheck,
+  autoCorrect,
+  autoCapitalize,
+}) {
   const isTerminal = className.includes("input-terminal");
 
   return (
@@ -18,6 +33,10 @@ function FormInput({ label, name, value, onChange, onBlur, error, placeholder = 
         value={value}
         onChange={onChange}
         onBlur={onBlur}
+        autoComplete={autoComplete}
+        spellCheck={spellCheck}
+        autoCorrect={autoCorrect}
+        autoCapitalize={autoCapitalize}
         placeholder={placeholder}
         className={`${className} ui-input ${
           isTerminal ? "bg-transparent text-inherit" : "bg-surface text-ink"

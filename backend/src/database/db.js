@@ -53,6 +53,43 @@ const createBrowseDomainMediaTableQuery = `
 
 db.exec(createBrowseDomainMediaTableQuery);
 
+const createAccessUsersTableQuery = `
+  CREATE TABLE IF NOT EXISTS access_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name TEXT NOT NULL,
+    work_email TEXT NOT NULL,
+    organization TEXT NOT NULL,
+    purpose TEXT NOT NULL,
+    phone TEXT NOT NULL DEFAULT '',
+    department TEXT NOT NULL DEFAULT '',
+    project_timeline TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_signed_in_at TEXT
+  )
+`;
+
+db.exec(createAccessUsersTableQuery);
+
+db.exec(`
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_access_users_email_unique
+  ON access_users (LOWER(TRIM(work_email)))
+`);
+
+const createAccessSigninLogsTableQuery = `
+  CREATE TABLE IF NOT EXISTS access_signin_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    access_user_id INTEGER NOT NULL,
+    full_name TEXT NOT NULL,
+    work_email TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (access_user_id) REFERENCES access_users (id) ON DELETE CASCADE
+  )
+`;
+
+db.exec(createAccessSigninLogsTableQuery);
+
 function normalizeBrowseDomainMediaSingleImage() {
   db.exec(`
     DELETE FROM domain_media_browse

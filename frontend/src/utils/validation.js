@@ -79,3 +79,53 @@ export function validateCustomDomain(value) {
 
   return "";
 }
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+}
+
+export function validateAccessGateFullDetails(values) {
+  const errors = {};
+  const fullName = String(values?.fullName || "").trim();
+  const workEmail = String(values?.workEmail || "").trim();
+  const organization = String(values?.organization || "").trim();
+  const purpose = String(values?.purpose || "").trim();
+
+  if (!fullName) {
+    errors.fullName = "Full name is required";
+  }
+
+  if (!workEmail) {
+    errors.workEmail = "Work email is required";
+  } else if (!isValidEmail(workEmail)) {
+    errors.workEmail = "Enter a valid email address";
+  }
+
+  if (!organization) {
+    errors.organization = "Organization is required";
+  }
+
+  if (!purpose) {
+    errors.purpose = "Purpose is required";
+  }
+
+  return errors;
+}
+
+export function validateAccessGateLoginDetails(values) {
+  const errors = {};
+  const fullName = String(values?.fullName || "").trim();
+  const workEmail = String(values?.workEmail || "").trim();
+
+  if (!fullName) {
+    errors.fullName = "Full name is required";
+  }
+
+  if (!workEmail) {
+    errors.workEmail = "Work email is required";
+  } else if (!isValidEmail(workEmail)) {
+    errors.workEmail = "Enter a valid email address";
+  }
+
+  return errors;
+}

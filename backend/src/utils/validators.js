@@ -37,4 +37,58 @@ function validateUseCase(data) {
   return errors;
 }
 
-module.exports = { validateUseCase };
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+}
+
+function validateAccessSignup(data) {
+  const errors = [];
+  const fullName = String(data?.full_name || "").trim();
+  const workEmail = String(data?.work_email || "").trim();
+  const organization = String(data?.organization || "").trim();
+  const purpose = String(data?.purpose || "").trim();
+
+  if (!fullName) {
+    errors.push("full name is required");
+  }
+
+  if (!workEmail) {
+    errors.push("work email is required");
+  } else if (!isValidEmail(workEmail)) {
+    errors.push("work email must be valid");
+  }
+
+  if (!organization) {
+    errors.push("organization is required");
+  }
+
+  if (!purpose) {
+    errors.push("purpose is required");
+  }
+
+  return errors;
+}
+
+function validateAccessSignin(data) {
+  const errors = [];
+  const fullName = String(data?.full_name || "").trim();
+  const workEmail = String(data?.work_email || "").trim();
+
+  if (!fullName) {
+    errors.push("full name is required");
+  }
+
+  if (!workEmail) {
+    errors.push("work email is required");
+  } else if (!isValidEmail(workEmail)) {
+    errors.push("work email must be valid");
+  }
+
+  return errors;
+}
+
+module.exports = {
+  validateUseCase,
+  validateAccessSignup,
+  validateAccessSignin,
+};

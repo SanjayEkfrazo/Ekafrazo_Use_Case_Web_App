@@ -40,6 +40,7 @@ function DashboardOverview() {
   const { showToast } = useToast();
   const [isUnlockOpen, setIsUnlockOpen] = useState(false);
   const [passcode, setPasscode] = useState("");
+  const [showPasscode, setShowPasscode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const reduceMotion = useReducedMotion();
   const { isIdle, tick } = useAutoMotionState({ enabled: !reduceMotion, idleMs: 3800, tickMs: 2400 });
@@ -47,6 +48,7 @@ function DashboardOverview() {
   useEffect(() => {
     if (isUnlockOpen) {
       setPasscode(rememberedPasscode || "");
+      setShowPasscode(false);
     }
   }, [isUnlockOpen, rememberedPasscode]);
 
@@ -508,37 +510,59 @@ function DashboardOverview() {
           setIsUnlockOpen(false);
           setPasscode(rememberedPasscode || "");
         }}
+        panelClassName="max-w-[49rem]"
       >
         <h2 className="font-display text-lg font-semibold text-ink">Enable Admin Mode</h2>
         <p className="mt-2 text-sm text-muted">Enter the admin passcode to enable create, edit, and delete actions.</p>
 
-        <div className="mt-4">
+        <form
+          className="mt-4"
+          autoComplete="off"
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleUnlock();
+          }}
+        >
           <FormInput
             label="Admin Passcode"
             name="admin_passcode"
-            type="password"
+            type={showPasscode ? "text" : "password"}
             value={passcode}
             onChange={(event) => setPasscode(event.target.value)}
             placeholder="Enter passcode"
             className="input-terminal"
+            autoComplete="new-password"
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="none"
           />
-        </div>
+          <div className="mt-2 flex justify-end">
+            <button
+              type="button"
+              className="text-xs font-semibold text-primary transition-colors hover:text-primary-hover"
+              onClick={() => setShowPasscode((current) => !current)}
+            >
+              {showPasscode ? "Hide" : "Show"} passcode
+            </button>
+          </div>
 
-        <div className="mt-6 flex justify-end gap-3">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setIsUnlockOpen(false);
-              setPasscode(rememberedPasscode || "");
-            }}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleUnlock} disabled={isSubmitting}>
-            {isSubmitting ? "Enabling..." : "Enable Admin Mode"}
-          </Button>
-        </div>
+          <div className="mt-6 flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setIsUnlockOpen(false);
+                setPasscode(rememberedPasscode || "");
+              }}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Enabling..." : "Enable Admin Mode"}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </>
   );

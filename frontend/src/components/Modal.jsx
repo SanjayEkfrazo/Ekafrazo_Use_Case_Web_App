@@ -1,12 +1,18 @@
 // Reusable modal dialog wrapper
 // Renders its children inside a centered card with a backdrop
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { motionTokens, softScaleIn } from "../utils/motion";
 
 function Modal({ isOpen, onClose, children, panelClassName = "", backdropClassName = "" }) {
   const panelRef = useRef(null);
+  const onCloseRef = useRef(onClose);
   const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -23,7 +29,7 @@ function Modal({ isOpen, onClose, children, panelClassName = "", backdropClassNa
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        onCloseRef.current?.();
         return;
       }
 
@@ -48,9 +54,9 @@ function Modal({ isOpen, onClose, children, panelClassName = "", backdropClassNa
         previousFocused.focus();
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
-  return (
+  const modalNode = (
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -76,6 +82,12 @@ function Modal({ isOpen, onClose, children, panelClassName = "", backdropClassNa
       )}
     </AnimatePresence>
   );
+
+  if (typeof document === "undefined") {
+    return modalNode;
+  }
+
+  return createPortal(modalNode, document.body);
 }
 
 export default Modal;

@@ -2,11 +2,49 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { fetchCurrentRole, unlockAdmin as unlockAdminRequest, logoutAdmin as logoutAdminRequest } from "../services/authService";
 
 const AuthContext = createContext(null);
+const REMEMBERED_PASSCODE_KEY = "auth:remembered-passcode";
+const REMEMBERED_PASSCODE_VERIFIED_KEY = "auth:remembered-passcode:verified";
+
+function getSessionRememberedPasscode() {
+  try {
+    const isVerified = sessionStorage.getItem(REMEMBERED_PASSCODE_VERIFIED_KEY) === "1";
+    if (!isVerified) {
+      sessionStorage.removeItem(REMEMBERED_PASSCODE_KEY);
+      return "";
+    }
+
+    const remembered = String(sessionStorage.getItem(REMEMBERED_PASSCODE_KEY) || "").trim();
+    if (!remembered) {
+      sessionStorage.removeItem(REMEMBERED_PASSCODE_KEY);
+      sessionStorage.removeItem(REMEMBERED_PASSCODE_VERIFIED_KEY);
+      return "";
+    }
+
+    return remembered;
+  } catch (_error) {
+    return "";
+  }
+}
+
+function setSessionRememberedPasscode(value) {
+  try {
+    if (!value) {
+      sessionStorage.removeItem(REMEMBERED_PASSCODE_KEY);
+      sessionStorage.removeItem(REMEMBERED_PASSCODE_VERIFIED_KEY);
+      return;
+    }
+
+    sessionStorage.setItem(REMEMBERED_PASSCODE_KEY, value);
+    sessionStorage.setItem(REMEMBERED_PASSCODE_VERIFIED_KEY, "1");
+  } catch (_error) {
+    // Ignore storage write errors and keep auth flow functional.
+  }
+}
 
 export function AuthProvider({ children }) {
   const [role, setRole] = useState("public");
   const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [rememberedPasscode, setRememberedPasscode] = useState("");
+  const [rememberedPasscode, setRememberedPasscode] = useState(() => getSessionRememberedPasscode());
 
   const refreshRole = useCallback(async () => {
     try {
@@ -42,9 +80,17 @@ export function AuthProvider({ children }) {
 
   const unlockAdmin = useCallback(async (passcode) => {
     const normalizedPasscode = String(passcode || "").trim();
-    await unlockAdminRequest(normalizedPasscode);
-    setRememberedPasscode(normalizedPasscode);
-    setRole("admin");
+    try {
+      await unlockAdminRequest(normalizedPasscode);
+      setRememberedPasscode(normalizedPasscode);
+      setSessionRememberedPasscode(normalizedPasscode);
+      setRole("admin");
+    } catch (error) {
+      // Keep autofill trustworthy by clearing stale/invalid remembered values.
+      setRememberedPasscode("");
+      setSessionRememberedPasscode("");
+      throw error;
+    }
   }, []);
 
   const lockAdmin = useCallback(async () => {
