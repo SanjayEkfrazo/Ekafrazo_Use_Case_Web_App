@@ -10,6 +10,19 @@ import { fetchUseCaseById, deleteUseCase, fetchDomainMedia } from "../services/u
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
 
+function getOrderedIds() {
+  try {
+    const raw = localStorage.getItem("usecase:list:orderedIds");
+    if (!raw) {
+      return [];
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map((value) => String(value)) : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
 function UseCaseDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -21,6 +34,7 @@ function UseCaseDetails() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [domainImages, setDomainImages] = useState([]);
+  const [orderedIds, setOrderedIds] = useState([]);
 
   const formatDate = (value) => {
     const date = new Date(value);
@@ -58,11 +72,8 @@ function UseCaseDetails() {
   };
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
-    navigate("/use-cases");
+    const lastQuery = localStorage.getItem("usecase:list:lastQuery") || "";
+    navigate(`/use-cases${lastQuery}`);
   };
 
   const handleCopyLink = async () => {
@@ -85,6 +96,10 @@ function UseCaseDetails() {
       showToast("Unable to copy link", "error");
     }
   };
+
+  useEffect(() => {
+    setOrderedIds(getOrderedIds());
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -173,6 +188,24 @@ function UseCaseDetails() {
     { label: "Client", value: normalize(useCase?.client_name) || "Unknown" },
   ];
 
+  const currentIndex = orderedIds.indexOf(String(id));
+  const previousId = currentIndex > 0 ? orderedIds[currentIndex - 1] : null;
+  const nextId = currentIndex >= 0 && currentIndex < orderedIds.length - 1 ? orderedIds[currentIndex + 1] : null;
+
+  const handleGoPrevious = () => {
+    if (!previousId) {
+      return;
+    }
+    navigate(`/use-cases/${previousId}`);
+  };
+
+  const handleGoNext = () => {
+    if (!nextId) {
+      return;
+    }
+    navigate(`/use-cases/${nextId}`);
+  };
+
   return (
     <div className="usecase-auto-shell usecase-details-page min-h-full">
       <PageNavCard
@@ -180,6 +213,13 @@ function UseCaseDetails() {
         className="px-3 py-1.5 md:px-4 md:py-2"
         title="Use Case Profile"
         subtitle="View the full use case profile, links, and related media."
+        extraActions={(
+          <>
+            <Button variant="ghost" onClick={handleGoPrevious} disabled={!previousId} className="h-9 px-3 text-xs">Previous</Button>
+            <Button variant="ghost" onClick={handleGoNext} disabled={!nextId} className="h-9 px-3 text-xs">Next</Button>
+            <Button variant="secondary" onClick={handleBack} className="h-9 px-3 text-xs">Back to Library</Button>
+          </>
+        )}
       />
 
       <div className="px-3 pb-1 pt-1 md:px-4 md:pb-1.5 md:pt-1.5">
@@ -203,7 +243,6 @@ function UseCaseDetails() {
                       <span className="shrink-0 text-xs font-medium text-muted whitespace-nowrap">
                         Updated {useCase?.updated_at ? formatDate(useCase.updated_at) : "Not available"}
                       </span>
-                      <Button variant="ghost" onClick={handleBack} className="h-8 whitespace-nowrap px-3 text-xs">Back</Button>
                       <Button variant="ghost" onClick={handleCopyLink} className="h-8 whitespace-nowrap px-3 text-xs">Copy Link</Button>
                       {isAdmin && (
                         <>

@@ -18,16 +18,16 @@ function DashboardHero({ isAdmin, onSearch, onBrowse, onCreate, compact = false,
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" className={compact ? "px-3 py-1.5 text-xs" : "px-3.5 py-2"} onClick={onSearch}>
+          <Button variant="ghost" className={`btn-tone-copy ${compact ? "px-3 py-1.5 text-xs" : "px-3.5 py-2"}`} onClick={onSearch}>
             <Search className="h-4 w-4" />
             Search Use Cases
           </Button>
-          <Button className={compact ? "px-3 py-1.5 text-xs" : "px-3.5 py-2"} onClick={onBrowse}>
+          <Button className={`btn-link-repo ${compact ? "px-3 py-1.5 text-xs" : "px-3.5 py-2"}`} onClick={onBrowse}>
             Browse Use Cases
             <ArrowRight className="h-4 w-4" />
           </Button>
           {isAdmin && (
-            <Button variant="secondary" className={compact ? "px-3 py-1.5 text-xs" : "px-3.5 py-2"} onClick={onCreate}>
+            <Button variant="secondary" className={`btn-tone-create ${compact ? "px-3 py-1.5 text-xs" : "px-3.5 py-2"}`} onClick={onCreate}>
               <Plus className="h-4 w-4" />
               Create Use Case
             </Button>

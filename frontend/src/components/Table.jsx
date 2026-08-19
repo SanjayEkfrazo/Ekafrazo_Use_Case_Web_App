@@ -208,7 +208,7 @@ function UseCaseCard({
               event.stopPropagation();
               onOpen(useCase.id);
             }}
-            className="rounded-lg border border-border bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-primary motion-reduce:transition-none"
+            className="btn-tone-view-details rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all duration-200 ease-out motion-reduce:transition-none"
             whileHover={reduceMotion ? undefined : { scale: 1.03 }}
             whileTap={reduceMotion ? undefined : { scale: 0.97 }}
             transition={reduceMotion ? undefined : { type: "spring", stiffness: 360, damping: 20 }}

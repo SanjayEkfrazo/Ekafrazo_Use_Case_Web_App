@@ -576,22 +576,6 @@ function BrowseDomainMediaManager() {
                         <p className="text-xs text-muted">1 browse card image</p>
                         <p className="text-[11px] text-muted">Updated: {formatUpdatedLabel(item)}</p>
                       </div>
-
-                      <label className="inline-flex cursor-pointer items-center gap-1 rounded-xl border border-border bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink transition-all duration-200 hover:border-primary">
-                        <UploadCloud className="h-3.5 w-3.5" />
-                        Replace
-                        <input
-                          type="file"
-                          accept="image/*"
-                          disabled={isUploading}
-                          onChange={async (event) => {
-                            const file = event.target.files?.[0] || null;
-                            event.target.value = "";
-                            await handleUpload({ domain: group.domain, file });
-                          }}
-                          className="hidden"
-                        />
-                      </label>
                     </div>
 
                     <div className="mt-3">

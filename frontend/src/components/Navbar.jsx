@@ -72,7 +72,7 @@ function Navbar({ title, subtitle, compact = false }) {
               type="button"
               onClick={toggleTheme}
               aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface-elevated text-muted transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-border-strong hover:text-ink motion-reduce:transition-none motion-reduce:transform-none"
+              className="btn-tone-theme-icon inline-flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:transform-none"
               whileHover={reduceMotion ? undefined : { y: -2, scale: 1.04, rotate: isDark ? -8 : 8 }}
               whileTap={reduceMotion ? undefined : { scale: 0.94, rotate: 0 }}
               transition={reduceMotion ? undefined : { type: "spring", stiffness: 320, damping: 18 }}
@@ -80,11 +80,11 @@ function Navbar({ title, subtitle, compact = false }) {
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </motion.button>
             {isAdmin ? (
-              <Button onClick={handleLock} className="px-3 py-2 text-xs">
+              <Button onClick={handleLock} className="btn-tone-admin-on px-3 py-2 text-xs">
                 Disable Admin Mode
               </Button>
             ) : (
-              <Button variant="ghost" onClick={() => setIsUnlockOpen(true)} className="px-3 py-2 text-xs">
+              <Button variant="ghost" onClick={() => setIsUnlockOpen(true)} className="btn-tone-admin-enable px-3 py-2 text-xs">
                 Enable Admin Mode
               </Button>
             )}
@@ -122,11 +122,12 @@ function Navbar({ title, subtitle, compact = false }) {
               setIsUnlockOpen(false);
               setPasscode(rememberedPasscode || "");
             }}
+            className="btn-tone-modal-cancel"
             disabled={isSubmitting}
           >
             Cancel
           </Button>
-          <Button onClick={handleUnlock} disabled={isSubmitting}>
+          <Button onClick={handleUnlock} className="btn-tone-save" disabled={isSubmitting}>
             {isSubmitting ? "Enabling..." : "Enable Admin Mode"}
           </Button>
         </div>

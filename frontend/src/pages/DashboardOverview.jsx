@@ -248,7 +248,12 @@ function DashboardOverview() {
           <PageHeaderCard
           className="command-center-panel"
           title="Dashboard Overview"
-          subtitle="Track repository health, updates, and key use case metrics."
+          subtitle={(
+            <>
+              <p className="mb-0.5 text-[11px] text-muted-dim md:text-xs">Dashboard / Dashboard Overview</p>
+              <p>Track repository health, updates, and key use case metrics.</p>
+            </>
+          )}
           actions={(
             <>
               <button

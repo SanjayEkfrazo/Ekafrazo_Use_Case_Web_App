@@ -298,11 +298,11 @@ function Dashboard() {
                 <h3 className="font-display text-xl font-semibold text-ink">Repository is ready for first entries</h3>
                 <p className="mt-2 text-sm text-muted">Create your first use case to activate charts, domain insights, and health checks.</p>
                 {isAdmin ? (
-                  <Button onClick={() => navigate("/use-cases/new")} className="mt-5">
+                  <Button onClick={() => navigate("/use-cases/new")} className="btn-tone-create mt-5">
                     Create First Use Case
                   </Button>
                 ) : (
-                  <Button variant="secondary" onClick={() => navigate("/use-cases")} className="mt-5">
+                  <Button variant="secondary" onClick={() => navigate("/use-cases")} className="btn-link-repo mt-5">
                     Browse Use Cases
                   </Button>
                 )}

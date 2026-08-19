@@ -33,7 +33,15 @@ const requiredFields = [
   { key: "resource_url", label: "Presentation" },
 ];
 
-function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabel = "Save Use Case", compact = false }) {
+function UseCaseForm({
+  initialValues = emptyForm,
+  onSubmit,
+  onCancel,
+  submitLabel = "Save Use Case",
+  compact = false,
+  cancelClassName = "",
+  submitClassName = "",
+}) {
   const [values, setValues] = useState({ ...emptyForm, ...initialValues, domain_image_url: "" });
   const [existingDomains, setExistingDomains] = useState([]);
   const [errors, setErrors] = useState({});
@@ -488,10 +496,10 @@ function UseCaseForm({ initialValues = emptyForm, onSubmit, onCancel, submitLabe
               <AlertTriangle size={12} /> {submitError}
             </p>
           )}
-          <Button type="button" variant="ghost" onClick={onCancel}>
+          <Button type="button" variant="ghost" onClick={onCancel} className={cancelClassName}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting} className={submitClassName}>
             {isSubmitting ? (
               <>
                 <Loader2 size={14} className="animate-spin" />

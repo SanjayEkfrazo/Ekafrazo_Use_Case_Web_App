@@ -32,6 +32,21 @@ const QUICK_PRESETS = [
   { id: "incomplete", label: "Incomplete", review: "incomplete" },
 ];
 
+const LIST_FILTERS_KEY = "usecase:list:filters";
+
+function getStoredListFilters() {
+  try {
+    const raw = localStorage.getItem(LIST_FILTERS_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
 function getInitialViewMode() {
   const saved = localStorage.getItem("usecase:list:viewMode");
   return saved === "table" ? "table" : "card";
@@ -104,16 +119,18 @@ async function fetchAllUseCasesForFilters({ search, domain, sortBy, sortOrder })
 
 function UseCaseList() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const storedFilters = getStoredListFilters();
 
-  const initialSearch = searchParams.get("search") || "";
-  const initialDomain = searchParams.get("domain") || ALL_DOMAINS;
-  const initialClient = searchParams.get("client") || ALL_CLIENTS;
-  const initialPage = toPositiveNumberOrFallback(searchParams.get("page"), 1);
+  const initialSearch = searchParams.get("search") || storedFilters?.search || "";
+  const initialDomain = searchParams.get("domain") || storedFilters?.selectedDomain || ALL_DOMAINS;
+  const initialClient = searchParams.get("client") || storedFilters?.selectedClient || ALL_CLIENTS;
+  const initialPage = toPositiveNumberOrFallback(searchParams.get("page") || storedFilters?.page, 1);
   const reviewFromParams = (searchParams.get("review") || "").trim();
   const savedQuickPreset = localStorage.getItem("usecase:list:quickPreset") || "";
+  const storedReview = String(storedFilters?.reviewFilter || "").trim();
   const initialReview = REVIEW_KINDS.has(reviewFromParams)
     ? reviewFromParams
-    : (REVIEW_KINDS.has(savedQuickPreset) ? savedQuickPreset : "");
+    : (REVIEW_KINDS.has(storedReview) ? storedReview : (REVIEW_KINDS.has(savedQuickPreset) ? savedQuickPreset : ""));
 
   const [useCases, setUseCases] = useState([]);
   const [domains, setDomains] = useState([]);
@@ -127,7 +144,13 @@ function UseCaseList() {
   const [page, setPage] = useState(initialPage);
   const [reviewFilter, setReviewFilter] = useState(initialReview);
   const [listMotionDirection, setListMotionDirection] = useState(1);
-  const [viewMode, setViewMode] = useState(getInitialViewMode);
+  const [viewMode, setViewMode] = useState(() => {
+    const storedViewMode = storedFilters?.viewMode;
+    if (storedViewMode === "card" || storedViewMode === "table") {
+      return storedViewMode;
+    }
+    return getInitialViewMode();
+  });
   const [quickPreset, setQuickPreset] = useState(() => getInitialQuickPreset(initialReview));
   const handledToastLocationKeyRef = useRef(null);
 
@@ -157,6 +180,16 @@ function UseCaseList() {
         const matchesReview = !reviewFilter || matchesReviewKind(item, reviewFilter);
         return matchesTitle && matchesClient && matchesReview;
       });
+
+      localStorage.setItem(
+        "usecase:list:orderedIds",
+        JSON.stringify(
+          filtered
+            .map((item) => item?.id)
+            .filter((value) => value !== null && value !== undefined)
+            .map((value) => String(value))
+        )
+      );
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / DEFAULT_PAGE_SIZE));
       const currentPage = Math.min(page, totalPages);
@@ -246,7 +279,24 @@ function UseCaseList() {
       params.set("review", reviewFilter);
     }
     setSearchParams(params, { replace: true });
+
+    const query = params.toString();
+    localStorage.setItem("usecase:list:lastQuery", query ? `?${query}` : "");
   }, [search, selectedDomain, selectedClient, page, reviewFilter, setSearchParams]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      LIST_FILTERS_KEY,
+      JSON.stringify({
+        search,
+        selectedDomain,
+        selectedClient,
+        page,
+        reviewFilter,
+        viewMode,
+      })
+    );
+  }, [search, selectedDomain, selectedClient, page, reviewFilter, viewMode]);
 
   useEffect(() => {
     localStorage.setItem("usecase:list:viewMode", viewMode);
@@ -346,7 +396,11 @@ function UseCaseList() {
   return (
     <>
       <div className="usecase-auto-shell">
-        <PageNavCard title="Use Case Library" subtitle="Search and explore all data and AI use cases." />
+        <PageNavCard
+          title="Use Case Library"
+          subtitle="Search and explore all data and AI use cases."
+          extraActions={isAdmin ? <Button onClick={() => navigate("/use-cases/new")} className="h-9 px-3 text-xs">Create New</Button> : null}
+        />
 
         <div className="p-4 md:p-6">
           <div className="mb-4 rounded-2xl border border-border bg-surface p-3 shadow-card md:p-4">
@@ -413,7 +467,6 @@ function UseCaseList() {
                     Clear Filters
                   </Button>
                 )}
-                {isAdmin && <Button disableMotion onClick={() => navigate("/use-cases/new")} className="w-full xl:w-auto hover:!translate-y-0">Create Use Case</Button>}
               </div>
             </div>
 

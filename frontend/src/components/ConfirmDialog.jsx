@@ -2,7 +2,16 @@
 import Modal from "./Modal";
 import Button from "./Button";
 
-function ConfirmDialog({ isOpen, title, description, onConfirm, onCancel, confirmLabel = "Delete" }) {
+function ConfirmDialog({
+  isOpen,
+  title,
+  description,
+  onConfirm,
+  onCancel,
+  confirmLabel = "Delete",
+  cancelClassName = "",
+  confirmClassName = "",
+}) {
   return (
     <Modal
       isOpen={isOpen}
@@ -13,10 +22,10 @@ function ConfirmDialog({ isOpen, title, description, onConfirm, onCancel, confir
       <h2 className="font-display text-lg font-semibold text-ink">{title}</h2>
       <p className="mt-2 text-sm text-muted">{description}</p>
       <div className="mt-6 flex justify-end gap-3">
-        <Button variant="secondary" onClick={onCancel}>
+        <Button variant="secondary" onClick={onCancel} className={cancelClassName}>
           Cancel
         </Button>
-        <Button variant="danger" onClick={onConfirm}>
+        <Button variant="danger" onClick={onConfirm} className={confirmClassName}>
           {confirmLabel}
         </Button>
       </div>

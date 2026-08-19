@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
 import Button from "./Button";
 import Modal from "./Modal";
@@ -8,13 +9,47 @@ import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { useToast } from "../hooks/useToast";
 
+const breadcrumbLabelMap = {
+  dashboard: "Dashboard",
+  overview: "Dashboard Overview",
+  "use-cases": "Use Case Library",
+  new: "Create New Use Case",
+  edit: "Edit Use Case",
+  "domain-media": "Detail Page Media",
+  "browse-domain-media": "Browse Card Media",
+};
+
+function getBreadcrumbs(pathname) {
+  const segments = pathname.split("/").filter(Boolean);
+  const crumbs = [];
+  let cumulativePath = "";
+
+  for (let index = 0; index < segments.length; index += 1) {
+    const segment = segments[index];
+    const prev = segments[index - 1] || "";
+    cumulativePath += `/${segment}`;
+
+    if (prev === "use-cases" && segment !== "new") {
+      crumbs.push({ label: "Use Case Profile", to: cumulativePath });
+      continue;
+    }
+
+    const label = breadcrumbLabelMap[segment] || segment.replace(/-/g, " ");
+    crumbs.push({ label, to: cumulativePath });
+  }
+
+  return crumbs;
+}
+
 function PageNavCard({ title, subtitle, className = "", extraActions = null, compact = false }) {
   const { isAdmin, unlockAdmin, lockAdmin, rememberedPasscode } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { showToast } = useToast();
+  const location = useLocation();
   const [isUnlockOpen, setIsUnlockOpen] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const breadcrumbs = getBreadcrumbs(location.pathname);
 
   useEffect(() => {
     if (isUnlockOpen) {
@@ -55,7 +90,30 @@ function PageNavCard({ title, subtitle, className = "", extraActions = null, com
         <PageHeaderCard
           className={className}
           title={title}
-          subtitle={subtitle}
+          subtitle={(
+            <>
+              {breadcrumbs.length > 1 ? (
+                <p className="mb-0.5 flex flex-wrap items-center gap-1 text-[11px] text-muted-dim md:text-xs">
+                  {breadcrumbs.map((crumb, index) => {
+                    const isLast = index === breadcrumbs.length - 1;
+                    return (
+                      <span key={crumb.to} className="inline-flex items-center gap-1">
+                        {isLast ? (
+                          <span className="font-medium text-muted">{crumb.label}</span>
+                        ) : (
+                          <Link to={crumb.to} className="transition-colors hover:text-ink">
+                            {crumb.label}
+                          </Link>
+                        )}
+                        {!isLast ? <span className="text-muted-dim">/</span> : null}
+                      </span>
+                    );
+                  })}
+                </p>
+              ) : null}
+              <p>{subtitle}</p>
+            </>
+          )}
           actions={(
             <>
               {extraActions}
