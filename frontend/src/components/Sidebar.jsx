@@ -78,11 +78,11 @@ function Sidebar() {
             <img
               src="/ekfrazo-logo.png"
               alt="Ekfrazo"
-              className="h-12 w-auto max-w-[132px] object-contain"
+              className="h-20 w-auto max-w-[208px] object-contain"
               onError={() => setLogoFailed(true)}
             />
           ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-gradient font-display text-base font-bold text-on-solid shadow-glow-brand">
+            <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-brand-gradient font-display text-xl font-bold text-on-solid shadow-glow-brand">
               EK
             </div>
           )}

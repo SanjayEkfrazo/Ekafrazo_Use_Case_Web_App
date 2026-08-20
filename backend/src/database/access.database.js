@@ -58,8 +58,17 @@ function updateUserById(id, profile) {
     WHERE id = @id
   `;
 
-  db.prepare(query).run({ ...profile, id });
+  const result = db.prepare(query).run({ ...profile, id });
+  if (!result.changes) {
+    return null;
+  }
   return findUserById(id);
+}
+
+function deleteUserById(id) {
+  const query = `DELETE FROM access_users WHERE id = ?`;
+  const result = db.prepare(query).run(id);
+  return result.changes > 0;
 }
 
 function touchLastSignedIn(id) {
@@ -118,6 +127,7 @@ module.exports = {
   findUserById,
   createUser,
   updateUserById,
+  deleteUserById,
   touchLastSignedIn,
   createSigninLog,
   findUsers,

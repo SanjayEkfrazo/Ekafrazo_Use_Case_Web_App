@@ -101,6 +101,46 @@ function getAccessSigninLogs(req, res) {
   }
 }
 
+function updateAccessUser(req, res) {
+  try {
+    const result = accessService.updateAccessUser(req.params.id, req.body || {});
+
+    if (result.errors) {
+      return res.status(400).json({ message: "Validation failed", errors: result.errors });
+    }
+
+    if (result.notFound) {
+      return res.status(404).json({ message: "Access user not found" });
+    }
+
+    if (result.conflict) {
+      return res.status(409).json({ message: result.message || "Work email already exists" });
+    }
+
+    return res.status(200).json({ data: result.data, message: "Access user updated" });
+  } catch (_error) {
+    return res.status(500).json({ message: "Failed to update access user" });
+  }
+}
+
+function deleteAccessUser(req, res) {
+  try {
+    const result = accessService.deleteAccessUser(req.params.id);
+
+    if (result.errors) {
+      return res.status(400).json({ message: "Validation failed", errors: result.errors });
+    }
+
+    if (result.notFound) {
+      return res.status(404).json({ message: "Access user not found" });
+    }
+
+    return res.status(200).json({ message: "Access user deleted" });
+  } catch (_error) {
+    return res.status(500).json({ message: "Failed to delete access user" });
+  }
+}
+
 module.exports = {
   signup,
   signin,
@@ -108,4 +148,6 @@ module.exports = {
   getSession,
   getAccessUsers,
   getAccessSigninLogs,
+  updateAccessUser,
+  deleteAccessUser,
 };

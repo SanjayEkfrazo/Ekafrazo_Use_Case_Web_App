@@ -101,6 +101,50 @@ function getAccessSigninLogs({ limit } = {}) {
   return accessDb.findSigninLogs({ limit });
 }
 
+function updateAccessUser(id, payload) {
+  const accessUserId = Number(id);
+  if (!Number.isFinite(accessUserId) || accessUserId <= 0) {
+    return { errors: ["invalid user id"] };
+  }
+
+  const existing = accessDb.findUserById(accessUserId);
+  if (!existing) {
+    return { notFound: true };
+  }
+
+  const normalized = normalizeProfile(payload);
+  const errors = validateAccessSignup(normalized);
+  if (errors.length > 0) {
+    return { errors };
+  }
+
+  const duplicate = accessDb.findUserByEmail(normalized.work_email);
+  if (duplicate && Number(duplicate.id) !== accessUserId) {
+    return { conflict: true, message: "Work email already exists for another user." };
+  }
+
+  const updated = accessDb.updateUserById(accessUserId, normalized);
+  if (!updated) {
+    return { notFound: true };
+  }
+
+  return { data: updated };
+}
+
+function deleteAccessUser(id) {
+  const accessUserId = Number(id);
+  if (!Number.isFinite(accessUserId) || accessUserId <= 0) {
+    return { errors: ["invalid user id"] };
+  }
+
+  const deleted = accessDb.deleteUserById(accessUserId);
+  if (!deleted) {
+    return { notFound: true };
+  }
+
+  return { deleted: true };
+}
+
 module.exports = {
   signupAccessUser,
   signinAccessUser,
@@ -108,4 +152,6 @@ module.exports = {
   getAccessUserById,
   getAccessUsers,
   getAccessSigninLogs,
+  updateAccessUser,
+  deleteAccessUser,
 };
