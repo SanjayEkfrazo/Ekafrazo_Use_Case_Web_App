@@ -282,7 +282,7 @@ function DashboardOverview() {
 
               {isAdmin ? (
                 <Button onClick={handleLock} className="h-9 px-3 text-xs">
-                  Admin Mode On
+                  Disable Admin Mode
                 </Button>
               ) : (
                 <Button variant="ghost" onClick={() => setIsUnlockOpen(true)} className="h-9 border border-border px-3 text-xs">
