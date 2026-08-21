@@ -83,6 +83,7 @@ function DashboardOverview() {
       : topDomains;
     const topDomain = domainDistribution[0] || null;
     const recentlyUpdated = (dashboardData.recentlyUpdated || []).slice(0, 4);
+    const recentUserActivity = (dashboardData.recentUserActivity || []).slice(0, 6);
     const lastUpdatedAt = dashboardData.lastUpdatedAt ? formatRelativeDate(dashboardData.lastUpdatedAt) : "Time not available";
 
     const safePercent = (value) => {
@@ -168,6 +169,7 @@ function DashboardOverview() {
       deploymentCoverage,
       presentationCoverage,
       createdThisMonthCount,
+      recentUserActivity,
     };
   }, [dashboardData]);
 
@@ -262,7 +264,7 @@ function DashboardOverview() {
                 type="button"
                 onClick={toggleTheme}
                 aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surface-elevated text-muted transition-all duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:text-ink"
+                className="btn-tone-theme-icon inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-200 hover:-translate-y-0.5"
               >
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
@@ -271,7 +273,7 @@ function DashboardOverview() {
                 type="button"
                 onClick={handleRefresh}
                 aria-label="Refresh command center"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surface-elevated text-muted transition-all duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:text-ink"
+                className="btn-tone-refresh-icon inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-200 hover:-translate-y-0.5"
               >
                 <RefreshCw className="h-4 w-4" />
               </button>
@@ -334,7 +336,7 @@ function DashboardOverview() {
                 <button
                   type="button"
                   onClick={() => navigate("/use-cases")}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary transition-colors duration-200 hover:text-primary-hover"
+                  className="btn-link-repo inline-flex items-center gap-1 text-[11px] font-semibold"
                 >
                   View repository
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -369,7 +371,7 @@ function DashboardOverview() {
                 <button
                   type="button"
                   onClick={() => navigate("/use-cases")}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary transition-colors duration-200 hover:text-primary-hover"
+                  className="btn-link-domains inline-flex items-center gap-1 text-[11px] font-semibold"
                 >
                   View all domains
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -417,7 +419,7 @@ function DashboardOverview() {
                   <button
                     type="button"
                     onClick={() => navigate("/use-cases?review=incomplete")}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary transition-colors duration-200 hover:text-primary-hover"
+                    className="btn-link-quality inline-flex items-center gap-1 text-[11px] font-semibold"
                   >
                     Quality review
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -466,32 +468,30 @@ function DashboardOverview() {
 
             <motion.section className="command-center-panel flex min-h-0 flex-col p-2 md:p-2.5" whileHover={reduceMotion ? undefined : { y: -4, scale: 1.004 }}>
               <div className="mb-1.5 flex items-center justify-between gap-2">
-                <h3 className="font-display text-sm font-semibold text-ink md:text-base">Recent Activity</h3>
+                <h3 className="font-display text-sm font-semibold text-ink md:text-base">Recent User Activity</h3>
                 <button
                   type="button"
-                  onClick={() => navigate("/use-cases?sortBy=updated_at&sortOrder=desc")}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary transition-colors duration-200 hover:text-primary-hover"
+                  onClick={() => navigate("/access-audit")}
+                  className="btn-link-activity inline-flex items-center gap-1 text-[11px] font-semibold"
                 >
-                  View all
+                  Open Access Audit
                   <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </div>
 
-              {commandCenterModel.recentlyUpdated.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted">No recent activity available yet.</p>
+              {commandCenterModel.recentUserActivity.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted">No user activity recorded yet.</p>
               ) : (
                 <div className="panel-scrollbar min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
-                  {commandCenterModel.recentlyUpdated.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => navigate(`/use-cases/${item.id}`)}
-                      className="w-full rounded-xl border border-border bg-surface-elevated/80 px-2.5 py-2 text-left transition-all duration-200 hover:border-border-strong"
+                  {commandCenterModel.recentUserActivity.map((activity) => (
+                    <article
+                      key={activity.id}
+                      className="w-full rounded-xl border border-border bg-surface-elevated/80 px-2.5 py-2"
                     >
-                      <p className="line-clamp-1 text-xs font-semibold text-ink">{item.title}</p>
-                      <p className="mt-0.5 text-[11px] text-muted">{item.domain || "Unknown domain"} • {item.client_name || "Unknown client"}</p>
-                      <p className="mt-0.5 text-[11px] text-muted">Updated {formatRelativeDate(item.updated_at || item.created_at)}</p>
-                    </button>
+                      <p className="line-clamp-1 text-xs font-semibold text-ink">{activity.full_name || "Unknown user"}</p>
+                      <p className="mt-0.5 text-[11px] text-muted">{activity.work_email || "No email"}{activity.organization ? ` • ${activity.organization}` : ""}</p>
+                      <p className="mt-0.5 text-[11px] text-muted">Signed in {formatRelativeDate(activity.created_at)}</p>
+                    </article>
                   ))}
                 </div>
               )}
@@ -539,7 +539,7 @@ function DashboardOverview() {
           <div className="mt-2 flex justify-end">
             <button
               type="button"
-              className="text-xs font-semibold text-primary transition-colors hover:text-primary-hover"
+              className="btn-link-inline text-xs font-semibold"
               onClick={() => setShowPasscode((current) => !current)}
             >
               {showPasscode ? "Hide" : "Show"} passcode

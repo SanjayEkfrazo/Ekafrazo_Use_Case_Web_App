@@ -443,7 +443,7 @@ function BrowseDomainMediaManager() {
                 </div>
               </div>
 
-              <label className="inline-flex h-[38px] cursor-pointer items-center justify-center gap-2 self-end whitespace-nowrap rounded-xl border border-dashed border-border-strong bg-surface-elevated px-3 text-sm font-semibold text-ink transition-all duration-200 hover:border-primary hover:bg-primary/10">
+              <label className="btn-tone-upload-label inline-flex h-[38px] cursor-pointer items-center justify-center gap-2 self-end whitespace-nowrap rounded-xl border border-dashed px-3 text-sm font-semibold transition-all duration-200">
                 <UploadCloud className="h-4 w-4" />
                 {isUploading ? "Saving..." : "Upload Image"}
                 <input
@@ -537,7 +537,7 @@ function BrowseDomainMediaManager() {
               </div>
 
               {filterDomain && (
-                <Button variant="secondary" className="h-[38px] px-3 text-xs" onClick={() => setFilterDomain("")}>
+                <Button variant="secondary" className="btn-tone-clear h-[38px] px-3 text-xs" onClick={() => setFilterDomain("")}>
                   Clear Filter
                 </Button>
               )}
@@ -589,7 +589,7 @@ function BrowseDomainMediaManager() {
                           />
                           <Button
                             variant="secondary"
-                            className="mt-2 w-full px-2 py-1 text-xs"
+                            className="btn-tone-delete-soft mt-2 w-full px-2 py-1 text-xs"
                             disabled={isDeletingId === item.id}
                             onClick={() => setPendingDeleteImage(item)}
                           >
@@ -597,7 +597,7 @@ function BrowseDomainMediaManager() {
                             {isDeletingId === item.id ? "Deleting..." : "Delete"}
                           </Button>
 
-                          <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-border bg-surface px-2 py-1 text-xs font-semibold text-ink transition-all duration-200 hover:border-primary">
+                          <label className="btn-tone-replace-label mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-xl border px-2 py-1 text-xs font-semibold transition-all duration-200">
                             <Pencil className="mr-1 h-3.5 w-3.5" />
                             {isReplacingId === item.id ? "Updating..." : "Replace"}
                             <input

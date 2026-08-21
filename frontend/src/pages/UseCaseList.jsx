@@ -393,6 +393,46 @@ function UseCaseList() {
     setPage(1);
   };
 
+  const getQuickPresetClassName = (presetId, isActive) => {
+    if (!isActive) {
+      return "btn-preset-inactive";
+    }
+
+    if (presetId === "all") {
+      return "btn-preset-all";
+    }
+    if (presetId === "deployment") {
+      return "btn-preset-deployment";
+    }
+    if (presetId === "presentation") {
+      return "btn-preset-presentation";
+    }
+    if (presetId === "image") {
+      return "btn-preset-image";
+    }
+    if (presetId === "incomplete") {
+      return "btn-preset-incomplete";
+    }
+
+    return "btn-preset-inactive";
+  };
+
+  const getFilterChipToneClass = (kind) => {
+    if (kind === "search") {
+      return "btn-chip-search";
+    }
+    if (kind === "domain") {
+      return "btn-chip-domain";
+    }
+    if (kind === "client") {
+      return "btn-chip-client";
+    }
+    if (kind === "review") {
+      return "btn-chip-review";
+    }
+    return "";
+  };
+
   return (
     <>
       <div className="usecase-auto-shell">
@@ -449,7 +489,7 @@ function UseCaseList() {
                     type="button"
                     onClick={() => setViewMode("card")}
                     aria-pressed={viewMode === "card"}
-                    className={`rounded-md border-b-2 px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "card" ? "border-primary bg-primary/12 text-primary-text shadow-elevation-1" : "border-transparent text-muted hover:text-ink"}`}
+                    className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "card" ? "btn-toggle-card-active" : "btn-toggle-card-inactive"}`}
                   >
                     Card
                   </button>
@@ -457,7 +497,7 @@ function UseCaseList() {
                     type="button"
                     onClick={() => setViewMode("table")}
                     aria-pressed={viewMode === "table"}
-                    className={`rounded-md border-b-2 px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "table" ? "border-primary bg-primary/12 text-primary-text shadow-elevation-1" : "border-transparent text-muted hover:text-ink"}`}
+                    className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition-all duration-200 ${viewMode === "table" ? "btn-toggle-table-active" : "btn-toggle-table-inactive"}`}
                   >
                     Table
                   </button>
@@ -486,7 +526,7 @@ function UseCaseList() {
                   key={preset.id}
                   type="button"
                   onClick={() => handleQuickPreset(preset.id)}
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200 ${quickPreset === preset.id ? "border-primary/60 bg-primary/15 text-primary-text shadow-elevation-1" : "border-border bg-surface-elevated text-muted hover:border-primary/45 hover:text-ink"}`}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200 ${getQuickPresetClassName(preset.id, quickPreset === preset.id)}`}
                 >
                   {preset.label}
                 </button>
@@ -499,7 +539,7 @@ function UseCaseList() {
                   <button
                     type="button"
                     onClick={() => handleClearSingleFilter("search")}
-                    className="filter-chip-motion"
+                    className={`filter-chip-motion ${getFilterChipToneClass("search")}`}
                   >
                     Search: {search.trim()} x
                   </button>
@@ -509,7 +549,7 @@ function UseCaseList() {
                   <button
                     type="button"
                     onClick={() => handleClearSingleFilter("domain")}
-                    className="filter-chip-motion"
+                    className={`filter-chip-motion ${getFilterChipToneClass("domain")}`}
                   >
                     Domain: {selectedDomain} x
                   </button>
@@ -519,7 +559,7 @@ function UseCaseList() {
                   <button
                     type="button"
                     onClick={() => handleClearSingleFilter("client")}
-                    className="filter-chip-motion"
+                    className={`filter-chip-motion ${getFilterChipToneClass("client")}`}
                   >
                     Client: {selectedClient} x
                   </button>
@@ -529,7 +569,7 @@ function UseCaseList() {
                   <button
                     type="button"
                     onClick={() => handleClearSingleFilter("review")}
-                    className="filter-chip-motion"
+                    className={`filter-chip-motion ${getFilterChipToneClass("review")}`}
                   >
                     Filter: {REVIEW_LABELS[reviewFilter]} x
                   </button>

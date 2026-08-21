@@ -22,59 +22,82 @@ function UseCaseDenseTable({ preparedUseCases, direction, reduceMotion, onOpen }
 
   return (
     <motion.div
-      className="ui-table-container overflow-hidden"
+      className="ui-dense-table-shell space-y-2"
       initial={reduceMotion ? false : { opacity: 0, x: direction > 0 ? 10 : -10 }}
       animate={reduceMotion ? {} : { opacity: 1, x: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } }}
       exit={reduceMotion ? {} : { opacity: 0, x: direction > 0 ? -12 : 12, transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] } }}
     >
-      <div className="max-h-[68vh] overflow-auto">
-        <table className="min-w-full table-fixed border-collapse">
-          <thead className="border-b border-border-strong bg-surface-elevated/95">
-            <tr>
-              <th className="sticky top-0 z-20 font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Title</th>
-              <th className="sticky top-0 z-20 font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Domain</th>
-              <th className="sticky top-0 z-20 font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Client</th>
-              <th className="sticky top-0 z-20 font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Updated</th>
-              <th className="sticky top-0 z-20 font-display px-4 py-3 text-right text-xs font-semibold tracking-[0.04em] text-muted backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/90">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {preparedUseCases.map((item, index) => (
-              <tr
-                key={item.raw.id}
-                tabIndex={0}
-                role="button"
-                aria-label={`Open use case ${item.title}`}
-                onClick={() => onOpen(item.raw.id)}
-                onKeyDown={(event) => handleRowKeyDown(event, item.raw.id)}
-                onMouseEnter={() => {
-                  prefetchUseCaseById(item.raw.id);
-                }}
-                className={`cursor-pointer border-b border-border/80 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${index % 2 === 0 ? "bg-surface" : "bg-surface-elevated/35"} hover:bg-primary/6`}
-              >
-                <td className="max-w-[360px] px-4 py-3 text-ink">
-                  <p className="line-clamp-1 font-semibold">{item.title}</p>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-muted">{item.description}</p>
-                </td>
-                <td className="px-4 py-3 text-ink">{item.domain}</td>
-                <td className="px-4 py-3 text-ink">{item.client}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-muted">{item.updatedLabel}</td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onOpen(item.raw.id);
-                    }}
-                    className="rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-ink transition-all duration-200 ease-out hover:border-primary"
-                  >
-                    Open
-                  </button>
-                </td>
+      <div className="ui-table-container overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="ui-dense-table min-w-full table-fixed border-collapse">
+            <colgroup>
+              <col style={{ width: "38%" }} />
+              <col style={{ width: "17%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "10%" }} />
+            </colgroup>
+            <thead className="ui-dense-table-head bg-surface-elevated/95">
+              <tr>
+                <th className="w-[38%] min-w-[240px] font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted">Title</th>
+                <th className="w-[17%] min-w-[130px] font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted">Domain</th>
+                <th className="w-[20%] min-w-[150px] font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted">Client</th>
+                <th className="w-[15%] min-w-[130px] font-display px-4 py-3 text-left text-xs font-semibold tracking-[0.04em] text-muted">Updated</th>
+                <th className="w-[10%] min-w-[110px] font-display px-4 py-3 text-right text-xs font-semibold tracking-[0.04em] text-muted">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+          </table>
+        </div>
+      </div>
+
+      <div className="ui-table-container overflow-hidden">
+        <div className="ui-dense-table-scroll max-h-[60vh] overflow-auto">
+          <table className="ui-dense-table min-w-full table-fixed border-collapse">
+            <colgroup>
+              <col style={{ width: "38%" }} />
+              <col style={{ width: "17%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "10%" }} />
+            </colgroup>
+            <tbody>
+              {preparedUseCases.map((item, index) => (
+                <tr
+                  key={item.raw.id}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Open use case ${item.title}`}
+                  onClick={() => onOpen(item.raw.id)}
+                  onKeyDown={(event) => handleRowKeyDown(event, item.raw.id)}
+                  onMouseEnter={() => {
+                    prefetchUseCaseById(item.raw.id);
+                  }}
+                  className={`ui-dense-table-row cursor-pointer border-b border-border/80 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${index % 2 === 0 ? "bg-surface" : "bg-surface-elevated/35"} hover:bg-primary/6`}
+                >
+                  <td className="max-w-[360px] px-4 py-3 align-top text-ink">
+                    <p className="line-clamp-1 font-semibold">{item.title}</p>
+                    <p className="mt-0.5 line-clamp-1 text-xs text-muted">{item.description}</p>
+                  </td>
+                  <td className="px-4 py-3 align-top text-ink">{item.domain}</td>
+                  <td className="px-4 py-3 align-top text-ink">{item.client}</td>
+                  <td className="whitespace-nowrap px-4 py-3 align-top text-muted">{item.updatedLabel}</td>
+                  <td className="px-4 py-3 align-top text-right">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onOpen(item.raw.id);
+                      }}
+                      className="btn-tone-view-details rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all duration-200 ease-out"
+                    >
+                      Open
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </motion.div>
   );

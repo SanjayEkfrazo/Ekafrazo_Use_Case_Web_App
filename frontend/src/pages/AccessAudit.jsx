@@ -291,7 +291,7 @@ function AccessAudit() {
                           <div className="flex items-center gap-2">
                             <Button
                               variant="secondary"
-                              className="px-2.5 py-1.5 text-xs"
+                              className="btn-tone-edit px-2.5 py-1.5 text-xs"
                               onClick={() => openEditModal(user)}
                               disabled={deletingUserId === user.id}
                             >
@@ -299,7 +299,7 @@ function AccessAudit() {
                             </Button>
                             <Button
                               variant="dangerSoft"
-                              className="px-2.5 py-1.5 text-xs"
+                              className="btn-tone-delete-soft px-2.5 py-1.5 text-xs"
                               onClick={() => setPendingDeleteUser(user)}
                               disabled={deletingUserId === user.id}
                             >
@@ -425,10 +425,10 @@ function AccessAudit() {
           />
 
           <div className="flex justify-end gap-3">
-            <Button variant="secondary" onClick={closeEditModal} disabled={isSavingEdit}>
+            <Button variant="secondary" className="btn-tone-modal-cancel" onClick={closeEditModal} disabled={isSavingEdit}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSavingEdit}>
+            <Button type="submit" className="btn-tone-save" disabled={isSavingEdit}>
               {isSavingEdit ? "Saving..." : "Save Changes"}
             </Button>
           </div>

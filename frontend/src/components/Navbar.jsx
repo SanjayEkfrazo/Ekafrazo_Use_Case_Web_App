@@ -130,7 +130,7 @@ function Navbar({ title, subtitle, compact = false }) {
           <div className="mt-2 flex justify-end">
             <button
               type="button"
-              className="text-xs font-semibold text-primary transition-colors hover:text-primary-hover"
+              className="btn-link-inline text-xs font-semibold"
               onClick={() => setShowPasscode((current) => !current)}
             >
               {showPasscode ? "Hide" : "Show"} passcode

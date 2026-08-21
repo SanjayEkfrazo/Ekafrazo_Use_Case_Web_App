@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchDashboardSummary, fetchUseCases } from "../services/useCaseService";
+import { fetchAccessSigninLogs } from "../services/accessService";
 
 const DASHBOARD_CACHE_TTL_MS = 60 * 1000;
 let dashboardCache = null;
@@ -57,25 +58,28 @@ export function useDashboardData(showToast) {
   const cacheIsFresh = dashboardCache && Date.now() - dashboardCache.timestamp < DASHBOARD_CACHE_TTL_MS;
   const [summary, setSummary] = useState(cacheIsFresh ? dashboardCache.summary : null);
   const [allUseCases, setAllUseCases] = useState(cacheIsFresh ? dashboardCache.allUseCases : []);
+  const [recentUserActivity, setRecentUserActivity] = useState(cacheIsFresh ? dashboardCache.recentUserActivity : []);
   const [isLoading, setIsLoading] = useState(!cacheIsFresh);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
 
-    async function loadSummary() {
-      if (dashboardCache && Date.now() - dashboardCache.timestamp < DASHBOARD_CACHE_TTL_MS) {
+    async function loadSummary({ force = false, silent = false } = {}) {
+      if (!force && dashboardCache && Date.now() - dashboardCache.timestamp < DASHBOARD_CACHE_TTL_MS) {
         setSummary(dashboardCache.summary);
         setAllUseCases(dashboardCache.allUseCases);
+        setRecentUserActivity(dashboardCache.recentUserActivity || []);
         setIsLoading(false);
         return;
       }
 
       try {
         setHasError(false);
-        const [summaryResponse, allUseCasesData] = await Promise.all([
+        const [summaryResponse, allUseCasesData, signinLogsResponse] = await Promise.all([
           fetchDashboardSummary(),
           fetchAllUseCasesForDashboard(),
+          fetchAccessSigninLogs(100).catch(() => ({ data: [] })),
         ]);
 
         if (isCancelled) {
@@ -83,17 +87,22 @@ export function useDashboardData(showToast) {
         }
 
         const nextSummary = summaryResponse.data || {};
+        const nextRecentUserActivity = Array.isArray(signinLogsResponse?.data) ? signinLogsResponse.data : [];
         setSummary(nextSummary);
         setAllUseCases(allUseCasesData);
+        setRecentUserActivity(nextRecentUserActivity);
         dashboardCache = {
           timestamp: Date.now(),
           summary: nextSummary,
           allUseCases: allUseCasesData,
+          recentUserActivity: nextRecentUserActivity,
         };
       } catch (error) {
         if (!isCancelled) {
           setHasError(true);
-          showToast(error.message || "Failed to load dashboard data", "error");
+          if (!silent) {
+            showToast(error.message || "Failed to load dashboard data", "error");
+          }
         }
       } finally {
         if (!isCancelled) {
@@ -104,8 +113,13 @@ export function useDashboardData(showToast) {
 
     loadSummary();
 
+    const refreshIntervalId = setInterval(() => {
+      loadSummary({ force: true, silent: true });
+    }, DASHBOARD_CACHE_TTL_MS);
+
     return () => {
       isCancelled = true;
+      clearInterval(refreshIntervalId);
     };
   }, [showToast]);
 
@@ -234,6 +248,7 @@ export function useDashboardData(showToast) {
       recentlyUpdated: summary?.recentlyUpdated || items.slice(0, 6),
       recentlyCreated,
       needsAttention,
+      recentUserActivity,
       readinessDistribution: [
         { key: "ready", label: "Demo + Presentation Ready", count: readyForDemoAndPresentationCount },
         { key: "demo-missing", label: "Demo Missing", count: missingOnlyDemoCount },
@@ -247,5 +262,5 @@ export function useDashboardData(showToast) {
         incompleteRecordsCount,
       },
     };
-  }, [allUseCases, hasError, isLoading, summary]);
+  }, [allUseCases, hasError, isLoading, recentUserActivity, summary]);
 }

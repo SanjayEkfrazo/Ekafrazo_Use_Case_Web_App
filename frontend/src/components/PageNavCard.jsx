@@ -124,7 +124,7 @@ function PageNavCard({ title, subtitle, className = "", extraActions = null, com
                 type="button"
                 onClick={toggleTheme}
                 aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surface-elevated text-muted transition-all duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:text-ink"
+                className="btn-tone-theme-icon inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-200 hover:-translate-y-0.5"
               >
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
@@ -181,7 +181,7 @@ function PageNavCard({ title, subtitle, className = "", extraActions = null, com
           <div className="mt-2 flex justify-end">
             <button
               type="button"
-              className="text-xs font-semibold text-primary transition-colors hover:text-primary-hover"
+              className="btn-link-inline text-xs font-semibold"
               onClick={() => setShowPasscode((current) => !current)}
             >
               {showPasscode ? "Hide" : "Show"} passcode

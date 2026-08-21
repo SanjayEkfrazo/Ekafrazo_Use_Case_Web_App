@@ -129,7 +129,7 @@ function AccessGateDialog({
           <button
             type="button"
             onClick={() => setAuthMode("signup")}
-            className={`rounded-md px-3 py-1 text-xs font-semibold transition-all duration-200 ${authMode === "signup" ? "bg-primary/12 text-primary-text" : "text-muted hover:text-ink"}`}
+            className={`rounded-md border px-3 py-1 text-xs font-semibold transition-all duration-200 ${authMode === "signup" ? "btn-auth-mode-active" : "btn-auth-mode-inactive"}`}
             aria-pressed={authMode === "signup"}
           >
             Sign Up
@@ -137,7 +137,7 @@ function AccessGateDialog({
           <button
             type="button"
             onClick={() => setAuthMode("signin")}
-            className={`rounded-md px-3 py-1 text-xs font-semibold transition-all duration-200 ${authMode === "signin" ? "bg-primary/12 text-primary-text" : "text-muted hover:text-ink"}`}
+            className={`rounded-md border px-3 py-1 text-xs font-semibold transition-all duration-200 ${authMode === "signin" ? "btn-auth-mode-active" : "btn-auth-mode-inactive"}`}
             aria-pressed={authMode === "signin"}
           >
             Sign In
@@ -154,7 +154,7 @@ function AccessGateDialog({
                 <p className="text-[11px] text-muted">New here? Create your profile first.</p>
                 <button
                   type="button"
-                  className="inline-flex shrink-0 rounded-md border border-border bg-surface px-2 py-0.5 text-[11px] font-semibold text-primary-text hover:border-primary"
+                  className="btn-link-inline inline-flex shrink-0 rounded-md border px-2 py-0.5 text-[11px] font-semibold"
                   onClick={() => setAuthMode("signup")}
                 >
                   Go to Sign Up

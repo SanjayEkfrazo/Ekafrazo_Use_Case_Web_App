@@ -204,8 +204,8 @@ function UseCaseDetails() {
 
   const resolvedDeploymentUrl = shouldSwapLinks ? resourceUrl : deploymentUrl;
   const resolvedResourceUrl = shouldSwapLinks ? deploymentUrl : resourceUrl;
-  const demoActionClass = "mt-1.5 inline-flex w-full items-center justify-center rounded-lg border border-primary/35 bg-primary/12 px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/55 hover:bg-primary/18 motion-reduce:transform-none motion-reduce:transition-none";
-  const presentationActionClass = "mt-1.5 inline-flex w-full items-center justify-center rounded-lg border border-primary/35 bg-primary/12 px-3 py-2 text-sm font-semibold text-primary-text transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/55 hover:bg-primary/18 motion-reduce:transform-none motion-reduce:transition-none";
+  const demoActionClass = "btn-tone-view-details mt-1.5 inline-flex w-full items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold transition-all duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none";
+  const presentationActionClass = "btn-tone-view-details mt-1.5 inline-flex w-full items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold transition-all duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none";
   const techStackItems = normalize(useCase?.technology_stack)
     .split(/[,;|\n]+/)
     .map((item) => item.trim())
@@ -354,9 +354,9 @@ function UseCaseDetails() {
         subtitle="View the full use case profile, links, and related media."
         extraActions={(
           <>
-            <Button variant="ghost" onClick={handleGoPrevious} disabled={!previousId} className="h-9 px-3 text-xs">Previous</Button>
-            <Button variant="ghost" onClick={handleGoNext} disabled={!nextId} className="h-9 px-3 text-xs">Next</Button>
-            <Button variant="secondary" onClick={handleBack} className="h-9 px-3 text-xs">Back to Library</Button>
+            <Button variant="ghost" onClick={handleGoPrevious} disabled={!previousId} className="btn-tone-prev h-9 px-3 text-xs">Previous</Button>
+            <Button variant="ghost" onClick={handleGoNext} disabled={!nextId} className="btn-tone-next h-9 px-3 text-xs">Next</Button>
+            <Button variant="secondary" onClick={handleBack} className="btn-tone-back h-9 px-3 text-xs">Back to Library</Button>
           </>
         )}
       />
@@ -382,7 +382,7 @@ function UseCaseDetails() {
                       <span className="shrink-0 text-xs font-medium text-muted whitespace-nowrap">
                         Updated {useCase?.updated_at ? formatDate(useCase.updated_at) : "Not available"}
                       </span>
-                      <Button variant="ghost" onClick={handleCopyLink} className="h-8 whitespace-nowrap px-3 text-xs">Copy Link</Button>
+                      <Button variant="ghost" onClick={handleCopyLink} className="btn-tone-copy h-8 whitespace-nowrap px-3 text-xs">Copy Link</Button>
                       {isAdmin && (
                         <>
                           <Button
@@ -393,10 +393,10 @@ function UseCaseDetails() {
                             Edit
                           </Button>
                           <Button
-                            variant="danger"
+                            variant="dangerSoft"
                             onClick={() => setShowDeleteDialog(true)}
                             disabled={isDeleting}
-                            className="h-8 whitespace-nowrap px-3 text-xs"
+                            className="btn-tone-delete-soft h-8 whitespace-nowrap px-3 text-xs"
                           >
                             {isDeleting ? "Deleting..." : "Delete"}
                           </Button>
@@ -504,6 +504,8 @@ function UseCaseDetails() {
         description={`"${useCase?.title || "This use case"}" will be permanently removed. This action cannot be undone.`}
         onConfirm={handleConfirmDelete}
         onCancel={() => setShowDeleteDialog(false)}
+        cancelClassName="btn-tone-modal-cancel"
+        confirmClassName="btn-tone-delete-soft"
       />
 
       <AccessGateDialog
