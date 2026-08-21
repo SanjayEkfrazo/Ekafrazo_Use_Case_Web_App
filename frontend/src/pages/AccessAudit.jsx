@@ -330,7 +330,6 @@ function AccessAudit() {
                       <th className="sticky top-0 z-10 px-3 py-2 text-left text-xs font-semibold text-muted">Name</th>
                       <th className="sticky top-0 z-10 px-3 py-2 text-left text-xs font-semibold text-muted">Email</th>
                       <th className="sticky top-0 z-10 px-3 py-2 text-left text-xs font-semibold text-muted">Organization</th>
-                      <th className="sticky top-0 z-10 px-3 py-2 text-left text-xs font-semibold text-muted">Department</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -340,7 +339,6 @@ function AccessAudit() {
                         <td className="px-3 py-2 text-ink">{entry.full_name || "-"}</td>
                         <td className="px-3 py-2 text-ink">{entry.work_email || "-"}</td>
                         <td className="px-3 py-2 text-ink">{entry.organization || "-"}</td>
-                        <td className="px-3 py-2 text-ink">{entry.department || "-"}</td>
                       </tr>
                     ))}
                   </tbody>

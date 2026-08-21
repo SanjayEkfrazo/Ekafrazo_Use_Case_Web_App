@@ -24,7 +24,9 @@ function AppRoutes() {
     <Suspense fallback={<div className="p-4 md:p-6"><Loader rows={6} /></div>}>
       <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Navigate to="/use-cases" replace />} />
+        <Route path="/" element={<PageTransition><UseCaseList /></PageTransition>} />
+        <Route path="/usecases" element={<PageTransition><UseCaseList /></PageTransition>} />
+        <Route path="/usecases/:id" element={<PageTransition><UseCaseDetails /></PageTransition>} />
         <Route element={<AdminRoute />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Navigate to="overview" replace />} />
