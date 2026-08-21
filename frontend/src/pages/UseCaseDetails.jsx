@@ -6,9 +6,51 @@ import Button from "../components/Button";
 import ConfirmDialog from "../components/ConfirmDialog";
 import PageNavCard from "../components/PageNavCard";
 import ImageCarousel from "../components/ImageCarousel";
+import AccessGateDialog from "../components/AccessGateDialog";
 import { fetchUseCaseById, deleteUseCase, fetchDomainMedia } from "../services/useCaseService";
+import {
+  fetchAccessSession,
+  identifyAccessProfile,
+  signinAccessProfile,
+  signupAccessProfile,
+} from "../services/accessService";
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
+
+const ACCESS_PROFILE_KEY = "usecase:access:profile";
+
+function readStoredAccessProfile() {
+  try {
+    const raw = localStorage.getItem(ACCESS_PROFILE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function saveAccessProfile(values) {
+  const payload = {
+    fullName: String(values?.fullName || "").trim(),
+    workEmail: String(values?.workEmail || "").trim(),
+    organization: String(values?.organization || "").trim(),
+    purpose: String(values?.purpose || "").trim(),
+    phone: String(values?.phone || "").trim(),
+    department: String(values?.department || "").trim(),
+    projectTimeline: String(values?.projectTimeline || "").trim(),
+    notes: String(values?.notes || "").trim(),
+    createdAt: new Date().toISOString(),
+  };
+
+  try {
+    localStorage.setItem(ACCESS_PROFILE_KEY, JSON.stringify(payload));
+  } catch (_error) {
+    // Ignore storage failures and continue access flow.
+  }
+}
 
 function getOrderedIds() {
   try {
@@ -35,6 +77,10 @@ function UseCaseDetails() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [domainImages, setDomainImages] = useState([]);
   const [orderedIds, setOrderedIds] = useState([]);
+  const [isAccessGateOpen, setIsAccessGateOpen] = useState(false);
+  const [accessMode, setAccessMode] = useState("signin");
+  const [existingAccessProfile, setExistingAccessProfile] = useState(() => readStoredAccessProfile());
+  const [pendingLink, setPendingLink] = useState(null);
 
   const formatDate = (value) => {
     const date = new Date(value);
@@ -206,6 +252,99 @@ function UseCaseDetails() {
     navigate(`/use-cases/${nextId}`);
   };
 
+  const openExternalLink = (url) => {
+    if (!url) {
+      return;
+    }
+
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const closeAccessGate = () => {
+    setIsAccessGateOpen(false);
+  };
+
+  const handleAccessGateConfirm = async (submittedValues) => {
+    const mode = String(submittedValues?.mode || "").trim();
+
+    if (mode === "full" || mode === "signup") {
+      const identifyResponse = await identifyAccessProfile({
+        workEmail: String(submittedValues?.workEmail || "").trim(),
+      });
+      const alreadyExists = Boolean(identifyResponse?.data?.exists);
+
+      if (alreadyExists) {
+        setAccessMode("signin");
+        setExistingAccessProfile((current) => ({
+          ...(current || {}),
+          fullName: String(submittedValues?.fullName || current?.fullName || "").trim(),
+          workEmail: String(submittedValues?.workEmail || current?.workEmail || "").trim(),
+        }));
+        throw new Error("Account already exists for this email. Please sign in.");
+      }
+
+      await signupAccessProfile(submittedValues);
+    }
+
+    if (mode === "signin" || mode === "login") {
+      // Backfill DB profile for legacy local-only users before signin.
+      const fallbackProfile = {
+        ...(existingAccessProfile || {}),
+        fullName: String(submittedValues?.fullName || existingAccessProfile?.fullName || "").trim(),
+        workEmail: String(submittedValues?.workEmail || existingAccessProfile?.workEmail || "").trim(),
+      };
+
+      if (
+        String(fallbackProfile.organization || "").trim()
+        && String(fallbackProfile.purpose || "").trim()
+      ) {
+        await signupAccessProfile(fallbackProfile);
+      }
+
+      await signinAccessProfile(submittedValues);
+    }
+
+    if (mode === "full" || mode === "signup") {
+      saveAccessProfile(submittedValues);
+      setExistingAccessProfile(readStoredAccessProfile());
+    }
+
+    const nextLink = pendingLink;
+    closeAccessGate();
+
+    if (nextLink?.url) {
+      openExternalLink(nextLink.url);
+      setPendingLink(null);
+    }
+  };
+
+  const handleProtectedLinkClick = async (url, label) => {
+    const safeUrl = normalize(url);
+    if (!safeUrl) {
+      return;
+    }
+
+    if (isAdmin) {
+      openExternalLink(safeUrl);
+      return;
+    }
+
+    try {
+      const sessionResponse = await fetchAccessSession();
+      if (sessionResponse?.data?.authenticated) {
+        openExternalLink(safeUrl);
+        return;
+      }
+    } catch (_error) {
+      // Continue to access gate when session check fails.
+    }
+
+    setPendingLink({ url: safeUrl, label: String(label || "resource") });
+    setExistingAccessProfile(readStoredAccessProfile());
+    setAccessMode("signin");
+    setIsAccessGateOpen(true);
+  };
+
   return (
     <div className="usecase-auto-shell usecase-details-page min-h-full">
       <PageNavCard
@@ -323,14 +462,13 @@ function UseCaseDetails() {
                         <div className="rounded-lg border border-border bg-surface p-2">
                           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Live Demo</p>
                           {resolvedDeploymentUrl ? (
-                            <a
-                              href={resolvedDeploymentUrl}
-                              target="_blank"
-                              rel="noreferrer"
+                            <button
+                              type="button"
+                              onClick={() => handleProtectedLinkClick(resolvedDeploymentUrl, "deployment")}
                               className={demoActionClass}
                             >
                               Open Demo
-                            </a>
+                            </button>
                           ) : (
                             <p className="mt-2 text-xs text-muted">Not provided.</p>
                           )}
@@ -339,14 +477,13 @@ function UseCaseDetails() {
                         <div className="rounded-lg border border-border bg-surface p-2">
                           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Presentation</p>
                           {resolvedResourceUrl ? (
-                            <a
-                              href={resolvedResourceUrl}
-                              target="_blank"
-                              rel="noreferrer"
+                            <button
+                              type="button"
+                              onClick={() => handleProtectedLinkClick(resolvedResourceUrl, "presentation")}
                               className={presentationActionClass}
                             >
                               Open Presentation
-                            </a>
+                            </button>
                           ) : (
                             <p className="mt-2 text-xs text-muted">Not provided.</p>
                           )}
@@ -367,6 +504,15 @@ function UseCaseDetails() {
         description={`"${useCase?.title || "This use case"}" will be permanently removed. This action cannot be undone.`}
         onConfirm={handleConfirmDelete}
         onCancel={() => setShowDeleteDialog(false)}
+      />
+
+      <AccessGateDialog
+        isOpen={isAccessGateOpen}
+        mode={accessMode}
+        allowModeSwitch
+        existingProfile={existingAccessProfile}
+        onClose={closeAccessGate}
+        onConfirm={handleAccessGateConfirm}
       />
     </div>
   );

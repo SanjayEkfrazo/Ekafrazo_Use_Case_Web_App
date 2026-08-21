@@ -11,49 +11,6 @@ import {
   useTransform,
 } from "framer-motion";
 import { fetchBrowseDomainMedia, prefetchUseCaseById } from "../services/useCaseService";
-import {
-  fetchAccessSession,
-  identifyAccessProfile,
-  signinAccessProfile,
-  signupAccessProfile,
-} from "../services/accessService";
-import AccessGateDialog from "./AccessGateDialog";
-import { useAuth } from "../hooks/useAuth";
-
-const ACCESS_PROFILE_KEY = "usecase:access:profile";
-
-function readStoredAccessProfile() {
-  try {
-    const raw = localStorage.getItem(ACCESS_PROFILE_KEY);
-    if (!raw) {
-      return null;
-    }
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : null;
-  } catch (_error) {
-    return null;
-  }
-}
-
-function saveAccessProfile(values) {
-  const payload = {
-    fullName: String(values?.fullName || "").trim(),
-    workEmail: String(values?.workEmail || "").trim(),
-    organization: String(values?.organization || "").trim(),
-    purpose: String(values?.purpose || "").trim(),
-    phone: String(values?.phone || "").trim(),
-    department: String(values?.department || "").trim(),
-    projectTimeline: String(values?.projectTimeline || "").trim(),
-    notes: String(values?.notes || "").trim(),
-    createdAt: new Date().toISOString(),
-  };
-
-  try {
-    localStorage.setItem(ACCESS_PROFILE_KEY, JSON.stringify(payload));
-  } catch (_error) {
-    // Ignore storage failures and continue navigation.
-  }
-}
 
 function UseCaseDenseTable({ preparedUseCases, direction, reduceMotion, onOpen }) {
   const handleRowKeyDown = (event, id) => {
@@ -266,13 +223,8 @@ function UseCaseCard({
 
 function Table({ useCases, transitionKey = "default", direction = 1, viewMode = "card" }) {
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
   const reduceMotion = useReducedMotion();
   const [domainMediaByDomain, setDomainMediaByDomain] = useState({});
-  const [isAccessGateOpen, setIsAccessGateOpen] = useState(false);
-  const [pendingUseCaseId, setPendingUseCaseId] = useState(null);
-  const [accessMode, setAccessMode] = useState("signup");
-  const [existingAccessProfile, setExistingAccessProfile] = useState(() => readStoredAccessProfile());
   const isCardMode = viewMode !== "table";
 
   const domainKey = (value) => String(value || "").trim().toLowerCase();
@@ -347,87 +299,8 @@ function Table({ useCases, transitionKey = "default", direction = 1, viewMode = 
     };
   }, [isCardMode, useCases]);
 
-  const openUseCaseDetails = async (id) => {
-    if (isAdmin) {
-      navigate(`/use-cases/${id}`);
-      return;
-    }
-
-    try {
-      const sessionResponse = await fetchAccessSession();
-      if (sessionResponse?.data?.authenticated) {
-        navigate(`/use-cases/${id}`);
-        return;
-      }
-    } catch (_error) {
-      // If session check fails, continue with access gate.
-    }
-
-    const profile = readStoredAccessProfile();
-    setExistingAccessProfile(profile);
-    setAccessMode("signin");
-    setPendingUseCaseId(id);
-    setIsAccessGateOpen(true);
-  };
-
-  const closeAccessGate = () => {
-    setIsAccessGateOpen(false);
-    setPendingUseCaseId(null);
-  };
-
-  const handleAccessGateConfirm = async (submittedValues) => {
-    const mode = String(submittedValues?.mode || "").trim();
-
-    if (mode === "full" || mode === "signup") {
-      const identifyResponse = await identifyAccessProfile({
-        workEmail: String(submittedValues?.workEmail || "").trim(),
-      });
-      const alreadyExists = Boolean(identifyResponse?.data?.exists);
-
-      if (alreadyExists) {
-        setAccessMode("signin");
-        setExistingAccessProfile((current) => ({
-          ...(current || {}),
-          fullName: String(submittedValues?.fullName || current?.fullName || "").trim(),
-          workEmail: String(submittedValues?.workEmail || current?.workEmail || "").trim(),
-        }));
-        throw new Error("Account already exists for this email. Please sign in.");
-      }
-
-      await signupAccessProfile(submittedValues);
-    }
-
-    if (mode === "signin" || mode === "login") {
-      // Backfill DB profile for legacy local-only users before signin.
-      const fallbackProfile = {
-        ...(existingAccessProfile || {}),
-        fullName: String(submittedValues?.fullName || existingAccessProfile?.fullName || "").trim(),
-        workEmail: String(submittedValues?.workEmail || existingAccessProfile?.workEmail || "").trim(),
-      };
-
-      if (
-        String(fallbackProfile.organization || "").trim()
-        && String(fallbackProfile.purpose || "").trim()
-      ) {
-        await signupAccessProfile(fallbackProfile);
-      }
-
-      await signinAccessProfile(submittedValues);
-    }
-
-    if (mode === "full" || mode === "signup") {
-      saveAccessProfile(submittedValues);
-      setExistingAccessProfile(readStoredAccessProfile());
-    }
-
-    const targetId = pendingUseCaseId;
-    closeAccessGate();
-
-    if (targetId === null || targetId === undefined) {
-      return;
-    }
-
-    navigate(`/use-cases/${targetId}`);
+  const openUseCaseDetails = (id) => {
+    navigate(`/use-cases/${id}`);
   };
 
   const handleCardKeyDown = (event, id) => {
@@ -524,15 +397,6 @@ function Table({ useCases, transitionKey = "default", direction = 1, viewMode = 
           />
         )}
       </AnimatePresence>
-
-      <AccessGateDialog
-        isOpen={isAccessGateOpen}
-        mode={accessMode}
-        allowModeSwitch
-        existingProfile={existingAccessProfile}
-        onClose={closeAccessGate}
-        onConfirm={handleAccessGateConfirm}
-      />
     </>
   );
 }
